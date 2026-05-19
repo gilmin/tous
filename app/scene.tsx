@@ -287,8 +287,8 @@ function OrbitingBody({
     }
   });
 
-  const handleClick = useCallback(
-    (e: ThreeEvent<MouseEvent>) => {
+  const handleSelect = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
       if (!selfRef.current || !body.label) return;
       const pos = new THREE.Vector3();
@@ -335,7 +335,7 @@ function OrbitingBody({
           emissiveIntensity={emissive.intensity}
           roughness={variant === "mono" ? 0.75 : 0.5}
           metalness={variant === "mono" ? 0.05 : 0.1}
-          onClick={handleClick}
+          onSelect={handleSelect}
         />
         {body.label && focused?.id !== body.id && (
           <Html
@@ -473,7 +473,16 @@ export default function Scene({
 }: {
   variant?: SceneVariant;
 }) {
-  const [focused, setFocused] = useState<FocusedState | null>(null);
+  const [focused, setFocusedState] = useState<FocusedState | null>(null);
+  // Selecting an orbiting body fires on pointerdown, but pointerup lands on
+  // empty space (the body has moved) → onPointerMissed would immediately
+  // clear the focus. Suppress that for a short window after a select.
+  const lastSelectAtRef = useRef(0);
+
+  const setFocused = useCallback((next: FocusedState | null) => {
+    if (next !== null) lastSelectAtRef.current = performance.now();
+    setFocusedState(next);
+  }, []);
 
   useEffect(() => {
     if (!focused) return;
@@ -482,7 +491,7 @@ export default function Scene({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [focused]);
+  }, [focused, setFocused]);
 
   const isMono = variant === "mono";
 
@@ -495,7 +504,10 @@ export default function Scene({
             ? "#f4f4f2"
             : "radial-gradient(circle at center, #0a0a1a 0%, #000 70%)",
         }}
-        onPointerMissed={() => setFocused(null)}
+        onPointerMissed={() => {
+          if (performance.now() - lastSelectAtRef.current < 300) return;
+          setFocused(null);
+        }}
       >
         {isMono ? (
           <>
