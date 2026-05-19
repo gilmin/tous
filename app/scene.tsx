@@ -11,6 +11,7 @@ import {
   useCallback,
 } from "react";
 import * as THREE from "three";
+import { PlanetMesh, type PlanetShape } from "./_components/Planet";
 
 const IDLE_ROTATION_SPEED = 0.05;
 const MOUSE_INFLUENCE = 2.5;
@@ -31,6 +32,12 @@ type OrbitalBody = {
   size: number;
   color: string;
   emissive?: string;
+  /**
+   * Organic shape variant. Defaults to "smooth" (a clean sphere) so existing
+   * data without a shape keeps the original look. See Planet.tsx for the full
+   * set of 20 shape ids.
+   */
+  shape?: PlanetShape;
   selfRotation?: number;
   orbitRadius?: number;
   orbitSpeed?: number;
@@ -56,12 +63,17 @@ const FocusContext = createContext<FocusContextValue>({
   setFocused: () => {},
 });
 
+// ─────────────────────────────────────────────────────────
+// Shape mapping: each planet's meaning → organic shape variant.
+// Add/edit `shape` on any body to remap. See Planet.tsx for the catalogue.
+// ─────────────────────────────────────────────────────────
 const SYSTEM: OrbitalBody = {
   id: "self",
   label: "나",
   size: 0.6,
   color: "#ffd97a",
   emissive: "#ff8c1a",
+  shape: "smooth", // 매끄러운 중심
   selfRotation: 0.05,
   children: [
     {
@@ -69,6 +81,7 @@ const SYSTEM: OrbitalBody = {
       label: "자유",
       size: 0.18,
       color: "#7ab0d8",
+      shape: "cluster", // 흩어진 덩어리 — 여러 갈래의 자유
       orbitRadius: 1.6,
       orbitSpeed: 0.45,
       inclination: 0.1,
@@ -80,6 +93,7 @@ const SYSTEM: OrbitalBody = {
           label: "선택",
           size: 0.06,
           color: "#cfd8e3",
+          shape: "smooth", // 작은 매끄러운 위성
           orbitRadius: 0.35,
           orbitSpeed: 1.5,
           inclination: 0.3,
@@ -92,6 +106,7 @@ const SYSTEM: OrbitalBody = {
       label: "외로움",
       size: 0.22,
       color: "#d68ea8",
+      shape: "oblong", // 길쭉한 비대칭 — 홀로 떠 있는
       orbitRadius: 2.4,
       orbitSpeed: 0.3,
       inclination: -0.15,
@@ -103,6 +118,7 @@ const SYSTEM: OrbitalBody = {
           label: "관계",
           size: 0.07,
           color: "#e8d0d8",
+          shape: "conjoined", // 두 덩어리 — 연결
           orbitRadius: 0.4,
           orbitSpeed: 1.2,
           inclination: 0.2,
@@ -113,6 +129,7 @@ const SYSTEM: OrbitalBody = {
           label: "고독",
           size: 0.05,
           color: "#f0e0e6",
+          shape: "crystal", // 작고 날카로운 결정
           orbitRadius: 0.6,
           orbitSpeed: 0.9,
           inclination: -0.1,
@@ -125,6 +142,7 @@ const SYSTEM: OrbitalBody = {
       label: "호기심",
       size: 0.14,
       color: "#a8d68e",
+      shape: "tentacle", // 사방으로 뻗어나가는
       orbitRadius: 3.2,
       orbitSpeed: 0.22,
       inclination: 0.25,
@@ -136,6 +154,7 @@ const SYSTEM: OrbitalBody = {
       label: "두려움",
       size: 0.1,
       color: "#e0b070",
+      shape: "cratered", // 패인 자국이 남은
       orbitRadius: 4.0,
       orbitSpeed: 0.15,
       inclination: -0.2,
@@ -307,16 +326,17 @@ function OrbitingBody({
         />
       )}
       <group position={[body.orbitRadius ?? 0, 0, 0]}>
-        <mesh ref={selfRef} onClick={handleClick}>
-          <sphereGeometry args={[body.size, 32, 32]} />
-          <meshStandardMaterial
-            color={color}
-            emissive={emissive.color}
-            emissiveIntensity={emissive.intensity}
-            roughness={variant === "mono" ? 0.75 : 0.5}
-            metalness={variant === "mono" ? 0.05 : 0.1}
-          />
-        </mesh>
+        <PlanetMesh
+          meshRef={selfRef}
+          shape={body.shape ?? "smooth"}
+          size={body.size}
+          color={color}
+          emissive={emissive.color}
+          emissiveIntensity={emissive.intensity}
+          roughness={variant === "mono" ? 0.75 : 0.5}
+          metalness={variant === "mono" ? 0.05 : 0.1}
+          onClick={handleClick}
+        />
         {body.label && focused?.id !== body.id && (
           <Html
             position={[0, labelYOffset, 0]}
