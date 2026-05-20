@@ -480,6 +480,8 @@ export default function Scene({
   const lastSelectAtRef = useRef(0);
 
   const setFocused = useCallback((next: FocusedState | null) => {
+    // Only stamp on select (next !== null) — clearing focus intentionally
+    // leaves the old timestamp so onPointerMissed can still honor the guard.
     if (next !== null) lastSelectAtRef.current = performance.now();
     setFocusedState(next);
   }, []);
@@ -505,6 +507,8 @@ export default function Scene({
             : "radial-gradient(circle at center, #0a0a1a 0%, #000 70%)",
         }}
         onPointerMissed={() => {
+          // 300ms covers the gap between pointerdown (select) and pointerup
+          // (which lands on empty space because the body has orbited away).
           if (performance.now() - lastSelectAtRef.current < 300) return;
           setFocused(null);
         }}
