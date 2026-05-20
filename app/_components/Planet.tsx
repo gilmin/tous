@@ -488,7 +488,9 @@ type PlanetMeshProps = {
   emissiveIntensity: number;
   roughness: number;
   metalness: number;
-  onClick?: (e: ThreeEvent<MouseEvent>) => void;
+  // Fires on pointerdown — onClick would miss when the body is orbiting,
+  // because pointerup lands off-target by the time the user releases.
+  onSelect?: (e: ThreeEvent<PointerEvent>) => void;
 };
 
 export function PlanetMesh({
@@ -500,7 +502,7 @@ export function PlanetMesh({
   emissiveIntensity,
   roughness,
   metalness,
-  onClick,
+  onSelect,
 }: PlanetMeshProps) {
   const variant = VARIANT_BY_ID[shape] ?? VARIANT_BY_ID.smooth;
 
@@ -541,7 +543,7 @@ export function PlanetMesh({
   });
 
   return (
-    <mesh ref={meshRef} geometry={geometry} onClick={onClick}>
+    <mesh ref={meshRef} geometry={geometry} onPointerDown={onSelect}>
       <meshStandardMaterial
         color={color}
         emissive={emissive}

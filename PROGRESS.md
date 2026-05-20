@@ -17,8 +17,8 @@
 - 다음 세션에서 백엔드/DB 결정 들어가기 전에 반드시 이 문서 먼저 읽기
 
 **다음에 가장 먼저 할 일**:
-1. (아직이면) PR 생성 — https://github.com/gilmin/tous/pull/new/feat/m1-solar-system-mindmap
-2. 행성 다양성 시각 확인 → 좋으면 커밋
+1. `git push` — 로컬에 layout fix 커밋 1개 (b9b5e6d) ahead
+2. PR 생성 — https://github.com/gilmin/tous/pull/new/feat/m1-solar-system-mindmap
 3. `/plan-eng-review` — M2 진입 전 아키텍처 락인 (RLS, 익명 클라이언트, 랜덤 sphere 쿼리 전략)
 4. M2 진입 (노드 CRUD UI)
 
@@ -90,8 +90,9 @@
   - 수정: `app/scene.tsx` (`<sphereGeometry>` → `<PlanetMesh>`, `OrbitalBody.shape?` 필드, SYSTEM 매핑)
   - 의존성 추가 없음 (`three`/`@react-three/fiber`/`@react-three/drei` 기존)
   - `tsc --noEmit` 통과
-- [ ] 브라우저에서 시각 확인 (mono `/`, cosmic `/v/cosmic` 모두)
-- [ ] 커밋 + PR (또는 기존 PR에 push)
+- [x] 브라우저에서 시각 확인 (mono `/`, cosmic `/v/cosmic` 모두) — 외로움 oblong, 자유 cluster, 관계 conjoined 모두 명확히 구분됨
+- [x] **레이아웃 버그 픽스** — `flex-1 w-full h-screen` 래퍼 안에서 R3F Canvas의 자식 `height:100%`가 `flex-basis:0%` 때문에 부모 높이를 indefinite로 보고 canvas 기본 150px로 폴백. `w-screen h-screen`으로 변경 (commit `b9b5e6d`)
+- [ ] 푸시 + PR (또는 기존 PR에 push)
 
 **20개 모양 카탈로그**: smooth, pebble, lumpy, potato, oblong, kidney, dimpled,
 cratered, fissured, rippled, facet, crystal, ringed, banded, doubleRing,
