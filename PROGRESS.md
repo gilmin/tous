@@ -12,17 +12,18 @@
 **Vision (한 줄)**: SNS의 획일화에 대한 정반대 경험 — 자기 자신을 보여주는 거울이자, 타인의 내면을 들여다보는 창문.
 
 **전체 설계 문서 (저장소 밖)**:
-`~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md`
-- Status: APPROVED (Mode: Builder)
-- 다음 세션에서 백엔드/DB 결정 들어가기 전에 반드시 이 문서 먼저 읽기
+- `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
+- `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**다음에 가장 먼저 할 일**:
-1. `git push` — 로컬에 layout fix 커밋 1개 (b9b5e6d) ahead
-2. PR 생성 — https://github.com/gilmin/tous/pull/new/feat/m1-solar-system-mindmap
-3. `/plan-eng-review` — M2 진입 전 아키텍처 락인 (RLS, 익명 클라이언트, 랜덤 sphere 쿼리 전략)
-4. M2 진입 (노드 CRUD UI)
+**다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 계속):
+1. `/plan-ceo-review` — M2 설계 doc 기준 scope 검증 (HOLD SCOPE 기본값)
+2. `/grill-with-docs` (첫 실행) — `CONTEXT.md` + `docs/adr/0001-orbital-metaphor.md` 생성
+3. `/to-prd` — GitHub issue `[PRD] M2: Local CRUD + Interaction Variety`
+4. `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7개
+5. `/plan-eng-review` — zustand vs context, localStorage schema, ADR-0002
 
-**현재 브랜치**: `feat/m1-solar-system-mindmap` (main에서 분기, PR 대기)
+**현재 브랜치**: `main` (PR #1~#4 모두 머지, main 최신)
+**gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
 
@@ -78,21 +79,27 @@
 
 ## 4. Active
 
-### M1.5 — 행성 다양성 패스 (코드 적용 완료, 검증·커밋 대기, 2026-05-19)
+### M2 — Local CRUD + Interaction Variety (Phase 1 킥오프 진행 중, 2026-05-20)
 
-- [x] **클릭 focus mode** — 카메라 줌인 + orbit 정지 + 라벨 패널, ESC/빈공간/× 해제
-- [x] **focus indicator ring** — billboard, 행성 크기×1.5~1.54, opacity 0.28, ±5% 맥동 (사용자 spec: "보일 듯 말 듯")
-- [x] **부모-자식 연결선** — 자식 색으로 얇게 (mono 0.5, cosmic 0.25), orbit과 함께 회전
-- [x] **거리 기반 라벨 fade** — `LABEL_FADE_NEAR=6, FAR=11`, `<Html>` overlay billboard
-- [x] **테마 시스템** — `SceneVariant = "mono" | "cosmic"`, `/` (mono) / `/v/cosmic`
-- [x] **행성 다양성 import** — Claude Design 번들 `oyZF9xRlnHVlEyOOAy3zcg`
-  - 신규: `app/_components/Planet.tsx` (20개 유기적 모양 카탈로그 + `<PlanetMesh>`)
-  - 수정: `app/scene.tsx` (`<sphereGeometry>` → `<PlanetMesh>`, `OrbitalBody.shape?` 필드, SYSTEM 매핑)
-  - 의존성 추가 없음 (`three`/`@react-three/fiber`/`@react-three/drei` 기존)
-  - `tsc --noEmit` 통과
-- [x] 브라우저에서 시각 확인 (mono `/`, cosmic `/v/cosmic` 모두) — 외로움 oblong, 자유 cluster, 관계 conjoined 모두 명확히 구분됨
-- [x] **레이아웃 버그 픽스** — `flex-1 w-full h-screen` 래퍼 안에서 R3F Canvas의 자식 `height:100%`가 `flex-basis:0%` 때문에 부모 높이를 indefinite로 보고 canvas 기본 150px로 폴백. `w-screen h-screen`으로 변경 (commit `b9b5e6d`)
-- [ ] 푸시 + PR (또는 기존 PR에 push)
+**설계 문서**: `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` (APPROVED, quality 9/10)
+
+Phase 1 킥오프 체크리스트:
+- [x] `/office-hours` — M2 design doc APPROVED (7개 premise, 3개 알고리즘 계약, 8개 success criteria)
+- [ ] `/plan-ceo-review` — scope 검증 (HOLD SCOPE 기본값)
+- [ ] `/grill-with-docs` (첫 실행) — `CONTEXT.md` + `docs/adr/0001-orbital-metaphor.md`
+- [ ] `/to-prd` — GitHub issue `[PRD] M2`
+- [ ] `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7개
+- [ ] `/plan-eng-review` — zustand vs context, localStorage schema, ADR-0002
+
+**M2 핵심 결정 (확정)**:
+- 노드 추가: focus 패널 → `[+ 자식]` → 이름 입력 → orbit param 자동 생성
+- 노드 편집/삭제: focus 패널 3버튼 (편집·+자식·삭제). inner_core는 삭제 버튼 미렌더 + reducer 차단
+- 키보드 nav: ←/→ DFS pre-order, circular (sun ↔ 마지막)
+- hover: scale 5% + label 즉시 (M2 포함)
+- localStorage: 키 `tous:sphere:v1`, JSON 손상 시 SYSTEM fallback
+- 예상 기간: 7~8일 human / 1.5~2일 CC
+
+### M1.5 — 행성 다양성 패스 ✅ DONE (2026-05-20, PR #1~#4 머지)
 
 **20개 모양 카탈로그**: smooth, pebble, lumpy, potato, oblong, kidney, dimpled,
 cratered, fissured, rippled, facet, crystal, ringed, banded, doubleRing,
