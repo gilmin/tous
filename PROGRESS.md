@@ -16,11 +16,12 @@
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
 **다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 계속):
-1. `/plan-ceo-review` — M2 설계 doc 기준 scope 검증 (HOLD SCOPE 기본값)
-2. `/grill-with-docs` (첫 실행) — `CONTEXT.md` + `docs/adr/0001-orbital-metaphor.md` 생성
-3. `/to-prd` — GitHub issue `[PRD] M2: Local CRUD + Interaction Variety`
-4. `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7개
-5. `/plan-eng-review` — zustand vs context, localStorage schema, ADR-0002
+1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
+2. ⬜ `/grill-with-docs` (첫 실행) — `CONTEXT.md` + `docs/adr/0001-orbital-metaphor.md` 생성
+3. ⬜ `/to-prd` — GitHub issue `[PRD] M2: Local CRUD + Interaction Variety`
+4. ⬜ `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7~8개 (T1~T8 task 참조)
+5. ⬜ `/plan-eng-review` — zustand store factory, persist+temporal 결합, ADR-0002. **shipping gate**
+6. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap
 
 **현재 브랜치**: `main` (PR #1~#4 모두 머지, main 최신)
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
@@ -85,11 +86,39 @@
 
 Phase 1 킥오프 체크리스트:
 - [x] `/office-hours` — M2 design doc APPROVED (7개 premise, 3개 알고리즘 계약, 8개 success criteria)
-- [ ] `/plan-ceo-review` — scope 검증 (HOLD SCOPE 기본값)
+- [x] `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION (1/6 accepted), 13개 결정 락인
 - [ ] `/grill-with-docs` (첫 실행) — `CONTEXT.md` + `docs/adr/0001-orbital-metaphor.md`
 - [ ] `/to-prd` — GitHub issue `[PRD] M2`
-- [ ] `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7개
-- [ ] `/plan-eng-review` — zustand vs context, localStorage schema, ADR-0002
+- [ ] `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7~8개 (T1~T8)
+- [ ] `/plan-eng-review` — zustand store factory + ADR-0002
+- [ ] `/plan-design-review` — hydration flash + cosmic 폴리쉬
+
+### CEO 리뷰 결정 락인 (2026-05-25)
+
+| # | 결정 | 영역 |
+|---|---|---|
+| D1 | **zustand + persist middleware** (zundo + persist 결합, `persist(temporal(...))`, `partialize: (s)=>({tree, lastFocused})`) | state lib |
+| D3 | **Undo/Redo** scope 추가 — Cmd+Z/Cmd+Shift+Z, 50 step, add/edit/delete만 추적, slider drag pause/resume | expansion |
+| D5 | **FocusContext 삭제**, 4개 소비자 → `useSphereStore` 직접 구독 | architecture |
+| D6 | localStorage `QuotaExceededError` → M3 deferral | architecture |
+| D7 | Multi-tab concurrent write → M3 deferral | architecture |
+| D8 | 행성 **깊이 무제한** + `size = max(0.05, parent.size * 0.6)` | error map |
+| D9 | Add Enter → **자동 NORMAL mode 복귀** (연속 입력 안 함) | UX |
+| D10 | Edit mode ←/→ → input 텍스트 커서만 (DFS nav 비활성) | UX |
+| D11 | Edit mode Cmd+Z → input 텍스트 undo만 (트리 undo 비활성) | UX |
+| D12 | **vitest** + store/순수 함수 unit test (R3F component test 안 함) | test setup |
+
+**원칙**: "mode가 키보드 독점" (D10/D11/D9 공통) — edit/add mode에서는 input이 모든 키 점유, ESC로 나가야 글로벌 nav 활성.
+
+### Implementation Tasks (T1~T8)
+
+CEO plan 참조. P1 5개 (re-render 최적화, inner_core 가드 테스트, 손상 fallback 테스트, size clamp, mode keyboard 계약). P2 3개 (slider coalesce, add Enter 자동 복귀, dfs helper). 7~8개 vertical slice issue로 분해 가능.
+
+### Eng Review로 넘기는 핵심 노트
+
+1. **Re-render 최적화 필수**: `OrbitingBody`에 `React.memo` + 노드별 zustand selector. body prop → id로 변경 후 컴포넌트 내부에서 store 구독.
+2. **Slider history coalesce 범위**: slider(size·속도)만 pause/resume 필요. shape 드롭다운·color picker는 single-event라 coalesce 불필요. ADR-0002에서 필드별 명시.
+3. **잔여 temporal interrogation 7개**: id 생성(crypto.randomUUID), parentId 필드 필요?, immer vs spread, 재클릭 no-op 위치, color picker 구현, hash 함수(djb2/FNV-1a/MD5), reducer 단위테스트 entry.
 
 **M2 핵심 결정 (확정)**:
 - 노드 추가: focus 패널 → `[+ 자식]` → 이름 입력 → orbit param 자동 생성
