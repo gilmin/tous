@@ -20,12 +20,10 @@
 2. ✅ `/grill-with-docs` — **DONE 2026-05-26**, `CONTEXT.md`(Universe/Body/Self/Orbit/Focus) + `docs/adr/0001-orbital-metaphor.md` 생성
 3. ✅ `/to-prd` — **DONE 2026-05-26**, [PRD] M2 = [issue #5](https://github.com/gilmin/tous/issues/5) (ready-for-agent). 테스트 대상 1/3/4 확정
 4. ✅ `/to-issues` — **DONE 2026-05-27**, milestone `M2`(#1) + 8개 슬라이스 #6~#13 발행
-5. ⬜ `/plan-eng-review` — **shipping gate**. ADR-0002(store factory·해시·id·parentId). #6 이게 막혀 있음 ← **다음**
-4. ⬜ `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7~8개 (T1~T8 task 참조)
-5. ⬜ `/plan-eng-review` — zustand store factory, persist+temporal 결합, ADR-0002. **shipping gate**
+5. ⬜ `/plan-eng-review` — **← 다음. shipping gate.** ADR-0002 산출(store factory·해시 함수·id 생성·`parentId` 필드 여부). 이게 끝나야 #6 풀리고 나머지 AFK 슬라이스(#7~#13)가 도미노로 열림
 6. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap
 
-**현재 브랜치**: `main` (PR #1~#4 모두 머지, main 최신)
+**현재 브랜치**: `main` 최신 (마지막 커밋 `c9dfa56`). 미머지 PR 없음. M2 이슈 #5~#13 open, milestone M2(#1)
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
