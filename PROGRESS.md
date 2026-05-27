@@ -19,7 +19,8 @@
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
 2. ✅ `/grill-with-docs` — **DONE 2026-05-26**, `CONTEXT.md`(Universe/Body/Self/Orbit/Focus) + `docs/adr/0001-orbital-metaphor.md` 생성
 3. ✅ `/to-prd` — **DONE 2026-05-26**, [PRD] M2 = [issue #5](https://github.com/gilmin/tous/issues/5) (ready-for-agent). 테스트 대상 1/3/4 확정
-4. ⬜ `/to-issues` — milestone `M2` + vertical-slice 이슈 7~8개 (T1~T8) ← **다음**
+4. ✅ `/to-issues` — **DONE 2026-05-27**, milestone `M2`(#1) + 8개 슬라이스 #6~#13 발행
+5. ⬜ `/plan-eng-review` — **shipping gate**. ADR-0002(store factory·해시·id·parentId). #6 이게 막혀 있음 ← **다음**
 4. ⬜ `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7~8개 (T1~T8 task 참조)
 5. ⬜ `/plan-eng-review` — zustand store factory, persist+temporal 결합, ADR-0002. **shipping gate**
 6. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap
@@ -90,9 +91,24 @@ Phase 1 킥오프 체크리스트:
 - [x] `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION (1/6 accepted), 13개 결정 락인
 - [x] `/grill-with-docs` — **DONE 2026-05-26**, `CONTEXT.md` + ADR-0001 생성. 도메인 명사 5개(Universe/Body/Self/Orbit/Focus) 락인, 용어 충돌 3건 해소
 - [x] `/to-prd` — **DONE 2026-05-26**, [issue #5](https://github.com/gilmin/tous/issues/5) (ready-for-agent). 모듈 6개 분해, 테스트 대상 1/3/4(tree-ops·persistence·interaction-logic) 확정
-- [ ] `/to-issues` — GitHub milestone `M2` + vertical-slice 이슈 7~8개 (T1~T8)
-- [ ] `/plan-eng-review` — zustand store factory + ADR-0002
+- [x] `/to-issues` — **DONE 2026-05-27**, milestone `M2`(#1) + 8개 vertical-slice 이슈 발행 (아래 맵)
+- [ ] `/plan-eng-review` — zustand store factory + ADR-0002. **#6 이게 막혀 있음 (shipping gate)**
 - [ ] `/plan-design-review` — hydration flash + cosmic 폴리쉬
+
+### M2 이슈 맵 (milestone M2 = #1, parent PRD = #5)
+
+| 이슈 | 슬라이스 | 유형 | blocked by |
+|---|---|---|---|
+| [#6](https://github.com/gilmin/tous/issues/6) | M2-1 영속 store 기반 (SYSTEM→zustand, FocusContext 삭제, fallback, memo) | HITL | eng-review 게이트 |
+| [#7](https://github.com/gilmin/tous/issues/7) | M2-2 이름 편집 + mode 기계 도입 | AFK | #6 |
+| [#8](https://github.com/gilmin/tous/issues/8) | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) | AFK | #6 |
+| [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #6 |
+| [#10](https://github.com/gilmin/tous/issues/10) | M2-5 키보드 nav (DFS 순환) | AFK | #6 |
+| [#11](https://github.com/gilmin/tous/issues/11) | M2-8 hover 폴리쉬 | AFK | #6 |
+| [#12](https://github.com/gilmin/tous/issues/12) | M2-6 Undo/Redo (temporal + coalesce) | AFK | #7·#8·#9 |
+| [#13](https://github.com/gilmin/tous/issues/13) | M2-7 외형 편집 (크기·속도·모양·색) | AFK | #7·#12 |
+
+테스트 대상: tree-ops(#7·#8·#9), persistence(#6), interaction-logic(#7·#10). orbit-gen 별도 테스트 안 함.
 
 ### CEO 리뷰 결정 락인 (2026-05-25)
 
