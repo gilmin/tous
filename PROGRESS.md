@@ -20,8 +20,11 @@
 2. ✅ `/grill-with-docs` — **DONE 2026-05-26**, `CONTEXT.md`(Universe/Body/Self/Orbit/Focus) + `docs/adr/0001-orbital-metaphor.md` 생성
 3. ✅ `/to-prd` — **DONE 2026-05-26**, [PRD] M2 = [issue #5](https://github.com/gilmin/tous/issues/5) (ready-for-agent). 테스트 대상 1/3/4 확정
 4. ✅ `/to-issues` — **DONE 2026-05-27**, milestone `M2`(#1) + 8개 슬라이스 #6~#13 발행
-5. ⬜ `/plan-eng-review` — **← 다음. shipping gate.** ADR-0002 산출(store factory·해시 함수·id 생성·`parentId` 필드 여부). 이게 끝나야 #6 풀리고 나머지 AFK 슬라이스(#7~#13)가 도미노로 열림
-6. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap
+5. ✅ `/plan-eng-review` — **DONE 2026-05-28**, ADR-0002 작성, 7개 결정 락인, 신규 슬라이스 #5.5/#5.6 신설. Eng review test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260528.md`
+6. ⬜ **#5.5 mechanical** — scene.tsx → app/scene/ 디렉터리 분할 (별도 PR, ~CC 15분, 로직 변경 0)
+7. ⬜ **#5.6 mechanical** — vitest 설치 + config + smoke test (별도 PR, ~CC 10분)
+8. ⬜ **#6 (M2-1)** — zustand + zundo + immer 도입, FocusContext 삭제, persist throttle 100ms, store unit test. 모든 AFK 슬라이스의 도미노 게이트.
+9. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, #6 머지 후로 미뤄도 됨)
 
 **현재 브랜치**: `main` 최신 (마지막 커밋 `c9dfa56`). 미머지 PR 없음. M2 이슈 #5~#13 open, milestone M2(#1)
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
@@ -90,23 +93,25 @@ Phase 1 킥오프 체크리스트:
 - [x] `/grill-with-docs` — **DONE 2026-05-26**, `CONTEXT.md` + ADR-0001 생성. 도메인 명사 5개(Universe/Body/Self/Orbit/Focus) 락인, 용어 충돌 3건 해소
 - [x] `/to-prd` — **DONE 2026-05-26**, [issue #5](https://github.com/gilmin/tous/issues/5) (ready-for-agent). 모듈 6개 분해, 테스트 대상 1/3/4(tree-ops·persistence·interaction-logic) 확정
 - [x] `/to-issues` — **DONE 2026-05-27**, milestone `M2`(#1) + 8개 vertical-slice 이슈 발행 (아래 맵)
-- [ ] `/plan-eng-review` — zustand store factory + ADR-0002. **#6 이게 막혀 있음 (shipping gate)**
-- [ ] `/plan-design-review` — hydration flash + cosmic 폴리쉬
+- [x] `/plan-eng-review` — **DONE 2026-05-28**, ADR-0002 작성. 7개 결정(D1~D7) 락인. #6 shipping gate 해제, 단 #5.5/#5.6 mechanical PR 두 개 사전 직렬.
+- [ ] `/plan-design-review` — hydration flash + cosmic 폴리쉬 (선택)
 
 ### M2 이슈 맵 (milestone M2 = #1, parent PRD = #5)
 
-| 이슈 | 슬라이스 | 유형 | blocked by |
-|---|---|---|---|
-| [#6](https://github.com/gilmin/tous/issues/6) | M2-1 영속 store 기반 (SYSTEM→zustand, FocusContext 삭제, fallback, memo) | HITL | eng-review 게이트 |
-| [#7](https://github.com/gilmin/tous/issues/7) | M2-2 이름 편집 + mode 기계 도입 | AFK | #6 |
-| [#8](https://github.com/gilmin/tous/issues/8) | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) | AFK | #6 |
-| [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #6 |
-| [#10](https://github.com/gilmin/tous/issues/10) | M2-5 키보드 nav (DFS 순환) | AFK | #6 |
-| [#11](https://github.com/gilmin/tous/issues/11) | M2-8 hover 폴리쉬 | AFK | #6 |
-| [#12](https://github.com/gilmin/tous/issues/12) | M2-6 Undo/Redo (temporal + coalesce) | AFK | #7·#8·#9 |
-| [#13](https://github.com/gilmin/tous/issues/13) | M2-7 외형 편집 (크기·속도·모양·색) | AFK | #7·#12 |
+| 이슈 | 슬라이스 | 유형 | blocked by | 병렬 lane |
+|---|---|---|---|---|
+| #5.5 (신설) | scene.tsx → app/scene/ mechanical 분할 | mechanical | — | 직렬 (gh issue 생성 필요) |
+| #5.6 (신설) | vitest 설치 + config + smoke | mechanical | — | 직렬 (gh issue 생성 필요) |
+| [#6](https://github.com/gilmin/tous/issues/6) | M2-1 영속 store 기반 (zustand+zundo+immer, FocusContext 삭제, persist throttle 100ms, store unit test) | HITL | #5.5, #5.6 | 직렬 |
+| [#7](https://github.com/gilmin/tous/issues/7) | M2-2 이름 편집 + mode 기계 도입 | AFK | #6 | 직렬 (mode 기계가 #10의 prerequisite) |
+| [#8](https://github.com/gilmin/tous/issues/8) | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) | AFK | #7 | **Lane A (병렬)** |
+| [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #7 | **Lane B (병렬)** |
+| [#11](https://github.com/gilmin/tous/issues/11) | M2-8 hover 폴리쉬 | AFK | #6 | **Lane C (병렬, #7 무관)** |
+| [#10](https://github.com/gilmin/tous/issues/10) | M2-5 키보드 nav (DFS 순환) | AFK | #7, #8, #9 | 직렬 (Lane A/B 머지 후) |
+| [#12](https://github.com/gilmin/tous/issues/12) | M2-6 Undo/Redo (temporal + coalesce) | AFK | #7·#8·#9 | 직렬 |
+| [#13](https://github.com/gilmin/tous/issues/13) | M2-7 외형 편집 (크기·속도·모양·색, slider throttle persist) | AFK | #7·#12 | 직렬 |
 
-테스트 대상: tree-ops(#7·#8·#9), persistence(#6), interaction-logic(#7·#10). orbit-gen 별도 테스트 안 함.
+테스트 대상: tree-ops(#7·#8·#9), persistence(#6), interaction-logic(#7·#10), orbit-gen + djb2(#8). R3F component test 없음 (D12 락인).
 
 ### CEO 리뷰 결정 락인 (2026-05-25)
 
