@@ -1,20 +1,20 @@
 "use client";
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useContext, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
-import { FocusContext } from "./FocusContext";
 import { IDLE_ROTATION_SPEED, MOUSE_INFLUENCE, LERP_FACTOR } from "./constants";
 import { OrbitingBody } from "./OrbitingBody";
-import { SYSTEM } from "./seed";
+import { useSphereStore } from "./store/sphere-store";
 import type { SceneVariant } from "./types";
 
 export function System({ variant }: { variant: SceneVariant }) {
+  const rootId = useSphereStore((s) => s.tree.id);
+  const focusedId = useSphereStore((s) => s.focusedId);
   const systemRef = useRef<THREE.Group>(null);
   const rotationSpeedRef = useRef(IDLE_ROTATION_SPEED);
   const { pointer } = useThree();
-  const { focused } = useContext(FocusContext);
-  const isPaused = focused !== null;
+  const isPaused = focusedId !== null;
 
   useFrame((_, delta) => {
     if (!systemRef.current || isPaused) return;
@@ -29,7 +29,7 @@ export function System({ variant }: { variant: SceneVariant }) {
 
   return (
     <group ref={systemRef}>
-      <OrbitingBody body={SYSTEM} variant={variant} />
+      <OrbitingBody id={rootId} variant={variant} />
     </group>
   );
 }

@@ -1,35 +1,45 @@
 "use client";
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useContext, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
-import { FocusContext } from "./FocusContext";
+import { useSphereStore } from "./store/sphere-store";
+import { selectBodyById } from "./store/tree-ops";
+import { getBodyMesh } from "./store/body-mesh-registry";
 import { CAMERA_LERP, DEFAULT_CAM_POS, DEFAULT_LOOK_AT } from "./constants";
 
 export function CameraController() {
-  const { focused } = useContext(FocusContext);
+  const focusedId = useSphereStore((s) => s.focusedId);
+  const focusedSize = useSphereStore((s) => {
+    const id = s.focusedId;
+    if (!id) return null;
+    return selectBodyById(s.tree, id)?.size ?? null;
+  });
   const { camera } = useThree();
   const lookAtRef = useRef(new THREE.Vector3().copy(DEFAULT_LOOK_AT));
+  const worldPos = useRef(new THREE.Vector3());
+  const desiredPos = useRef(new THREE.Vector3());
+  const desiredLook = useRef(new THREE.Vector3());
 
   useFrame(() => {
-    let desiredPos: THREE.Vector3;
-    let desiredLook: THREE.Vector3;
+    const mesh = focusedId ? getBodyMesh(focusedId) : null;
 
-    if (focused) {
+    if (focusedId && focusedSize !== null && mesh) {
+      mesh.getWorldPosition(worldPos.current);
       const offset = new THREE.Vector3(
         0,
-        focused.size * 0.6,
-        focused.size * 4 + 0.9,
+        focusedSize * 0.6,
+        focusedSize * 4 + 0.9,
       );
-      desiredPos = new THREE.Vector3().copy(focused.position).add(offset);
-      desiredLook = focused.position;
+      desiredPos.current.copy(worldPos.current).add(offset);
+      desiredLook.current.copy(worldPos.current);
     } else {
-      desiredPos = DEFAULT_CAM_POS;
-      desiredLook = DEFAULT_LOOK_AT;
+      desiredPos.current.copy(DEFAULT_CAM_POS);
+      desiredLook.current.copy(DEFAULT_LOOK_AT);
     }
 
-    camera.position.lerp(desiredPos, CAMERA_LERP);
-    lookAtRef.current.lerp(desiredLook, CAMERA_LERP);
+    camera.position.lerp(desiredPos.current, CAMERA_LERP);
+    lookAtRef.current.lerp(desiredLook.current, CAMERA_LERP);
     camera.lookAt(lookAtRef.current);
   });
 

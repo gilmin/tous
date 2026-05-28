@@ -2,13 +2,13 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { FocusContext } from "./FocusContext";
+import { useEffect, useRef } from "react";
 import { CameraController } from "./CameraController";
 import { FocusPanel } from "./FocusPanel";
 import { FocusRing } from "./FocusRing";
 import { System } from "./System";
-import type { FocusedState, SceneVariant } from "./types";
+import { useSphereStore } from "./store/sphere-store";
+import type { SceneVariant } from "./types";
 
 export type { SceneVariant } from "./types";
 
@@ -17,32 +17,31 @@ export default function Scene({
 }: {
   variant?: SceneVariant;
 }) {
-  const [focused, setFocusedState] = useState<FocusedState | null>(null);
-  // Selecting an orbiting body fires on pointerdown, but pointerup lands on
-  // empty space (the body has moved) → onPointerMissed would immediately
-  // clear the focus. Suppress that for a short window after a select.
+  const focusedId = useSphereStore((s) => s.focusedId);
+  const setFocus = useSphereStore((s) => s.setFocus);
+  // Selecting an orbiting body fires on pointerdown, but pointerup can land on
+  // empty space (the body has moved) → onPointerMissed would immediately clear
+  // the focus. Stamp the time of every select so the 300ms guard can suppress
+  // that follow-up clear.
   const lastSelectAtRef = useRef(0);
 
-  const setFocused = useCallback((next: FocusedState | null) => {
-    // Only stamp on select (next !== null) — clearing focus intentionally
-    // leaves the old timestamp so onPointerMissed can still honor the guard.
-    if (next !== null) lastSelectAtRef.current = performance.now();
-    setFocusedState(next);
-  }, []);
+  useEffect(() => {
+    if (focusedId !== null) lastSelectAtRef.current = performance.now();
+  }, [focusedId]);
 
   useEffect(() => {
-    if (!focused) return;
+    if (!focusedId) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setFocused(null);
+      if (e.key === "Escape") setFocus(null);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [focused, setFocused]);
+  }, [focusedId, setFocus]);
 
   const isMono = variant === "mono";
 
   return (
-    <FocusContext.Provider value={{ focused, setFocused }}>
+    <>
       <Canvas
         camera={{ position: [0, 2, 8], fov: 50 }}
         style={{
@@ -51,10 +50,8 @@ export default function Scene({
             : "radial-gradient(circle at center, #0a0a1a 0%, #000 70%)",
         }}
         onPointerMissed={() => {
-          // 300ms covers the gap between pointerdown (select) and pointerup
-          // (which lands on empty space because the body has orbited away).
           if (performance.now() - lastSelectAtRef.current < 300) return;
-          setFocused(null);
+          setFocus(null);
         }}
       >
         {isMono ? (
@@ -89,6 +86,6 @@ export default function Scene({
         <FocusRing variant={variant} />
       </Canvas>
       <FocusPanel variant={variant} />
-    </FocusContext.Provider>
+    </>
   );
 }
