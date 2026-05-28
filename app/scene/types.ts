@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { type PlanetShape } from "../_components/Planet";
 
 export type { PlanetShape };
@@ -23,16 +22,4 @@ export type OrbitalBody = {
   inclination?: number;
   phase?: number;
   children?: OrbitalBody[];
-};
-
-export type FocusedState = {
-  id: string;
-  label: string;
-  position: THREE.Vector3;
-  size: number;
-};
-
-export type FocusContextValue = {
-  focused: FocusedState | null;
-  setFocused: (s: FocusedState | null) => void;
 };

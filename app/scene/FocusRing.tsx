@@ -1,20 +1,29 @@
 "use client";
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useContext, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
-import { FocusContext } from "./FocusContext";
+import { useSphereStore } from "./store/sphere-store";
+import { selectBodyById } from "./store/tree-ops";
+import { getBodyMesh } from "./store/body-mesh-registry";
 import type { SceneVariant } from "./types";
 
 export function FocusRing({ variant }: { variant: SceneVariant }) {
-  const { focused } = useContext(FocusContext);
+  const focusedId = useSphereStore((s) => s.focusedId);
+  const focusedBody = useSphereStore((s) =>
+    s.focusedId ? selectBodyById(s.tree, s.focusedId) : null,
+  );
   const groupRef = useRef<THREE.Group>(null);
   const ringRef = useRef<THREE.Mesh>(null);
+  const worldPos = useRef(new THREE.Vector3());
   const { camera } = useThree();
 
   useFrame((state) => {
-    if (!groupRef.current || !focused) return;
-    groupRef.current.position.copy(focused.position);
+    if (!groupRef.current || !focusedId) return;
+    const mesh = getBodyMesh(focusedId);
+    if (!mesh) return;
+    mesh.getWorldPosition(worldPos.current);
+    groupRef.current.position.copy(worldPos.current);
     groupRef.current.lookAt(camera.position);
     if (ringRef.current) {
       const t = state.clock.elapsedTime;
@@ -23,10 +32,10 @@ export function FocusRing({ variant }: { variant: SceneVariant }) {
     }
   });
 
-  if (!focused) return null;
+  if (!focusedId || !focusedBody) return null;
 
-  const inner = focused.size * 1.5;
-  const outer = focused.size * 1.54;
+  const inner = focusedBody.size * 1.5;
+  const outer = focusedBody.size * 1.54;
   const color = variant === "mono" ? "#1a1a1a" : "#ffffff";
 
   return (

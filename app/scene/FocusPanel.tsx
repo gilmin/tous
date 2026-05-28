@@ -1,12 +1,15 @@
 "use client";
 
-import { useContext } from "react";
-import { FocusContext } from "./FocusContext";
+import { useSphereStore } from "./store/sphere-store";
+import { selectBodyById } from "./store/tree-ops";
 import type { SceneVariant } from "./types";
 
 export function FocusPanel({ variant }: { variant: SceneVariant }) {
-  const { focused, setFocused } = useContext(FocusContext);
-  if (!focused) return null;
+  const focusedBody = useSphereStore((s) =>
+    s.focusedId ? selectBodyById(s.tree, s.focusedId) : null,
+  );
+  const setFocus = useSphereStore((s) => s.setFocus);
+  if (!focusedBody) return null;
 
   const isMono = variant === "mono";
 
@@ -21,9 +24,7 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
         padding: "14px 22px",
         minWidth: 220,
         textAlign: "center",
-        background: isMono
-          ? "rgba(255,255,255,0.85)"
-          : "rgba(15,15,20,0.7)",
+        background: isMono ? "rgba(255,255,255,0.85)" : "rgba(15,15,20,0.7)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
         border: isMono
@@ -38,7 +39,7 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
       }}
     >
       <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "0.01em" }}>
-        {focused.label}
+        {focusedBody.label}
       </div>
       <div
         style={{
@@ -50,7 +51,7 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
         빈 공간 클릭 또는 ESC로 닫기
       </div>
       <button
-        onClick={() => setFocused(null)}
+        onClick={() => setFocus(null)}
         style={{
           position: "absolute",
           top: 8,

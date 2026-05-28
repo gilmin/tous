@@ -2,29 +2,45 @@
 
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Line, Html } from "@react-three/drei";
-import { useCallback, useContext, useRef } from "react";
+import { memo, useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { PlanetMesh } from "../_components/Planet";
-import { FocusContext } from "./FocusContext";
 import { LABEL_FADE_NEAR, LABEL_FADE_FAR } from "./constants";
+import { useSphereStore } from "./store/sphere-store";
+import { selectBodyById } from "./store/tree-ops";
+import {
+  registerBodyMesh,
+  unregisterBodyMesh,
+} from "./store/body-mesh-registry";
 import { getBodyColor, getEmissiveSettings, getLineColor } from "./utils";
-import type { OrbitalBody, SceneVariant } from "./types";
+import type { SceneVariant } from "./types";
 
-export function OrbitingBody({
-  body,
+export const OrbitingBody = memo(function OrbitingBody({
+  id,
   variant,
 }: {
-  body: OrbitalBody;
+  id: string;
   variant: SceneVariant;
 }) {
+  const body = useSphereStore((s) => selectBodyById(s.tree, id));
+  const focusedId = useSphereStore((s) => s.focusedId);
+  const setFocus = useSphereStore((s) => s.setFocus);
+
   const orbitRef = useRef<THREE.Group>(null);
   const selfRef = useRef<THREE.Mesh>(null);
   const labelRef = useRef<HTMLDivElement>(null);
   const worldPos = useRef(new THREE.Vector3());
-  const { focused, setFocused } = useContext(FocusContext);
-  const isPaused = focused !== null;
+  const isPaused = focusedId !== null;
+
+  useEffect(() => {
+    const mesh = selfRef.current;
+    if (!mesh) return;
+    registerBodyMesh(id, mesh);
+    return () => unregisterBodyMesh(id, mesh);
+  }, [id]);
 
   useFrame((state, delta) => {
+    if (!body) return;
     if (orbitRef.current && body.orbitSpeed && !isPaused) {
       orbitRef.current.rotation.y += body.orbitSpeed * delta;
     }
@@ -46,18 +62,13 @@ export function OrbitingBody({
   const handleSelect = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
-      if (!selfRef.current || !body.label) return;
-      const pos = new THREE.Vector3();
-      selfRef.current.getWorldPosition(pos);
-      setFocused({
-        id: body.id,
-        label: body.label,
-        position: pos,
-        size: body.size,
-      });
+      if (!body?.label) return;
+      setFocus(id);
     },
-    [body.id, body.label, body.size, setFocused],
+    [body?.label, id, setFocus],
   );
+
+  if (!body) return null;
 
   const hasOrbit = (body.orbitRadius ?? 0) > 0;
   const color = getBodyColor(body, variant);
@@ -93,7 +104,7 @@ export function OrbitingBody({
           metalness={variant === "mono" ? 0.05 : 0.1}
           onSelect={handleSelect}
         />
-        {body.label && focused?.id !== body.id && (
+        {body.label && focusedId !== body.id && (
           <Html
             position={[0, labelYOffset, 0]}
             center
@@ -123,9 +134,9 @@ export function OrbitingBody({
           </Html>
         )}
         {body.children?.map((child) => (
-          <OrbitingBody key={child.id} body={child} variant={variant} />
+          <OrbitingBody key={child.id} id={child.id} variant={variant} />
         ))}
       </group>
     </group>
   );
-}
+});
