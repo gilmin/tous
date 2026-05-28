@@ -23,7 +23,7 @@
 5. ✅ `/plan-eng-review` — **DONE 2026-05-28**, ADR-0002 작성, 7개 결정 락인, 신규 슬라이스 #5.5/#5.6 신설. Eng review test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260528.md`
 6. ✅ **#5.5 scene split** — **DONE 2026-05-28**, PR #14 merged (`d7b5009`). scene.tsx → app/scene/ 11개 모듈
 7. ✅ **#5.6 vitest 셋업** — **DONE 2026-05-28**, PR #15 merged (`7da6e70`). 7 smoke tests passing
-8. ✅ **#6 (M2-1) 영속 store** — **DONE 2026-05-28**, 브랜치 `feat/m2-1-sphere-store` 커밋 `7c458db`, PR 대기. zustand+zundo+immer 도입, `FocusContext` 삭제, `useSphereStore` 단일 source, 100ms throttle persist, 손상 JSON·version mismatch fallback, 8개 store/persist unit test. mesh registry로 focus position을 store 밖에 유지(D5).
+8. ✅ **#6 (M2-1) 영속 store** — **DONE 2026-05-28**, PR #16 merged (`f595e07`). zustand+zundo+immer 도입, `FocusContext` 삭제, `useSphereStore` 단일 source, 100ms throttle persist, 손상 JSON·version mismatch fallback, 8개 store/persist unit test. mesh registry로 focus position을 store 밖에 유지(D5).
 9. ⬜ **#7 (M2-2) ← 다음 세션 시작점.** Body 이름 편집 + mode 기계 도입. focus panel `[편집]` → input 즉시 반영 → Enter/ESC NORMAL 복귀. Edit mode 중 ←/→는 input 커서만(D10), Cmd+Z는 input undo만(D11). store에 `editBody` 액션 추가, mode 전환 keybinding 점유 계약. #8/#9/#11의 prerequisite.
 10. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, #6 머지 후로 미뤄도 됨)
 
@@ -34,7 +34,7 @@
 - `app/scene/store/sphere-store.ts` (`useSphereStore`, `Mode`, `setFocus`, `setMode`) — #7은 여기에 `editBody` 추가
 - `app/scene/store/tree-ops.ts` (`selectBodyById`) — 트리 탐색 헬퍼
 
-**현재 브랜치**: `feat/m2-1-sphere-store` (마지막 커밋 `7c458db`). #6 PR 대기. M2 이슈 #7~#13 open, milestone M2(#1).
+**현재 브랜치**: `main` 최신 (마지막 커밋 `f595e07`). 미머지 PR 없음. M2 이슈 #7~#13 open, milestone M2(#1). PR #14/#15/#16 머지 완료.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
