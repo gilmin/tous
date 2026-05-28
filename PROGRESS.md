@@ -21,12 +21,18 @@
 3. ✅ `/to-prd` — **DONE 2026-05-26**, [PRD] M2 = [issue #5](https://github.com/gilmin/tous/issues/5) (ready-for-agent). 테스트 대상 1/3/4 확정
 4. ✅ `/to-issues` — **DONE 2026-05-27**, milestone `M2`(#1) + 8개 슬라이스 #6~#13 발행
 5. ✅ `/plan-eng-review` — **DONE 2026-05-28**, ADR-0002 작성, 7개 결정 락인, 신규 슬라이스 #5.5/#5.6 신설. Eng review test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260528.md`
-6. ⬜ **#5.5 mechanical** — scene.tsx → app/scene/ 디렉터리 분할 (별도 PR, ~CC 15분, 로직 변경 0)
-7. ⬜ **#5.6 mechanical** — vitest 설치 + config + smoke test (별도 PR, ~CC 10분)
-8. ⬜ **#6 (M2-1)** — zustand + zundo + immer 도입, FocusContext 삭제, persist throttle 100ms, store unit test. 모든 AFK 슬라이스의 도미노 게이트.
+6. ✅ **#5.5 scene split** — **DONE 2026-05-28**, PR #14 merged (`d7b5009`). scene.tsx → app/scene/ 11개 모듈
+7. ✅ **#5.6 vitest 셋업** — **DONE 2026-05-28**, PR #15 merged (`7da6e70`). 7 smoke tests passing
+8. ⬜ **#6 (M2-1) ← 다음 세션 시작점.** zustand + zundo + immer 도입, FocusContext 완전 제거, persist throttle 100ms storage adapter, 손상 JSON migrate fallback, store + persist unit tests. ADR-0002에 결정 다 박혀 있어 구현은 직선적. HITL (PR review 가치 큼). 모든 AFK 슬라이스(#7~#11)의 도미노 게이트.
 9. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, #6 머지 후로 미뤄도 됨)
 
-**현재 브랜치**: `main` 최신 (마지막 커밋 `c9dfa56`). 미머지 PR 없음. M2 이슈 #5~#13 open, milestone M2(#1)
+**다음 세션 시작 시 읽을 것**:
+- `PROGRESS.md` (이 파일)
+- `docs/adr/0002-state-store-architecture.md` (#6 구현 청사진)
+- `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260528.md` (#6 테스트 시나리오)
+- `app/scene/` (분할된 11개 모듈, #6은 여기를 store-driven으로 전환)
+
+**현재 브랜치**: `main` 최신 (마지막 커밋 `7da6e70`). 미머지 PR 없음. M2 이슈 #5~#13 open, milestone M2(#1). PR #14/#15 머지 완료.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
@@ -100,9 +106,9 @@ Phase 1 킥오프 체크리스트:
 
 | 이슈 | 슬라이스 | 유형 | blocked by | 병렬 lane |
 |---|---|---|---|---|
-| #5.5 (신설) | scene.tsx → app/scene/ mechanical 분할 | mechanical | — | 직렬 (gh issue 생성 필요) |
-| #5.6 (신설) | vitest 설치 + config + smoke | mechanical | — | 직렬 (gh issue 생성 필요) |
-| [#6](https://github.com/gilmin/tous/issues/6) | M2-1 영속 store 기반 (zustand+zundo+immer, FocusContext 삭제, persist throttle 100ms, store unit test) | HITL | #5.5, #5.6 | 직렬 |
+| ✅ #5.5 | scene.tsx → app/scene/ mechanical 분할 (PR #14) | mechanical | — | — |
+| ✅ #5.6 | vitest 설치 + config + smoke (PR #15) | mechanical | — | — |
+| [#6](https://github.com/gilmin/tous/issues/6) | M2-1 영속 store 기반 (zustand+zundo+immer, FocusContext 삭제, persist throttle 100ms, store unit test) | HITL | — (게이트 해제됨) | 직렬 |
 | [#7](https://github.com/gilmin/tous/issues/7) | M2-2 이름 편집 + mode 기계 도입 | AFK | #6 | 직렬 (mode 기계가 #10의 prerequisite) |
 | [#8](https://github.com/gilmin/tous/issues/8) | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) | AFK | #7 | **Lane A (병렬)** |
 | [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #7 | **Lane B (병렬)** |
