@@ -8,6 +8,7 @@ import { FocusPanel } from "./FocusPanel";
 import { FocusRing } from "./FocusRing";
 import { System } from "./System";
 import { useSphereStore } from "./store/sphere-store";
+import { keyReducer } from "./store/key-reducer";
 import type { SceneVariant } from "./types";
 
 export type { SceneVariant } from "./types";
@@ -18,7 +19,9 @@ export default function Scene({
   variant?: SceneVariant;
 }) {
   const focusedId = useSphereStore((s) => s.focusedId);
+  const mode = useSphereStore((s) => s.mode);
   const setFocus = useSphereStore((s) => s.setFocus);
+  const setMode = useSphereStore((s) => s.setMode);
   // Selecting an orbiting body fires on pointerdown, but pointerup can land on
   // empty space (the body has moved) → onPointerMissed would immediately clear
   // the focus. Stamp the time of every select so the 300ms guard can suppress
@@ -30,13 +33,31 @@ export default function Scene({
   }, [focusedId]);
 
   useEffect(() => {
-    if (!focusedId) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setFocus(null);
+      const action = keyReducer(
+        { mode, hasFocus: focusedId !== null },
+        {
+          key: e.key,
+          metaKey: e.metaKey,
+          ctrlKey: e.ctrlKey,
+          shiftKey: e.shiftKey,
+        },
+      );
+      switch (action.type) {
+        case "exit-edit":
+          setMode("normal");
+          break;
+        case "clear-focus":
+          setFocus(null);
+          break;
+        case "noop":
+        default:
+          break;
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [focusedId, setFocus]);
+  }, [mode, focusedId, setFocus, setMode]);
 
   const isMono = variant === "mono";
 
@@ -51,6 +72,10 @@ export default function Scene({
         }}
         onPointerMissed={() => {
           if (performance.now() - lastSelectAtRef.current < 300) return;
+          if (mode === "edit") {
+            setMode("normal");
+            return;
+          }
           setFocus(null);
         }}
       >
