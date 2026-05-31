@@ -154,6 +154,33 @@ describe("sphere-store actions", () => {
     expect(fresh.getState().tree.children?.[0]?.label).toBe("영속");
   });
 
+  it("editBody applies appearance fields and persists them (#13)", async () => {
+    const useStore = await freshStore();
+    useStore.getState().editBody("p1", {
+      size: 0.42,
+      selfRotation: 1.1,
+      orbitSpeed: 2.2,
+      shape: "crystal",
+      color: "#abcdef",
+    });
+    const p1 = selectBodyById(useStore.getState().tree, "p1");
+    expect(p1).toMatchObject({
+      size: 0.42,
+      selfRotation: 1.1,
+      orbitSpeed: 2.2,
+      shape: "crystal",
+      color: "#abcdef",
+    });
+    await new Promise((r) => setTimeout(r, 150));
+
+    const fresh = await freshStore();
+    expect(selectBodyById(fresh.getState().tree, "p1")).toMatchObject({
+      size: 0.42,
+      shape: "crystal",
+      color: "#abcdef",
+    });
+  });
+
   it("persists tree and lastFocused but not focusedId or mode", async () => {
     const useStore = await freshStore();
     useStore.getState().setFocus("p1");
