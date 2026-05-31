@@ -36,7 +36,8 @@
 - `app/scene/store/tree-ops.ts` (`selectBodyById`, `hasBodyId`, `editBody`) — #8에 `addChild`, #9에 `deleteBody` 순수 함수 추가
 - `app/scene/store/key-reducer.ts` (현재 NORMAL/EDIT만; #8 진행 시 ADD mode 추가)
 
-**현재 브랜치**: `main` 최신 (마지막 커밋 `e8423b5`). 미머지 PR 없음. M2 이슈 #8~#13 open, milestone M2(#1). PR #14/#15/#16/#17 머지 완료.
+**현재 브랜치**: `main` 최신 (마지막 커밋 `589d489` + 이 세션 chore). **미머지 로컬 브랜치 2개: `feat/m2-3-add-child`(#8, `0c0820e`), `feat/m2-8-hover-polish`(#11, `0686e75`)** — 둘 다 tsc clean, 테스트 통과(#8 53/53, #11 36/36), PR 미생성. M2 이슈 #8~#13 open, milestone M2(#1). PR #14/#15/#16/#17 머지 완료.
+**참고**: 이 세션에서 #8/#11을 worktree 격리 에이전트로 병렬 실행했으나 worktree 샌드박스가 쓰기를 차단 → 메인 작업트리에서 직접 적용·커밋함. 다음에 병렬 에이전트 쓸 때 worktree 쓰기 권한 먼저 확인할 것.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
@@ -114,9 +115,9 @@ Phase 1 킥오프 체크리스트:
 | ✅ #5.6 | vitest 설치 + config + smoke (PR #15) | mechanical | — | — |
 | ✅ #6 | M2-1 영속 store 기반 (PR #16) | HITL | — | 직렬 |
 | ✅ #7 | M2-2 이름 편집 + mode 기계 (PR #17) | AFK | #6 | 직렬 |
-| [#8](https://github.com/gilmin/tous/issues/8) | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) | AFK | #7 | **Lane A (병렬)** |
-| [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #7 | **Lane B (병렬)** |
-| [#11](https://github.com/gilmin/tous/issues/11) | M2-8 hover 폴리쉬 | AFK | #6 | **Lane C (병렬, #7 무관)** |
+| ✅ #8 | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) — branch `feat/m2-3-add-child` | AFK | #7 | store/FocusPanel/tree-ops CRUD 표면 선점 |
+| ✅ #11 | M2-8 hover 폴리쉬 — branch `feat/m2-8-hover-polish` | AFK | #6 | **진짜 병렬** (`OrbitingBody.tsx` 단독) |
+| [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #7, **#8(파일충돌)** | #8 머지 후 순차 |
 | [#10](https://github.com/gilmin/tous/issues/10) | M2-5 키보드 nav (DFS 순환) | AFK | #7, #8, #9 | 직렬 (Lane A/B 머지 후) |
 | [#12](https://github.com/gilmin/tous/issues/12) | M2-6 Undo/Redo (temporal + coalesce) | AFK | #7·#8·#9 | 직렬 |
 | [#13](https://github.com/gilmin/tous/issues/13) | M2-7 외형 편집 (크기·속도·모양·색, slider throttle persist) | AFK | #7·#12 | 직렬 |
