@@ -6,7 +6,14 @@ import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import type { OrbitalBody } from "../types";
 import { SYSTEM } from "../seed";
-import { childSize, hasBodyId, selectBodyById } from "./tree-ops";
+import {
+  childSize,
+  flattenDFS,
+  hasBodyId,
+  nextBodyId,
+  prevBodyId,
+  selectBodyById,
+} from "./tree-ops";
 import { generateOrbitParams } from "./orbit-gen";
 
 export type Mode = "normal" | "edit" | "add" | "delete-confirm";
@@ -17,6 +24,8 @@ export type SphereState = {
   focusedId: string | null;
   mode: Mode;
   setFocus: (id: string | null) => void;
+  focusNext: () => void;
+  focusPrev: () => void;
   setMode: (m: Mode) => void;
   editBody: (id: string, patch: Partial<OrbitalBody>) => void;
   addChild: (parentId: string, label: string) => void;
@@ -79,6 +88,23 @@ export const useSphereStore = create<SphereState>()(
             // forces a return to normal so the next focus does not reopen
             // an input that the user already abandoned.
             else s.mode = "normal";
+          }),
+        // DFS-circular nav (#10). Moves focus to the next/prev Body in
+        // pre-order, wrapping at both ends. Stays in NORMAL; the pure helpers
+        // (flattenDFS / next|prevBodyId) hold the ordering + wrap contract.
+        focusNext: () =>
+          set((s) => {
+            const id = nextBodyId(flattenDFS(s.tree), s.focusedId);
+            if (!id) return;
+            s.focusedId = id;
+            s.lastFocused = id;
+          }),
+        focusPrev: () =>
+          set((s) => {
+            const id = prevBodyId(flattenDFS(s.tree), s.focusedId);
+            if (!id) return;
+            s.focusedId = id;
+            s.lastFocused = id;
           }),
         setMode: (m: Mode) =>
           set((s) => {
