@@ -21,6 +21,8 @@ export default function Scene({
   const focusedId = useSphereStore((s) => s.focusedId);
   const mode = useSphereStore((s) => s.mode);
   const setFocus = useSphereStore((s) => s.setFocus);
+  const focusNext = useSphereStore((s) => s.focusNext);
+  const focusPrev = useSphereStore((s) => s.focusPrev);
   const setMode = useSphereStore((s) => s.setMode);
   // Selecting an orbiting body fires on pointerdown, but pointerup can land on
   // empty space (the body has moved) → onPointerMissed would immediately clear
@@ -51,6 +53,14 @@ export default function Scene({
         case "clear-focus":
           setFocus(null);
           break;
+        case "nav-prev":
+          e.preventDefault(); // arrows otherwise scroll the page
+          focusPrev();
+          break;
+        case "nav-next":
+          e.preventDefault();
+          focusNext();
+          break;
         case "noop":
         default:
           break;
@@ -58,7 +68,7 @@ export default function Scene({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [mode, focusedId, setFocus, setMode]);
+  }, [mode, focusedId, setFocus, focusNext, focusPrev, setMode]);
 
   const isMono = variant === "mono";
 

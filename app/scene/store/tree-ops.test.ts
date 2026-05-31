@@ -5,7 +5,10 @@ import {
   childSize,
   deleteBody,
   editBody,
+  flattenDFS,
   hasBodyId,
+  nextBodyId,
+  prevBodyId,
   selectBodyById,
 } from "./tree-ops";
 
@@ -142,6 +145,59 @@ describe("childSize", () => {
   it("clamps to a 0.05 floor", () => {
     expect(childSize(0.05)).toBe(0.05);
     expect(childSize(0)).toBe(0.05);
+  });
+});
+
+describe("flattenDFS", () => {
+  it("returns DFS pre-order (parent before children, siblings L→R)", () => {
+    const tree = makeTree();
+    expect(flattenDFS(tree).map((b) => b.id)).toEqual([
+      "self",
+      "p1",
+      "p1m1",
+      "p2",
+    ]);
+  });
+
+  it("returns just the root for a childless tree", () => {
+    const solo: OrbitalBody = { id: "self", size: 1, color: "#000" };
+    expect(flattenDFS(solo).map((b) => b.id)).toEqual(["self"]);
+  });
+});
+
+describe("nextBodyId / prevBodyId — circular DFS nav", () => {
+  const flat = () => flattenDFS(makeTree()); // [self, p1, p1m1, p2]
+
+  it("moves forward / backward in DFS order", () => {
+    expect(nextBodyId(flat(), "self")).toBe("p1");
+    expect(nextBodyId(flat(), "p1")).toBe("p1m1");
+    expect(prevBodyId(flat(), "p1m1")).toBe("p1");
+  });
+
+  it("wraps at the ends (last → self forward, self → last backward)", () => {
+    expect(nextBodyId(flat(), "p2")).toBe("self");
+    expect(prevBodyId(flat(), "self")).toBe("p2");
+  });
+
+  it("stays put when the tree has a single Body", () => {
+    const solo = [{ id: "self", size: 1, color: "#000" }] as OrbitalBody[];
+    expect(nextBodyId(solo, "self")).toBe("self");
+    expect(prevBodyId(solo, "self")).toBe("self");
+  });
+
+  it("starts from an end when there is no current focus", () => {
+    expect(nextBodyId(flat(), null)).toBe("self");
+    expect(prevBodyId(flat(), null)).toBe("p2");
+  });
+
+  it("starts from an end when currentId is missing from the list", () => {
+    expect(nextBodyId(flat(), "ghost")).toBe("self");
+    expect(prevBodyId(flat(), "ghost")).toBe("p2");
+  });
+
+  it("returns null for an empty list", () => {
+    expect(nextBodyId([], "self")).toBeNull();
+    expect(prevBodyId([], "self")).toBeNull();
   });
 });
 

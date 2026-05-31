@@ -32,13 +32,22 @@ describe("keyReducer — NORMAL mode", () => {
     ).toEqual({ type: "noop" });
   });
 
-  it("ArrowLeft / ArrowRight are noop in NORMAL until #10 wires nav", () => {
+  it("ArrowLeft / ArrowRight drive DFS nav (#10)", () => {
     expect(
       keyReducer({ mode: "normal", hasFocus: true }, { key: "ArrowLeft" }),
-    ).toEqual({ type: "noop" });
+    ).toEqual({ type: "nav-prev" });
     expect(
       keyReducer({ mode: "normal", hasFocus: true }, { key: "ArrowRight" }),
-    ).toEqual({ type: "noop" });
+    ).toEqual({ type: "nav-next" });
+  });
+
+  it("nav works even without a current focus (starts from an end)", () => {
+    expect(
+      keyReducer({ mode: "normal", hasFocus: false }, { key: "ArrowRight" }),
+    ).toEqual({ type: "nav-next" });
+    expect(
+      keyReducer({ mode: "normal", hasFocus: false }, { key: "ArrowLeft" }),
+    ).toEqual({ type: "nav-prev" });
   });
 });
 

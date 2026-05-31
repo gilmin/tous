@@ -50,8 +50,11 @@ export function keyReducer(ctx: KeyContext, input: KeyInput): KeyAction {
     if (input.key === "Escape" && ctx.hasFocus) {
       return { type: "clear-focus" };
     }
-    // #10 will return nav-prev / nav-next here; #12 will return tree-undo /
-    // tree-redo. Until then, leave NORMAL keys as noop.
+    // ←/→ walk the DFS pre-order Body list (circular). Nav works even without
+    // a current focus — it starts from an end (#10).
+    if (input.key === "ArrowLeft") return { type: "nav-prev" };
+    if (input.key === "ArrowRight") return { type: "nav-next" };
+    // #12 will return tree-undo / tree-redo here. Until then, the rest is noop.
     return NOOP;
   }
   return NOOP;
