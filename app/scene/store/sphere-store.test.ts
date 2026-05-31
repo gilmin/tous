@@ -97,7 +97,11 @@ describe("sphere-store persistence", () => {
 });
 
 describe("sphere-store actions", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Drain throttled writes leaked from a prior test before clearing —
+    // otherwise a delayed setTimeout would resurrect old state into a fresh
+    // store's rehydrate window.
+    await new Promise((r) => setTimeout(r, 150));
     window.localStorage.clear();
   });
 
@@ -111,12 +115,42 @@ describe("sphere-store actions", () => {
     expect(useStore.getState().lastFocused).toBe("p1");
   });
 
+  it("setFocus(null) forces mode back to normal", async () => {
+    const useStore = await freshStore();
+    useStore.getState().setFocus("p1");
+    useStore.getState().setMode("edit");
+    expect(useStore.getState().mode).toBe("edit");
+    useStore.getState().setFocus(null);
+    expect(useStore.getState().mode).toBe("normal");
+  });
+
   it("setMode transitions the mode flag", async () => {
     const useStore = await freshStore();
     useStore.getState().setMode("edit");
     expect(useStore.getState().mode).toBe("edit");
     useStore.getState().setMode("normal");
     expect(useStore.getState().mode).toBe("normal");
+  });
+
+  it("editBody updates the label of an existing body", async () => {
+    const useStore = await freshStore();
+    const target = useStore.getState().tree.children?.[0];
+    expect(target).toBeDefined();
+    useStore.getState().editBody(target!.id, { label: "새 이름" });
+    const updated = useStore.getState().tree.children?.[0];
+    expect(updated?.label).toBe("새 이름");
+    expect(updated?.id).toBe(target!.id);
+  });
+
+  it("editBody persists the change across rehydration", async () => {
+    const useStore = await freshStore();
+    const targetId = useStore.getState().tree.children?.[0]?.id;
+    expect(targetId).toBeDefined();
+    useStore.getState().editBody(targetId!, { label: "영속" });
+    await new Promise((r) => setTimeout(r, 150));
+
+    const fresh = await freshStore();
+    expect(fresh.getState().tree.children?.[0]?.label).toBe("영속");
   });
 
   it("persists tree and lastFocused but not focusedId or mode", async () => {

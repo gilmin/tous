@@ -6,7 +6,7 @@ import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import type { OrbitalBody } from "../types";
 import { SYSTEM } from "../seed";
-import { hasBodyId } from "./tree-ops";
+import { hasBodyId, selectBodyById } from "./tree-ops";
 
 export type Mode = "normal" | "edit" | "add" | "delete-confirm";
 
@@ -17,6 +17,7 @@ export type SphereState = {
   mode: Mode;
   setFocus: (id: string | null) => void;
   setMode: (m: Mode) => void;
+  editBody: (id: string, patch: Partial<OrbitalBody>) => void;
 };
 
 export const STORAGE_KEY = "tous:sphere:v1";
@@ -71,10 +72,19 @@ export const useSphereStore = create<SphereState>()(
           set((s) => {
             s.focusedId = id;
             if (id) s.lastFocused = id;
+            // Invariant: edit mode requires a focused body. Clearing focus
+            // forces a return to normal so the next focus does not reopen
+            // an input that the user already abandoned.
+            else s.mode = "normal";
           }),
         setMode: (m: Mode) =>
           set((s) => {
             s.mode = m;
+          }),
+        editBody: (id: string, patch: Partial<OrbitalBody>) =>
+          set((s) => {
+            const body = selectBodyById(s.tree, id);
+            if (body) Object.assign(body, patch);
           }),
       })),
       {
