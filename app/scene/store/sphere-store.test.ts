@@ -191,4 +191,39 @@ describe("sphere-store actions", () => {
     useStore.getState().addChild("ghost", "x");
     expect(useStore.getState().tree).toEqual(before);
   });
+
+  it("deleteBody removes the body and all its descendants", async () => {
+    const useStore = await freshStore();
+    // SYSTEM seed: p1 has a child p1m1.
+    expect(selectBodyById(useStore.getState().tree, "p1m1")).not.toBeNull();
+    useStore.getState().deleteBody("p1");
+    expect(selectBodyById(useStore.getState().tree, "p1")).toBeNull();
+    expect(selectBodyById(useStore.getState().tree, "p1m1")).toBeNull();
+  });
+
+  it("deleteBody clears focus when the focused body is removed", async () => {
+    const useStore = await freshStore();
+    useStore.getState().setFocus("p1");
+    expect(useStore.getState().focusedId).toBe("p1");
+    useStore.getState().deleteBody("p1");
+    expect(useStore.getState().focusedId).toBeNull();
+    expect(useStore.getState().mode).toBe("normal");
+  });
+
+  it("deleteBody rejects deleting Self (root) via any path", async () => {
+    const useStore = await freshStore();
+    const rootId = useStore.getState().tree.id;
+    const before = structuredClone(useStore.getState().tree);
+    useStore.getState().deleteBody(rootId);
+    expect(useStore.getState().tree).toEqual(before);
+  });
+
+  it("deleteBody persists the removal across rehydration", async () => {
+    const useStore = await freshStore();
+    useStore.getState().deleteBody("p2");
+    await new Promise((r) => setTimeout(r, 150));
+
+    const fresh = await freshStore();
+    expect(selectBodyById(fresh.getState().tree, "p2")).toBeNull();
+  });
 });

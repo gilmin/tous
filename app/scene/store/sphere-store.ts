@@ -20,6 +20,7 @@ export type SphereState = {
   setMode: (m: Mode) => void;
   editBody: (id: string, patch: Partial<OrbitalBody>) => void;
   addChild: (parentId: string, label: string) => void;
+  deleteBody: (id: string) => void;
 };
 
 export const STORAGE_KEY = "tous:sphere:v1";
@@ -103,6 +104,35 @@ export const useSphereStore = create<SphereState>()(
             };
             if (!parent.children) parent.children = [];
             parent.children.push(child);
+          }),
+        deleteBody: (id: string) =>
+          set((s) => {
+            // Self guard (reducer-level): the root Body is undeletable via any
+            // path — UI hides the button, but block here too (CONTEXT.md).
+            if (id === s.tree.id) return;
+            // In-place subtree removal: splicing the matched child drops its
+            // whole subtree with it (no orphans). Matches the store's in-place
+            // immer style (see addChild); tree-ops.deleteBody is the immutable
+            // unit-tested twin.
+            const removeFrom = (node: OrbitalBody): boolean => {
+              if (!node.children) return false;
+              const idx = node.children.findIndex((c) => c.id === id);
+              if (idx !== -1) {
+                node.children.splice(idx, 1);
+                return true;
+              }
+              return node.children.some(removeFrom);
+            };
+            if (!removeFrom(s.tree)) return;
+            // The deleted body (or an ancestor) may have been focused; clear
+            // focus and return to normal so no panel points at a gone Body.
+            if (s.focusedId && !hasBodyId(s.tree, s.focusedId)) {
+              s.focusedId = null;
+              s.mode = "normal";
+            }
+            if (s.lastFocused && !hasBodyId(s.tree, s.lastFocused)) {
+              s.lastFocused = s.tree.id;
+            }
           }),
       })),
       {

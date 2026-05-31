@@ -3,6 +3,7 @@ import type { OrbitalBody } from "../types";
 import {
   addChild,
   childSize,
+  deleteBody,
   editBody,
   hasBodyId,
   selectBodyById,
@@ -141,5 +142,52 @@ describe("childSize", () => {
   it("clamps to a 0.05 floor", () => {
     expect(childSize(0.05)).toBe(0.05);
     expect(childSize(0)).toBe(0.05);
+  });
+});
+
+describe("deleteBody", () => {
+  it("removes a leaf body", () => {
+    const tree = makeTree();
+    const next = deleteBody(tree, "p2");
+    expect(selectBodyById(next, "p2")).toBeNull();
+    expect(next.children?.map((c) => c.id)).toEqual(["p1"]);
+  });
+
+  it("removes a body together with all of its descendants (no orphans)", () => {
+    const tree = makeTree();
+    const next = deleteBody(tree, "p1");
+    expect(selectBodyById(next, "p1")).toBeNull();
+    // p1m1 was a child of p1 — it must be gone too, not reparented.
+    expect(selectBodyById(next, "p1m1")).toBeNull();
+  });
+
+  it("removes a nested descendant without touching its siblings", () => {
+    const tree = makeTree();
+    const next = deleteBody(tree, "p1m1");
+    expect(selectBodyById(next, "p1m1")).toBeNull();
+    expect(selectBodyById(next, "p1")?.children).toEqual([]);
+  });
+
+  it("returns the same tree ref when the id is missing", () => {
+    const tree = makeTree();
+    expect(deleteBody(tree, "ghost")).toBe(tree);
+  });
+
+  it("returns the same tree ref when asked to delete the root (Self)", () => {
+    const tree = makeTree();
+    expect(deleteBody(tree, "self")).toBe(tree);
+  });
+
+  it("preserves refs of subtrees that were not touched", () => {
+    const tree = makeTree();
+    const untouchedSibling = tree.children![0];
+    const next = deleteBody(tree, "p2");
+    expect(next.children![0]).toBe(untouchedSibling);
+  });
+
+  it("does not mutate the original tree", () => {
+    const tree = makeTree();
+    deleteBody(tree, "p1");
+    expect(tree.children?.map((c) => c.id)).toEqual(["p1", "p2"]);
   });
 });

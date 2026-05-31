@@ -14,6 +14,8 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
   const setMode = useSphereStore((s) => s.setMode);
   const editBody = useSphereStore((s) => s.editBody);
   const addChild = useSphereStore((s) => s.addChild);
+  const deleteBody = useSphereStore((s) => s.deleteBody);
+  const rootId = useSphereStore((s) => s.tree.id);
   const inputRef = useRef<HTMLInputElement>(null);
   const [addDraft, setAddDraft] = useState("");
 
@@ -178,6 +180,23 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
             >
               + 자식
             </button>
+            {focusedBody.id !== rootId && (
+              <button
+                onClick={() => deleteBody(focusedBody.id)}
+                style={{
+                  padding: "4px 12px",
+                  fontSize: 12,
+                  background: buttonBg,
+                  border: "none",
+                  borderRadius: 6,
+                  color: buttonColor,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                삭제
+              </button>
+            )}
           </div>
         )
       )}
