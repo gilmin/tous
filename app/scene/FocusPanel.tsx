@@ -1,9 +1,163 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSphereStore } from "./store/sphere-store";
+import {
+  beginSliderCoalesce,
+  endSliderCoalesce,
+  useSphereStore,
+} from "./store/sphere-store";
 import { selectBodyById } from "./store/tree-ops";
-import type { SceneVariant } from "./types";
+import { PLANET_SHAPES, type PlanetShape } from "../_components/Planet";
+import type { OrbitalBody, SceneVariant } from "./types";
+
+// Appearance editors shown inside the EDIT form (#13). Every change flows
+// through editBody → instant render + persist. Size/speed are drags, so they
+// open a coalesce window (one undo entry per drag, #12); shape/color are
+// single events. Color is cosmic-only — mono derives shade from size, so a
+// picker there would be a dead control.
+function AppearanceControls({
+  body,
+  isMono,
+  editBody,
+}: {
+  body: OrbitalBody;
+  isMono: boolean;
+  editBody: (id: string, patch: Partial<OrbitalBody>) => void;
+}) {
+  const labelColor = isMono ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.6)";
+  const controlBg = isMono ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.08)";
+  const controlBorder = isMono
+    ? "1px solid rgba(0,0,0,0.15)"
+    : "1px solid rgba(255,255,255,0.2)";
+  const valueColor = isMono ? "#1a1a1a" : "#f5f5f7";
+  const hasOrbit = (body.orbitRadius ?? 0) > 0;
+
+  // Collapse a pointer drag into one undo entry: open the coalesce window on
+  // pointerdown, close it on the next global pointerup so it fires even when
+  // the pointer is released off the slider.
+  const startSliderDrag = () => {
+    beginSliderCoalesce();
+    const end = () => {
+      endSliderCoalesce();
+      window.removeEventListener("pointerup", end);
+    };
+    window.addEventListener("pointerup", end);
+  };
+
+  const rowStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 8,
+  } as const;
+  const tagStyle = {
+    width: 34,
+    textAlign: "left",
+    fontSize: 11,
+    color: labelColor,
+    flexShrink: 0,
+  } as const;
+  const selectStyle = {
+    flex: 1,
+    fontFamily: "inherit",
+    fontSize: 12,
+    padding: "3px 6px",
+    background: controlBg,
+    border: controlBorder,
+    borderRadius: 6,
+    color: valueColor,
+  } as const;
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <label style={rowStyle}>
+        <span style={tagStyle}>크기</span>
+        <input
+          type="range"
+          min={0.05}
+          max={1}
+          step={0.01}
+          value={body.size}
+          onPointerDown={startSliderDrag}
+          onChange={(e) => editBody(body.id, { size: Number(e.target.value) })}
+          aria-label="크기"
+          style={{ flex: 1 }}
+        />
+      </label>
+      <label style={rowStyle}>
+        <span style={tagStyle}>자전</span>
+        <input
+          type="range"
+          min={0}
+          max={2}
+          step={0.05}
+          value={body.selfRotation ?? 0}
+          onPointerDown={startSliderDrag}
+          onChange={(e) =>
+            editBody(body.id, { selfRotation: Number(e.target.value) })
+          }
+          aria-label="자전 속도"
+          style={{ flex: 1 }}
+        />
+      </label>
+      {hasOrbit && (
+        <label style={rowStyle}>
+          <span style={tagStyle}>공전</span>
+          <input
+            type="range"
+            min={0}
+            max={3}
+            step={0.05}
+            value={body.orbitSpeed ?? 0}
+            onPointerDown={startSliderDrag}
+            onChange={(e) =>
+              editBody(body.id, { orbitSpeed: Number(e.target.value) })
+            }
+            aria-label="공전 속도"
+            style={{ flex: 1 }}
+          />
+        </label>
+      )}
+      <label style={rowStyle}>
+        <span style={tagStyle}>모양</span>
+        <select
+          value={body.shape ?? "smooth"}
+          onChange={(e) =>
+            editBody(body.id, { shape: e.target.value as PlanetShape })
+          }
+          aria-label="모양"
+          style={selectStyle}
+        >
+          {PLANET_SHAPES.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </label>
+      {!isMono && (
+        <label style={rowStyle}>
+          <span style={tagStyle}>색</span>
+          <input
+            type="color"
+            value={body.color}
+            onChange={(e) => editBody(body.id, { color: e.target.value })}
+            aria-label="색"
+            style={{
+              flex: 1,
+              height: 26,
+              padding: 0,
+              background: "transparent",
+              border: controlBorder,
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          />
+        </label>
+      )}
+    </div>
+  );
+}
 
 export function FocusPanel({ variant }: { variant: SceneVariant }) {
   const focusedBody = useSphereStore((s) =>
@@ -75,35 +229,42 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
       }}
     >
       {isEditing ? (
-        <input
-          ref={inputRef}
-          autoFocus
-          value={focusedBody.label ?? ""}
-          onChange={(e) =>
-            editBody(focusedBody.id, { label: e.target.value })
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === "Escape") {
-              e.preventDefault();
-              setMode("normal");
+        <>
+          <input
+            ref={inputRef}
+            autoFocus
+            value={focusedBody.label ?? ""}
+            onChange={(e) =>
+              editBody(focusedBody.id, { label: e.target.value })
             }
-          }}
-          aria-label="이름 편집"
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            letterSpacing: "0.01em",
-            textAlign: "center",
-            width: "100%",
-            padding: "4px 8px",
-            background: inputBg,
-            border: inputBorder,
-            borderRadius: 8,
-            color: buttonColor,
-            outline: "none",
-            fontFamily: "inherit",
-          }}
-        />
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === "Escape") {
+                e.preventDefault();
+                setMode("normal");
+              }
+            }}
+            aria-label="이름 편집"
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              letterSpacing: "0.01em",
+              textAlign: "center",
+              width: "100%",
+              padding: "4px 8px",
+              background: inputBg,
+              border: inputBorder,
+              borderRadius: 8,
+              color: buttonColor,
+              outline: "none",
+              fontFamily: "inherit",
+            }}
+          />
+          <AppearanceControls
+            body={focusedBody}
+            isMono={isMono}
+            editBody={editBody}
+          />
+        </>
       ) : (
         <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "0.01em" }}>
           {focusedBody.label}
