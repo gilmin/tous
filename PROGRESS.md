@@ -24,17 +24,19 @@
 6. ✅ **#5.5 scene split** — **DONE 2026-05-28**, PR #14 merged (`d7b5009`). scene.tsx → app/scene/ 11개 모듈
 7. ✅ **#5.6 vitest 셋업** — **DONE 2026-05-28**, PR #15 merged (`7da6e70`). 7 smoke tests passing
 8. ✅ **#6 (M2-1) 영속 store** — **DONE 2026-05-28**, PR #16 merged (`f595e07`). zustand+zundo+immer 도입, `FocusContext` 삭제, `useSphereStore` 단일 source, 100ms throttle persist, 손상 JSON·version mismatch fallback, 8개 store/persist unit test. mesh registry로 focus position을 store 밖에 유지(D5).
-9. ⬜ **#7 (M2-2) ← 다음 세션 시작점.** Body 이름 편집 + mode 기계 도입. focus panel `[편집]` → input 즉시 반영 → Enter/ESC NORMAL 복귀. Edit mode 중 ←/→는 input 커서만(D10), Cmd+Z는 input undo만(D11). store에 `editBody` 액션 추가, mode 전환 keybinding 점유 계약. #8/#9/#11의 prerequisite.
-10. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, #6 머지 후로 미뤄도 됨)
+9. ✅ **#7 (M2-2) 이름 편집 + mode 기계** — **DONE 2026-05-31**, PR #17 merged (`e8423b5`). `tree-ops.editBody` 순수 함수(구조 공유 유지), store `editBody` 액션(immer in-place), `setFocus(null)→mode=normal` 불변식, `key-reducer.ts` 신규(NORMAL/EDIT 계약 — EDIT은 Enter/ESC만 exit-edit, 나머지 noop), FocusPanel `[편집]` + autoFocus input, Scene 전역 keydown을 keyReducer 디스패치로 교체, `onPointerMissed` EDIT 가드. vitest 36/36 (tree-ops 6, key-reducer 9, store 11).
+10. ⬜ **#8/#9/#11 ← 다음 세션 시작점.** #7 머지로 Lane A/B/C 병렬 가능. #8(M2-3, AFK) 자식 추가 + ADD mode + size clamp / #9(M2-4, AFK) 삭제 + Self 가드 / #11(M2-8, AFK) hover 폴리쉬. 셋 중 시작 1개 선택 후 진행.
+11. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, Lane A/B/C 머지 후로 미뤄도 됨)
 
 **다음 세션 시작 시 읽을 것**:
 - `PROGRESS.md` (이 파일)
-- `docs/adr/0002-state-store-architecture.md` (M2 구현 청사진 — #7부터도 동일)
-- `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260528.md` (#7 테스트 시나리오)
-- `app/scene/store/sphere-store.ts` (`useSphereStore`, `Mode`, `setFocus`, `setMode`) — #7은 여기에 `editBody` 추가
-- `app/scene/store/tree-ops.ts` (`selectBodyById`) — 트리 탐색 헬퍼
+- `docs/adr/0002-state-store-architecture.md` (M2 구현 청사진)
+- `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260528.md` (#8/#9/#11 테스트 시나리오)
+- `app/scene/store/sphere-store.ts` (`useSphereStore`, `Mode`, `setFocus`, `setMode`, `editBody`) — #8은 여기에 `addBody`, #9는 `deleteBody` 추가
+- `app/scene/store/tree-ops.ts` (`selectBodyById`, `hasBodyId`, `editBody`) — #8에 `addChild`, #9에 `deleteBody` 순수 함수 추가
+- `app/scene/store/key-reducer.ts` (현재 NORMAL/EDIT만; #8 진행 시 ADD mode 추가)
 
-**현재 브랜치**: `main` 최신 (마지막 커밋 `f595e07`). 미머지 PR 없음. M2 이슈 #7~#13 open, milestone M2(#1). PR #14/#15/#16 머지 완료.
+**현재 브랜치**: `main` 최신 (마지막 커밋 `e8423b5`). 미머지 PR 없음. M2 이슈 #8~#13 open, milestone M2(#1). PR #14/#15/#16/#17 머지 완료.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
@@ -110,8 +112,8 @@ Phase 1 킥오프 체크리스트:
 |---|---|---|---|---|
 | ✅ #5.5 | scene.tsx → app/scene/ mechanical 분할 (PR #14) | mechanical | — | — |
 | ✅ #5.6 | vitest 설치 + config + smoke (PR #15) | mechanical | — | — |
-| [#6](https://github.com/gilmin/tous/issues/6) | M2-1 영속 store 기반 (zustand+zundo+immer, FocusContext 삭제, persist throttle 100ms, store unit test) | HITL | — (게이트 해제됨) | 직렬 |
-| [#7](https://github.com/gilmin/tous/issues/7) | M2-2 이름 편집 + mode 기계 도입 | AFK | #6 | 직렬 (mode 기계가 #10의 prerequisite) |
+| ✅ #6 | M2-1 영속 store 기반 (PR #16) | HITL | — | 직렬 |
+| ✅ #7 | M2-2 이름 편집 + mode 기계 (PR #17) | AFK | #6 | 직렬 |
 | [#8](https://github.com/gilmin/tous/issues/8) | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) | AFK | #7 | **Lane A (병렬)** |
 | [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #7 | **Lane B (병렬)** |
 | [#11](https://github.com/gilmin/tous/issues/11) | M2-8 hover 폴리쉬 | AFK | #6 | **Lane C (병렬, #7 무관)** |
