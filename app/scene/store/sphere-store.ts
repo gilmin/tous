@@ -35,6 +35,24 @@ export type SphereState = {
 export const STORAGE_KEY = "tous:sphere:v1";
 export const PERSIST_THROTTLE_MS = 100;
 
+// Slider coalesce (#12, consumed by #13). A size/speed slider drag fires many
+// edits per second; we want the whole drag to collapse to one undo entry. While
+// a coalesce window is open, only the FIRST edit records history (capturing the
+// pre-drag tree); the rest are skipped. shape/color are single-event and never
+// open a window. Module-scoped so the temporal `handleSet` closure can read it.
+let coalesceActive = false;
+let coalesceCommitted = false;
+
+export function beginSliderCoalesce() {
+  coalesceActive = true;
+  coalesceCommitted = false;
+}
+
+export function endSliderCoalesce() {
+  coalesceActive = false;
+  coalesceCommitted = false;
+}
+
 function makeThrottledStorage() {
   if (typeof window === "undefined") {
     return {
@@ -164,6 +182,29 @@ export const useSphereStore = create<SphereState>()(
       {
         partialize: (state) => ({ tree: state.tree }),
         limit: 50,
+        // Only structural changes (add/edit/delete) belong in history (D3).
+        // immer keeps the tree reference stable when an action touches only
+        // focus/mode/lastFocused, so a ref check cheaply skips those — undo
+        // walks structure edits, never focus/hover/nav (#12).
+        equality: (a, b) => a.tree === b.tree,
+        // Collapse a slider drag into one undo entry: record the first edit of
+        // the window (its pastState is the pre-drag tree), skip the rest.
+        handleSet: (handleSet) => (pastState, replace, currentState, delta) => {
+          if (coalesceActive) {
+            if (coalesceCommitted) return;
+            coalesceCommitted = true;
+          }
+          // zundo types the recorder as setState (1-2 args) but invokes it with
+          // 4 at runtime (see dist/index.js); forward all four.
+          (
+            handleSet as unknown as (
+              p: typeof pastState,
+              r: typeof replace,
+              c: typeof currentState,
+              d: typeof delta,
+            ) => void
+          )(pastState, replace, currentState, delta);
+        },
       },
     ),
     {

@@ -49,6 +49,40 @@ describe("keyReducer — NORMAL mode", () => {
       keyReducer({ mode: "normal", hasFocus: false }, { key: "ArrowLeft" }),
     ).toEqual({ type: "nav-prev" });
   });
+
+  it("Cmd+Z / Ctrl+Z → tree-undo (#12)", () => {
+    expect(
+      keyReducer({ mode: "normal", hasFocus: false }, { key: "z", metaKey: true }),
+    ).toEqual({ type: "tree-undo" });
+    expect(
+      keyReducer({ mode: "normal", hasFocus: false }, { key: "z", ctrlKey: true }),
+    ).toEqual({ type: "tree-undo" });
+  });
+
+  it("Cmd+Shift+Z / Ctrl+Y → tree-redo (#12)", () => {
+    expect(
+      keyReducer(
+        { mode: "normal", hasFocus: false },
+        { key: "z", metaKey: true, shiftKey: true },
+      ),
+    ).toEqual({ type: "tree-redo" });
+    // Shift produces an uppercase key — the reducer is case-insensitive.
+    expect(
+      keyReducer(
+        { mode: "normal", hasFocus: false },
+        { key: "Z", ctrlKey: true, shiftKey: true },
+      ),
+    ).toEqual({ type: "tree-redo" });
+    expect(
+      keyReducer({ mode: "normal", hasFocus: false }, { key: "y", ctrlKey: true }),
+    ).toEqual({ type: "tree-redo" });
+  });
+
+  it("a bare z (no modifier) is a noop", () => {
+    expect(
+      keyReducer({ mode: "normal", hasFocus: false }, { key: "z" }),
+    ).toEqual({ type: "noop" });
+  });
 });
 
 describe("keyReducer — EDIT mode (mode owns the keyboard)", () => {

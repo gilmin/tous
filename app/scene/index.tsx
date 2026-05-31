@@ -61,6 +61,14 @@ export default function Scene({
           e.preventDefault();
           focusNext();
           break;
+        case "tree-undo":
+          e.preventDefault();
+          useSphereStore.temporal.getState().undo();
+          break;
+        case "tree-redo":
+          e.preventDefault();
+          useSphereStore.temporal.getState().redo();
+          break;
         case "noop":
         default:
           break;
