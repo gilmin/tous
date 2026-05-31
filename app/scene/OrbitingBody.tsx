@@ -2,7 +2,7 @@
 
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Line, Html } from "@react-three/drei";
-import { memo, useCallback, useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { PlanetMesh } from "../_components/Planet";
 import { LABEL_FADE_NEAR, LABEL_FADE_FAR } from "./constants";
@@ -31,6 +31,7 @@ export const OrbitingBody = memo(function OrbitingBody({
   const labelRef = useRef<HTMLDivElement>(null);
   const worldPos = useRef(new THREE.Vector3());
   const isPaused = focusedId !== null;
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const mesh = selfRef.current;
@@ -47,6 +48,17 @@ export const OrbitingBody = memo(function OrbitingBody({
     if (selfRef.current && body.selfRotation) {
       selfRef.current.rotation.y += body.selfRotation * delta;
     }
+    if (selfRef.current) {
+      // Hover grows the body ~5%. Lerp (not snap) to match the scene's
+      // existing lerp-based motion feel; frame-rate independent.
+      const target = hovered ? 1.05 : 1;
+      const next = THREE.MathUtils.lerp(
+        selfRef.current.scale.x,
+        target,
+        1 - Math.exp(-12 * delta),
+      );
+      selfRef.current.scale.setScalar(next);
+    }
     if (selfRef.current && labelRef.current) {
       selfRef.current.getWorldPosition(worldPos.current);
       const distance = state.camera.position.distanceTo(worldPos.current);
@@ -55,7 +67,8 @@ export const OrbitingBody = memo(function OrbitingBody({
         0,
         1,
       );
-      labelRef.current.style.opacity = opacity.toFixed(3);
+      // Hover forces the label visible, ignoring distance fade.
+      labelRef.current.style.opacity = hovered ? "1" : opacity.toFixed(3);
     }
   });
 
@@ -92,7 +105,17 @@ export const OrbitingBody = memo(function OrbitingBody({
           transparent
         />
       )}
-      <group position={[body.orbitRadius ?? 0, 0, 0]}>
+      <group
+        position={[body.orbitRadius ?? 0, 0, 0]}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={(e) => {
+          e.stopPropagation();
+          setHovered(false);
+        }}
+      >
         <PlanetMesh
           meshRef={selfRef}
           shape={body.shape ?? "smooth"}
