@@ -15,7 +15,9 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 계속):
+**현재 상태 (2026-06-01)**: **M2 (Local CRUD + 인터랙션) 전 슬라이스 완료.** #6~#13 머지 끝(PR #14~#23). 남은 것은 선택 항목(`/plan-design-review`)과 M2 전체 QA dogfood뿐. 다음 큰 마일스톤은 **M3 (Auth + 백엔드 / Supabase)**.
+
+**다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 — 전부 완료):
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
 2. ✅ `/grill-with-docs` — **DONE 2026-05-26**, `CONTEXT.md`(Universe/Body/Self/Orbit/Focus) + `docs/adr/0001-orbital-metaphor.md` 생성
 3. ✅ `/to-prd` — **DONE 2026-05-26**, [PRD] M2 = [issue #5](https://github.com/gilmin/tous/issues/5) (ready-for-agent). 테스트 대상 1/3/4 확정
@@ -29,20 +31,20 @@
     - ✅ **#8 (M2-3) 자식 추가** — PR #19 merged (`5ee5a65`). orbit-gen(djb2)+addChild+childSize+ADD mode+FocusPanel `[+ 자식]`. vitest 53/53.
     - ✅ **#11 (M2-8) hover 폴리쉬** — PR #18 merged (`8d71289`). OrbitingBody 단독(5% lerp scale + 라벨 즉시). vitest 36/36.
 11. ✅ **#9 (M2-4) 삭제 + Self 가드** — PR #20 merged (`5553195`). `tree-ops.deleteBody`(자손 통째 제거, 구조 공유, root/missing은 동일 ref), store `deleteBody` 액션(immer splice + Self id 거부 + 삭제된 focus 해제/lastFocused 보정), FocusPanel `[삭제]` 버튼(Self일 때 미렌더 — 2중 방어). vitest 64/64 (tree-ops deleteBody 7, store deleteBody 4).
-12. ⬜ **#10/#12/#13 ← 다음 세션 시작점.** M2 CRUD 핵심(#6~#9) 완료. 남은 AFK 슬라이스 셋 다 **직렬**(서로 store/key-reducer 의존):
-    - **#10 (M2-5) 키보드 nav** — ←/→ DFS pre-order 순환(sun↔마지막). key-reducer NORMAL에 nav-prev/nav-next 배선(현재 noop 자리), store에 DFS helper + setFocus 이동. blocked by #7·#8·#9 (모두 완료).
-    - **#12 (M2-6) Undo/Redo** — temporal 배선(이미 store에 zundo 있음) + Cmd+Z/Cmd+Shift+Z(key-reducer tree-undo/redo 자리) + slider coalesce. blocked by #7·#8·#9 (완료).
-    - **#13 (M2-7) 외형 편집** — 크기·속도·모양·색 slider/picker, throttle persist. blocked by #7·#12.
-    - 권장 순서: **#10 → #12 → #13** (#13이 #12 의존).
-13. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택)
+12. ✅ **#10 (M2-5) 키보드 nav** — PR #21 merged (`5e95d02`). `tree-ops.flattenDFS`(pre-order, Self=idx 0) + `nextBodyId`/`prevBodyId`(circular; null/missing current는 끝에서 시작). key-reducer NORMAL ←/→ → nav-prev/nav-next. store `focusNext`/`focusPrev`(helper 래핑, NORMAL 유지). Scene preventDefault로 페이지 스크롤 차단. vitest 73/73.
+13. ✅ **#12 (M2-6) Undo/Redo + 슬라이더 coalesce** — PR #22 merged (`6d759eb`). temporal에 **`equality: (a,b)=>a.tree===b.tree`** 추가(immer가 focus/nav 시 tree ref 보존 → 구조 변경만 추적; 기존 shell은 equality 없어 모든 setState가 중복 entry 남기던 버그 수정). `handleSet` coalesce + `beginSliderCoalesce`/`endSliderCoalesce`(드래그 첫 tick만 기록). key-reducer Cmd/Ctrl+Z→undo, Cmd+Shift+Z·Ctrl+Y→redo. Scene이 `useSphereStore.temporal.getState().undo/redo` 호출. 히스토리는 메모리 전용(리로드 시 비워짐). vitest 81/81.
+14. ✅ **#13 (M2-7) 외형 편집** — PR #23 merged (`3e8531e`). FocusPanel EDIT 폼에 `AppearanceControls` 추가: 크기·자전·공전 range 슬라이더(드래그→coalesce, 공전은 궤도 있는 Body만), 모양 `<select>` PLANET_SHAPES 20종, 색 `<input type=color>`(cosmic 전용 — mono는 size 파생이라 dead control). 모두 `editBody`로 흐름. vitest 82/82, next build clean.
+15. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택)
+16. ⬜ **M2 전체 QA dogfood** — 외형 편집·nav·undo는 시각/인터랙션 검증 필요 (`/qa`)
+17. ⬜ **M3 킥오프** — Auth + Supabase 백엔드. §6 Backlog 참조.
 
 **다음 세션 시작 시 읽을 것**:
 - `PROGRESS.md` (이 파일)
-- `app/scene/store/key-reducer.ts` — NORMAL 분기에 nav-prev/nav-next(#10), tree-undo/redo(#12) 배선 자리 (주석으로 표시돼 있음)
-- `app/scene/store/sphere-store.ts` — `setFocus`, temporal(zundo) 이미 존재. #10 DFS helper, #12 undo/redo 액션 추가
-- `gh issue view 10/12/13 --repo gilmin/tous` — 전체 acceptance criteria
+- M2 완료. 새 작업은 M3 (Supabase) — `/plan-eng-review`로 RLS/익명/랜덤쿼리 락인부터 권장
+- `app/scene/store/sphere-store.ts` — store 전체(persist+temporal+coalesce) 한눈에 봄. M3는 여기에 백엔드 sync 레이어 추가
+- `gh issue list --repo gilmin/tous` — M3 이슈 발행 전이면 `/to-issues`부터
 
-**현재 브랜치**: `main` 최신 (`5553195`). 오픈 PR 없음. M2 이슈 #10/#12/#13 open. PR #14~#20 머지 완료.
+**현재 브랜치**: `main` 최신 (`531f6cf`). 오픈 PR 없음. **M2 이슈 #6~#13 전부 closed.** PR #14~#23 머지 완료.
 **참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
@@ -85,22 +87,22 @@
 
 ```
 ✅ /office-hours          (설계 문서 작성, 적대적 리뷰 1회, APPROVED — 2026-05-18)
-🟡 구현 (지금)            (M1 완료, M1.5 진행, M2 미개시)
-⬜ /plan-eng-review       (M2/M3 진입 전 — RLS/익명/랜덤쿼리 락인)
-⬜ /plan-design-review    (mono 테마 굳어지면 visual 리뷰)
-⬜ /review                (PR 머지 전 diff 리뷰)
-⬜ /qa / /qa-only         (전체 동작 QA)
-⬜ /ship                  (PR 생성·푸시 — 지금은 gh CLI 부재로 수동)
+✅ /plan-eng-review       (M2 진입 전 — ADR-0002, D1~D7 락인. M3 진입 전 재실행 예정)
+🟡 구현                   (M1·M1.5·M2 완료, M3 미개시)
+⬜ /plan-design-review    (mono 테마 굳어지면 visual 리뷰 — 선택)
+⬜ /qa / /qa-only         (M2 전체 동작 QA — 다음)
 ⬜ /land-and-deploy       (배포)
 ```
 
-**관찰**: `gh` CLI 미설치 → PR은 브라우저 URL 한 번 클릭. 향후 `gh` 깔면 `/ship`/`/land-and-deploy` 자동화 가능.
+**관찰**: `gh` CLI 설치 완료(gilmin 인증) → PR 생성·머지 자동화 가능. 워크플로: 슬라이스마다 `feat/*` 브랜치 직접 생성 → 구현+테스트 → `gh pr create` → 사용자가 머지 → main 동기화 후 다음.
 
 ---
 
 ## 4. Active
 
-### M2 — Local CRUD + Interaction Variety (Phase 1 킥오프 진행 중, 2026-05-20)
+> **M2 완료 (2026-06-01).** 아래 체크리스트는 완료 기록으로 보존. 다음 Active는 M3 (Supabase) — 시작 시 `/plan-eng-review`부터.
+
+### M2 — Local CRUD + Interaction Variety ✅ DONE (2026-05-20 ~ 2026-06-01)
 
 **설계 문서**: `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` (APPROVED, quality 9/10)
 
@@ -123,10 +125,12 @@ Phase 1 킥오프 체크리스트:
 | ✅ #7 | M2-2 이름 편집 + mode 기계 (PR #17) | AFK | #6 | 직렬 |
 | ✅ #8 | M2-3 자식 추가 (orbit 자동생성, ADD mode, size clamp) — branch `feat/m2-3-add-child` | AFK | #7 | store/FocusPanel/tree-ops CRUD 표면 선점 |
 | ✅ #11 | M2-8 hover 폴리쉬 — branch `feat/m2-8-hover-polish` | AFK | #6 | **진짜 병렬** (`OrbitingBody.tsx` 단독) |
-| [#9](https://github.com/gilmin/tous/issues/9) | M2-4 삭제 + Self 가드 | AFK | #7, **#8(파일충돌)** | #8 머지 후 순차 |
-| [#10](https://github.com/gilmin/tous/issues/10) | M2-5 키보드 nav (DFS 순환) | AFK | #7, #8, #9 | 직렬 (Lane A/B 머지 후) |
-| [#12](https://github.com/gilmin/tous/issues/12) | M2-6 Undo/Redo (temporal + coalesce) | AFK | #7·#8·#9 | 직렬 |
-| [#13](https://github.com/gilmin/tous/issues/13) | M2-7 외형 편집 (크기·속도·모양·색, slider throttle persist) | AFK | #7·#12 | 직렬 |
+| ✅ #9 | M2-4 삭제 + Self 가드 (PR #20) | AFK | #7, #8 | — |
+| ✅ #10 | M2-5 키보드 nav (DFS 순환, PR #21) | AFK | #7·#8·#9 | — |
+| ✅ #12 | M2-6 Undo/Redo (temporal equality + coalesce, PR #22) | AFK | #7·#8·#9 | — |
+| ✅ #13 | M2-7 외형 편집 (크기·속도·모양·색, PR #23) | AFK | #7·#12 | — |
+
+**M2 완료. #6~#13 전부 closed, PR #14~#23 머지.**
 
 테스트 대상: tree-ops(#7·#8·#9), persistence(#6), interaction-logic(#7·#10), orbit-gen + djb2(#8). R3F component test 없음 (D12 락인).
 
@@ -186,6 +190,16 @@ tentacle, spike, finned, conjoined, cluster.
 ---
 
 ## 5. Done
+
+### M2 — Local CRUD + Interaction Variety ✅ DONE (2026-06-01, PR #14~#23)
+- **상태 기반**: zustand + `persist(temporal(immer(...)))`. `useSphereStore` 단일 source, `FocusContext` 삭제. localStorage `tous:sphere:v1`, 100ms throttle, 손상·version mismatch → SYSTEM fallback. mesh registry로 focus position을 store 밖에 유지.
+- **CRUD**: 이름 편집(editBody, 구조 공유) · 자식 추가(orbit djb2 자동생성, size clamp) · 삭제(자손 통째, Self 가드 2중) — FocusPanel EDIT/ADD 폼.
+- **mode 기계**: `key-reducer.ts` 순수 디스패처 — NORMAL/EDIT/ADD. "mode가 키보드 독점" 원칙(edit/add는 input이 모든 키 점유).
+- **키보드 nav**: ←/→ DFS pre-order 순환(`flattenDFS`+`next/prevBodyId`).
+- **Undo/Redo**: temporal `equality: a.tree===b.tree`(구조 변경만 추적) + 슬라이더 coalesce(`begin/endSliderCoalesce`). Cmd/Ctrl+Z, Cmd+Shift+Z·Ctrl+Y.
+- **외형 편집**: 크기·자전·공전 슬라이더 + 모양 20종 드롭다운 + 색 picker(cosmic).
+- **hover**: OrbitingBody scale 5% lerp + 라벨 즉시.
+- **테스트**: vitest 82개 (tree-ops, key-reducer, sphere-store, orbit-gen). R3F 컴포넌트 테스트 없음(D12).
 
 ### M1 — 3D 솔라시스템 마인드맵 + 포커스 모드 (2026-05-19)
 - 재귀 `OrbitingBody` (sun → planets → moons, 임의 깊이)
@@ -247,6 +261,6 @@ tentacle, spike, finned, conjoined, cluster.
 
 ## 8. 알려진 미해결 사항
 
-- **`gh` CLI 미설치** — PR 생성·머지 자동화 안 됨. 브라우저 URL 또는 `winget install GitHub.cli` 권장
+- ✅ ~~`gh` CLI 미설치~~ — 설치+인증 완료(`C:\Program Files\GitHub CLI\gh.exe`, gilmin). PR 생성·머지 CLI로 가능.
 - **deprecation 경고**: `THREE.Clock` deprecated → THREE.Timer (R3F 내부 사용, v1에서 무시)
 - **`/v/cosmic`의 미니멀 nav 가독성** — Nav가 dark 테마 기준으로 디자인됨, mono에서 살짝 어색할 수 있음 (보고 결정)
