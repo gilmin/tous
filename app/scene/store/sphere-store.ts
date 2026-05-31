@@ -6,7 +6,8 @@ import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import type { OrbitalBody } from "../types";
 import { SYSTEM } from "../seed";
-import { hasBodyId, selectBodyById } from "./tree-ops";
+import { childSize, hasBodyId, selectBodyById } from "./tree-ops";
+import { generateOrbitParams } from "./orbit-gen";
 
 export type Mode = "normal" | "edit" | "add" | "delete-confirm";
 
@@ -18,6 +19,7 @@ export type SphereState = {
   setFocus: (id: string | null) => void;
   setMode: (m: Mode) => void;
   editBody: (id: string, patch: Partial<OrbitalBody>) => void;
+  addChild: (parentId: string, label: string) => void;
 };
 
 export const STORAGE_KEY = "tous:sphere:v1";
@@ -85,6 +87,22 @@ export const useSphereStore = create<SphereState>()(
           set((s) => {
             const body = selectBodyById(s.tree, id);
             if (body) Object.assign(body, patch);
+          }),
+        addChild: (parentId: string, label: string) =>
+          set((s) => {
+            const parent = selectBodyById(s.tree, parentId);
+            if (!parent) return;
+            const id = crypto.randomUUID();
+            const child: OrbitalBody = {
+              id,
+              label,
+              size: childSize(parent.size),
+              color: parent.color,
+              shape: "smooth",
+              ...generateOrbitParams(id),
+            };
+            if (!parent.children) parent.children = [];
+            parent.children.push(child);
           }),
       })),
       {

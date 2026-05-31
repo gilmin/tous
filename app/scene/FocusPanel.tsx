@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSphereStore } from "./store/sphere-store";
 import { selectBodyById } from "./store/tree-ops";
 import type { SceneVariant } from "./types";
@@ -13,13 +13,29 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
   const setFocus = useSphereStore((s) => s.setFocus);
   const setMode = useSphereStore((s) => s.setMode);
   const editBody = useSphereStore((s) => s.editBody);
+  const addChild = useSphereStore((s) => s.addChild);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [addDraft, setAddDraft] = useState("");
 
   const isEditing = mode === "edit" && focusedBody !== null;
+  const isAdding = mode === "add" && focusedBody !== null;
 
   useEffect(() => {
     if (isEditing) inputRef.current?.select();
   }, [isEditing]);
+
+  // Reset the draft each time the user enters ADD mode (D9: no carryover).
+  useEffect(() => {
+    if (isAdding) setAddDraft("");
+  }, [isAdding]);
+
+  const focusedId = focusedBody?.id;
+  const commitAdd = () => {
+    if (!focusedId) return;
+    const name = addDraft.trim();
+    if (name) addChild(focusedId, name);
+    setMode("normal");
+  };
 
   if (!focusedBody) return null;
 
@@ -91,32 +107,80 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
           {focusedBody.label}
         </div>
       )}
-      <div
-        style={{
-          marginTop: 10,
-          display: "flex",
-          gap: 8,
-          justifyContent: "center",
-        }}
-      >
-        {!isEditing && (
-          <button
-            onClick={() => setMode("edit")}
+      {isAdding ? (
+        <input
+          autoFocus
+          value={addDraft}
+          onChange={(e) => setAddDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitAdd();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              setMode("normal");
+            }
+          }}
+          placeholder="새 자식 이름"
+          aria-label="자식 이름 입력"
+          style={{
+            marginTop: 10,
+            fontSize: 15,
+            fontWeight: 500,
+            textAlign: "center",
+            width: "100%",
+            padding: "4px 8px",
+            background: inputBg,
+            border: inputBorder,
+            borderRadius: 8,
+            color: buttonColor,
+            outline: "none",
+            fontFamily: "inherit",
+          }}
+        />
+      ) : (
+        !isEditing && (
+          <div
             style={{
-              padding: "4px 12px",
-              fontSize: 12,
-              background: buttonBg,
-              border: "none",
-              borderRadius: 6,
-              color: buttonColor,
-              cursor: "pointer",
-              fontFamily: "inherit",
+              marginTop: 10,
+              display: "flex",
+              gap: 8,
+              justifyContent: "center",
             }}
           >
-            편집
-          </button>
-        )}
-      </div>
+            <button
+              onClick={() => setMode("edit")}
+              style={{
+                padding: "4px 12px",
+                fontSize: 12,
+                background: buttonBg,
+                border: "none",
+                borderRadius: 6,
+                color: buttonColor,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              편집
+            </button>
+            <button
+              onClick={() => setMode("add")}
+              style={{
+                padding: "4px 12px",
+                fontSize: 12,
+                background: buttonBg,
+                border: "none",
+                borderRadius: 6,
+                color: buttonColor,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              + 자식
+            </button>
+          </div>
+        )
+      )}
       <div
         style={{
           marginTop: 8,
@@ -126,7 +190,9 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
       >
         {isEditing
           ? "Enter 또는 ESC로 확정"
-          : "빈 공간 클릭 또는 ESC로 닫기"}
+          : isAdding
+            ? "Enter로 추가, ESC로 취소"
+            : "빈 공간 클릭 또는 ESC로 닫기"}
       </div>
       <button
         onClick={() => {

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { useSphereStore as UseSphereStore } from "./sphere-store";
+import { selectBodyById } from "./tree-ops";
 
 const STORAGE_KEY = "tous:sphere:v1";
 
@@ -168,5 +169,26 @@ describe("sphere-store actions", () => {
     expect(parsed.state.tree.id).toBe("self");
     expect(parsed.state.focusedId).toBeUndefined();
     expect(parsed.state.mode).toBeUndefined();
+  });
+
+  it("addChild adds a child with clamped size under the parent", async () => {
+    const useStore = await freshStore();
+    const parent = selectBodyById(useStore.getState().tree, "p1");
+    expect(parent).not.toBeNull();
+    const before = parent?.children?.length ?? 0;
+    useStore.getState().addChild("p1", "새 자식");
+    const after = selectBodyById(useStore.getState().tree, "p1");
+    expect(after?.children?.length).toBe(before + 1);
+    const added = after?.children?.[after.children.length - 1];
+    expect(added?.label).toBe("새 자식");
+    // p1.size in SYSTEM seed is 0.18 → 0.18 * 0.6 = 0.108
+    expect(added?.size).toBeCloseTo(0.108);
+  });
+
+  it("addChild on a missing parent leaves the tree unchanged", async () => {
+    const useStore = await freshStore();
+    const before = structuredClone(useStore.getState().tree);
+    useStore.getState().addChild("ghost", "x");
+    expect(useStore.getState().tree).toEqual(before);
   });
 });
