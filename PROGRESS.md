@@ -25,19 +25,21 @@
 7. ✅ **#5.6 vitest 셋업** — **DONE 2026-05-28**, PR #15 merged (`7da6e70`). 7 smoke tests passing
 8. ✅ **#6 (M2-1) 영속 store** — **DONE 2026-05-28**, PR #16 merged (`f595e07`). zustand+zundo+immer 도입, `FocusContext` 삭제, `useSphereStore` 단일 source, 100ms throttle persist, 손상 JSON·version mismatch fallback, 8개 store/persist unit test. mesh registry로 focus position을 store 밖에 유지(D5).
 9. ✅ **#7 (M2-2) 이름 편집 + mode 기계** — **DONE 2026-05-31**, PR #17 merged (`e8423b5`). `tree-ops.editBody` 순수 함수(구조 공유 유지), store `editBody` 액션(immer in-place), `setFocus(null)→mode=normal` 불변식, `key-reducer.ts` 신규(NORMAL/EDIT 계약 — EDIT은 Enter/ESC만 exit-edit, 나머지 noop), FocusPanel `[편집]` + autoFocus input, Scene 전역 keydown을 keyReducer 디스패치로 교체, `onPointerMissed` EDIT 가드. vitest 36/36 (tree-ops 6, key-reducer 9, store 11).
-10. 🟡 **#8 + #11 PR 생성 완료 — 다음 = PR 머지 + #9.** ⚠️ #8·#9 파일 충돌 있음 — #8 머지 후 #9 순차.
-    - ✅ **#8 (M2-3) 자식 추가** — PR #19 (`feat/m2-3-add-child`, `cef5da0`). orbit-gen(djb2)+addChild+childSize+ADD mode+FocusPanel `[+ 자식]`. vitest 53/53, tsc clean.
-    - ✅ **#11 (M2-8) hover 폴리쉬** — PR #18 (`feat/m2-8-hover-polish`, `6595f53`). OrbitingBody 단독(5% lerp scale + 라벨 즉시). vitest 36/36, tsc clean.
-    - ⬜ **#9 (M2-4) 삭제 + Self 가드** — PR #18/#19 머지 후 시작. `deleteBody` pure fn + store 액션 + FocusPanel `[삭제]` + Self 가드 2중.
-11. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, #9 머지 후로 미뤄도 됨)
+10. ✅ **#8 + #11 머지 완료 (PR #18, #19) — 다음 = #9.**
+    - ✅ **#8 (M2-3) 자식 추가** — PR #19 merged (`5ee5a65`). orbit-gen(djb2)+addChild+childSize+ADD mode+FocusPanel `[+ 자식]`. vitest 53/53.
+    - ✅ **#11 (M2-8) hover 폴리쉬** — PR #18 merged (`8d71289`). OrbitingBody 단독(5% lerp scale + 라벨 즉시). vitest 36/36.
+11. ⬜ **#9 (M2-4) 삭제 + Self 가드 ← 다음 세션 시작점.** `tree-ops.deleteBody`(자손 포함, 구조 공유) + store `deleteBody` 액션 + FocusPanel `[삭제]` 버튼(Self 숨김) + reducer Self 가드(id 차단). #8이 깐 CRUD 컨벤션 위에 추가만 하면 됨 — 충돌 없음.
+12. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, #9 머지 후로 미뤄도 됨)
 
 **다음 세션 시작 시 읽을 것**:
 - `PROGRESS.md` (이 파일)
-- `docs/adr/0002-state-store-architecture.md` (M2 구현 청사진)
-- PR #18 (#11), PR #19 (#8) — 머지 여부 확인 후 #9 시작
+- `app/scene/store/tree-ops.ts` — `deleteBody` 추가 위치
+- `app/scene/store/sphere-store.ts` — `deleteBody` 액션 추가 위치
+- `app/scene/FocusPanel.tsx` — `[삭제]` 버튼 위치 (이미 `[편집]`/`[+ 자식]` 있음)
+- `gh issue view 9 --repo gilmin/tous` — 전체 acceptance criteria
 
-**현재 브랜치**: `main` 최신. **오픈 PR: #18(#11 hover), #19(#8 add-child)**. M2 이슈 #8~#13 open. PR #14/#15/#16/#17 머지 완료.
-**참고**: worktree 에이전트가 샌드박스 쓰기 차단으로 실패 → 다음 병렬 에이전트 실행 시 worktree 대신 브랜치 직접 생성 방식 사용할 것.
+**현재 브랜치**: `main` 최신 (`5ee5a65`). 오픈 PR 없음. M2 이슈 #9~#13 open. PR #14~#19 머지 완료.
+**참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
