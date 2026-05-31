@@ -25,21 +25,25 @@
 7. ✅ **#5.6 vitest 셋업** — **DONE 2026-05-28**, PR #15 merged (`7da6e70`). 7 smoke tests passing
 8. ✅ **#6 (M2-1) 영속 store** — **DONE 2026-05-28**, PR #16 merged (`f595e07`). zustand+zundo+immer 도입, `FocusContext` 삭제, `useSphereStore` 단일 source, 100ms throttle persist, 손상 JSON·version mismatch fallback, 8개 store/persist unit test. mesh registry로 focus position을 store 밖에 유지(D5).
 9. ✅ **#7 (M2-2) 이름 편집 + mode 기계** — **DONE 2026-05-31**, PR #17 merged (`e8423b5`). `tree-ops.editBody` 순수 함수(구조 공유 유지), store `editBody` 액션(immer in-place), `setFocus(null)→mode=normal` 불변식, `key-reducer.ts` 신규(NORMAL/EDIT 계약 — EDIT은 Enter/ESC만 exit-edit, 나머지 noop), FocusPanel `[편집]` + autoFocus input, Scene 전역 keydown을 keyReducer 디스패치로 교체, `onPointerMissed` EDIT 가드. vitest 36/36 (tree-ops 6, key-reducer 9, store 11).
-10. ✅ **#8 + #11 머지 완료 (PR #18, #19) — 다음 = #9.**
+10. ✅ **#8 + #11 머지 완료 (PR #18, #19).**
     - ✅ **#8 (M2-3) 자식 추가** — PR #19 merged (`5ee5a65`). orbit-gen(djb2)+addChild+childSize+ADD mode+FocusPanel `[+ 자식]`. vitest 53/53.
     - ✅ **#11 (M2-8) hover 폴리쉬** — PR #18 merged (`8d71289`). OrbitingBody 단독(5% lerp scale + 라벨 즉시). vitest 36/36.
-11. ⬜ **#9 (M2-4) 삭제 + Self 가드 ← 다음 세션 시작점.** `tree-ops.deleteBody`(자손 포함, 구조 공유) + store `deleteBody` 액션 + FocusPanel `[삭제]` 버튼(Self 숨김) + reducer Self 가드(id 차단). #8이 깐 CRUD 컨벤션 위에 추가만 하면 됨 — 충돌 없음.
-12. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택, #9 머지 후로 미뤄도 됨)
+11. ✅ **#9 (M2-4) 삭제 + Self 가드** — PR #20 merged (`5553195`). `tree-ops.deleteBody`(자손 통째 제거, 구조 공유, root/missing은 동일 ref), store `deleteBody` 액션(immer splice + Self id 거부 + 삭제된 focus 해제/lastFocused 보정), FocusPanel `[삭제]` 버튼(Self일 때 미렌더 — 2중 방어). vitest 64/64 (tree-ops deleteBody 7, store deleteBody 4).
+12. ⬜ **#10/#12/#13 ← 다음 세션 시작점.** M2 CRUD 핵심(#6~#9) 완료. 남은 AFK 슬라이스 셋 다 **직렬**(서로 store/key-reducer 의존):
+    - **#10 (M2-5) 키보드 nav** — ←/→ DFS pre-order 순환(sun↔마지막). key-reducer NORMAL에 nav-prev/nav-next 배선(현재 noop 자리), store에 DFS helper + setFocus 이동. blocked by #7·#8·#9 (모두 완료).
+    - **#12 (M2-6) Undo/Redo** — temporal 배선(이미 store에 zundo 있음) + Cmd+Z/Cmd+Shift+Z(key-reducer tree-undo/redo 자리) + slider coalesce. blocked by #7·#8·#9 (완료).
+    - **#13 (M2-7) 외형 편집** — 크기·속도·모양·색 slider/picker, throttle persist. blocked by #7·#12.
+    - 권장 순서: **#10 → #12 → #13** (#13이 #12 의존).
+13. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택)
 
 **다음 세션 시작 시 읽을 것**:
 - `PROGRESS.md` (이 파일)
-- `app/scene/store/tree-ops.ts` — `deleteBody` 추가 위치
-- `app/scene/store/sphere-store.ts` — `deleteBody` 액션 추가 위치
-- `app/scene/FocusPanel.tsx` — `[삭제]` 버튼 위치 (이미 `[편집]`/`[+ 자식]` 있음)
-- `gh issue view 9 --repo gilmin/tous` — 전체 acceptance criteria
+- `app/scene/store/key-reducer.ts` — NORMAL 분기에 nav-prev/nav-next(#10), tree-undo/redo(#12) 배선 자리 (주석으로 표시돼 있음)
+- `app/scene/store/sphere-store.ts` — `setFocus`, temporal(zundo) 이미 존재. #10 DFS helper, #12 undo/redo 액션 추가
+- `gh issue view 10/12/13 --repo gilmin/tous` — 전체 acceptance criteria
 
-**현재 브랜치**: `main` 최신 (`5ee5a65`). 오픈 PR 없음. M2 이슈 #9~#13 open. PR #14~#19 머지 완료.
-**참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용.
+**현재 브랜치**: `main` 최신 (`5553195`). 오픈 PR 없음. M2 이슈 #10/#12/#13 open. PR #14~#20 머지 완료.
+**참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
 ---
