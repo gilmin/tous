@@ -62,3 +62,24 @@ export function addChild(
   });
   return changed ? { ...tree, children: nextChildren } : tree;
 }
+
+// Removes the body with the given id and its entire subtree (no orphans),
+// structural-sharing every untouched subtree. Returns the same tree reference
+// when id is missing or refers to the root — the root (Self) has no parent to
+// detach from and is undeletable (CONTEXT.md); Self is also guarded at the
+// store reducer so no code path can remove it.
+export function deleteBody(tree: OrbitalBody, id: string): OrbitalBody {
+  if (tree.id === id) return tree;
+  if (!tree.children) return tree;
+  const filtered = tree.children.filter((child) => child.id !== id);
+  if (filtered.length !== tree.children.length) {
+    return { ...tree, children: filtered };
+  }
+  let changed = false;
+  const nextChildren = tree.children.map((child) => {
+    const next = deleteBody(child, id);
+    if (next !== child) changed = true;
+    return next;
+  });
+  return changed ? { ...tree, children: nextChildren } : tree;
+}
