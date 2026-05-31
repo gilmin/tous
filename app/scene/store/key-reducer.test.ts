@@ -1,6 +1,24 @@
 import { describe, it, expect } from "vitest";
 import { keyReducer } from "./key-reducer";
 
+describe("keyReducer — ADD mode", () => {
+  it("Enter exits add (commit handled by panel)", () => {
+    expect(keyReducer({ mode: "add", hasFocus: true }, { key: "Enter" })).toEqual(
+      { type: "exit-add" },
+    );
+  });
+  it("Escape exits add", () => {
+    expect(
+      keyReducer({ mode: "add", hasFocus: true }, { key: "Escape" }),
+    ).toEqual({ type: "exit-add" });
+  });
+  it("other keys are noop in add", () => {
+    expect(keyReducer({ mode: "add", hasFocus: true }, { key: "a" })).toEqual({
+      type: "noop",
+    });
+  });
+});
+
 describe("keyReducer — NORMAL mode", () => {
   it("Escape with focus clears the focus", () => {
     expect(

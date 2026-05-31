@@ -3,6 +3,7 @@ import type { Mode } from "./sphere-store";
 export type KeyAction =
   | { type: "noop" }
   | { type: "exit-edit" }
+  | { type: "exit-add" }
   | { type: "clear-focus" }
   | { type: "nav-prev" }
   | { type: "nav-next" }
@@ -33,6 +34,15 @@ export function keyReducer(ctx: KeyContext, input: KeyInput): KeyAction {
     // history (D11), everything else is a literal keystroke for the input.
     if (input.key === "Escape" || input.key === "Enter") {
       return { type: "exit-edit" };
+    }
+    return NOOP;
+  }
+  if (ctx.mode === "add") {
+    // ADD mode mirrors EDIT: the input owns the keyboard. Only Enter (commit,
+    // handled by the panel which holds the draft) and Escape (cancel) exit;
+    // everything else is a literal keystroke for the input.
+    if (input.key === "Escape" || input.key === "Enter") {
+      return { type: "exit-add" };
     }
     return NOOP;
   }

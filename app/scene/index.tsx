@@ -45,6 +45,7 @@ export default function Scene({
       );
       switch (action.type) {
         case "exit-edit":
+        case "exit-add":
           setMode("normal");
           break;
         case "clear-focus":
@@ -72,7 +73,7 @@ export default function Scene({
         }}
         onPointerMissed={() => {
           if (performance.now() - lastSelectAtRef.current < 300) return;
-          if (mode === "edit") {
+          if (mode === "edit" || mode === "add") {
             setMode("normal");
             return;
           }

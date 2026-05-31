@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import type { OrbitalBody } from "../types";
-import { editBody, hasBodyId, selectBodyById } from "./tree-ops";
+import {
+  addChild,
+  childSize,
+  editBody,
+  hasBodyId,
+  selectBodyById,
+} from "./tree-ops";
 
 function makeTree(): OrbitalBody {
   return {
@@ -81,5 +87,59 @@ describe("editBody", () => {
     const p2 = selectBodyById(next, "p2");
     expect(p2?.label).toBe("고독");
     expect(p2?.size).toBe(0.5);
+  });
+});
+
+const newBody: OrbitalBody = {
+  id: "new",
+  label: "New",
+  size: 0.3,
+  color: "#777",
+};
+
+describe("addChild", () => {
+  it("appends under the matching parent (which already has a child)", () => {
+    const tree = makeTree();
+    const next = addChild(tree, "p1", newBody);
+    expect(selectBodyById(next, "p1")?.children?.map((c) => c.id)).toEqual([
+      "p1m1",
+      "new",
+    ]);
+  });
+
+  it("appends under a parent that has no children yet", () => {
+    const tree = makeTree();
+    const next = addChild(tree, "p2", newBody);
+    expect(selectBodyById(next, "p2")?.children?.map((c) => c.id)).toEqual([
+      "new",
+    ]);
+  });
+
+  it("preserves refs of subtrees that were not touched", () => {
+    const tree = makeTree();
+    const untouchedSibling = tree.children![1];
+    const next = addChild(tree, "p1", newBody);
+    expect(next.children![1]).toBe(untouchedSibling);
+  });
+
+  it("returns the same tree ref when parentId is missing", () => {
+    const tree = makeTree();
+    expect(addChild(tree, "ghost", newBody)).toBe(tree);
+  });
+
+  it("does not mutate the original tree", () => {
+    const tree = makeTree();
+    addChild(tree, "p2", newBody);
+    expect(selectBodyById(tree, "p2")?.children).toBeUndefined();
+  });
+});
+
+describe("childSize", () => {
+  it("shrinks to 60% of the parent", () => {
+    expect(childSize(1)).toBeCloseTo(0.6);
+  });
+  it("clamps to a 0.05 floor", () => {
+    expect(childSize(0.05)).toBe(0.05);
+    expect(childSize(0)).toBe(0.05);
   });
 });
