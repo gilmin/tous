@@ -54,7 +54,16 @@ export function keyReducer(ctx: KeyContext, input: KeyInput): KeyAction {
     // a current focus — it starts from an end (#10).
     if (input.key === "ArrowLeft") return { type: "nav-prev" };
     if (input.key === "ArrowRight") return { type: "nav-next" };
-    // #12 will return tree-undo / tree-redo here. Until then, the rest is noop.
+    // Undo/redo (#12). Cmd/Ctrl+Z → undo, Cmd/Ctrl+Shift+Z or Ctrl+Y → redo.
+    // EDIT/ADD already returned above, so these only fire in NORMAL — tree
+    // history never competes with the input's own text undo (D11).
+    const mod = input.metaKey || input.ctrlKey;
+    if (mod && input.key.toLowerCase() === "z") {
+      return input.shiftKey ? { type: "tree-redo" } : { type: "tree-undo" };
+    }
+    if (input.ctrlKey && input.key.toLowerCase() === "y") {
+      return { type: "tree-redo" };
+    }
     return NOOP;
   }
   return NOOP;

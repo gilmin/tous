@@ -227,3 +227,82 @@ describe("sphere-store actions", () => {
     expect(selectBodyById(fresh.getState().tree, "p2")).toBeNull();
   });
 });
+
+describe("sphere-store undo/redo (#12)", () => {
+  beforeEach(async () => {
+    await new Promise((r) => setTimeout(r, 150));
+    window.localStorage.clear();
+  });
+
+  it("starts with empty history on a fresh load", async () => {
+    const useStore = await freshStore();
+    expect(useStore.temporal.getState().pastStates).toHaveLength(0);
+    expect(useStore.temporal.getState().futureStates).toHaveLength(0);
+  });
+
+  it("undo reverts the last edit; redo reapplies it", async () => {
+    const useStore = await freshStore();
+    const before = selectBodyById(useStore.getState().tree, "p1")?.label;
+    useStore.getState().editBody("p1", { label: "바뀐 이름" });
+    expect(selectBodyById(useStore.getState().tree, "p1")?.label).toBe(
+      "바뀐 이름",
+    );
+
+    useStore.temporal.getState().undo();
+    expect(selectBodyById(useStore.getState().tree, "p1")?.label).toBe(before);
+
+    useStore.temporal.getState().redo();
+    expect(selectBodyById(useStore.getState().tree, "p1")?.label).toBe(
+      "바뀐 이름",
+    );
+  });
+
+  it("does not record focus / mode changes in history (only structure)", async () => {
+    const useStore = await freshStore();
+    useStore.getState().setFocus("p1");
+    useStore.getState().setFocus("p2");
+    useStore.getState().setMode("edit");
+    useStore.getState().setMode("normal");
+    expect(useStore.temporal.getState().pastStates).toHaveLength(0);
+
+    useStore.getState().editBody("p1", { label: "구조 변경" });
+    expect(useStore.temporal.getState().pastStates).toHaveLength(1);
+  });
+
+  it("restores a deleted body with all descendants in a single undo", async () => {
+    const useStore = await freshStore();
+    // SYSTEM seed: p1 has descendant p1m1.
+    expect(selectBodyById(useStore.getState().tree, "p1m1")).not.toBeNull();
+    useStore.getState().deleteBody("p1");
+    expect(selectBodyById(useStore.getState().tree, "p1")).toBeNull();
+    expect(selectBodyById(useStore.getState().tree, "p1m1")).toBeNull();
+
+    useStore.temporal.getState().undo();
+    expect(selectBodyById(useStore.getState().tree, "p1")).not.toBeNull();
+    expect(selectBodyById(useStore.getState().tree, "p1m1")).not.toBeNull();
+  });
+
+  it("coalesces a slider drag into a single undo entry", async () => {
+    vi.resetModules();
+    const mod = await import("./sphere-store");
+    const useStore = mod.useSphereStore;
+    await useStore.persist.rehydrate();
+
+    const orig = selectBodyById(useStore.getState().tree, "p1")?.size;
+    expect(orig).toBeDefined();
+
+    mod.beginSliderCoalesce();
+    useStore.getState().editBody("p1", { size: 0.2 });
+    useStore.getState().editBody("p1", { size: 0.3 });
+    useStore.getState().editBody("p1", { size: 0.4 });
+    mod.endSliderCoalesce();
+
+    // Three ticks, one history entry.
+    expect(useStore.temporal.getState().pastStates).toHaveLength(1);
+    expect(selectBodyById(useStore.getState().tree, "p1")?.size).toBe(0.4);
+
+    // One undo returns to the pre-drag size, not an intermediate tick.
+    useStore.temporal.getState().undo();
+    expect(selectBodyById(useStore.getState().tree, "p1")?.size).toBe(orig);
+  });
+});
