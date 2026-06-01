@@ -15,7 +15,7 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-01)**: **M3 진행 중 — M3-3(#26) 머지 완료(PR #30, 데모 확인).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인) + 이슈 #24~#27 발행. M3-1 인증(PR #28) · M3-2 클라우드 저장/복원(PR #29) 출하. **M3-3 공개 토글+공유 링크 출하**: `/s/[short_code]` 익명 읽기 + 공개읽기 RLS(`is_public AND NOT is_flagged`) + store 주입 리팩터로 Scene을 read-only 재사용(`app/scene/PublicScene.tsx`). 다음 = **#27 (M3-4)** 랜덤 공개 sphere 쿼리 — **M3 마지막**.
+**현재 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **다음 = M4 (탐험)** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리. ⚠️ cold-start 공개 풀 빔(D4) → M4에서 데모 sphere 시딩/넛지 선행.
 
 **다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 — 전부 완료):
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
@@ -41,7 +41,7 @@
 19. ✅ **#24 (M3-1) 로그인/로그아웃** — **DONE 2026-06-01, PR #28 머지 (`f81402c`).** HITL 프로비저닝 완료(Supabase 프로젝트 `lrfucciojxrqctfswduk` + Google/GitHub OAuth 앱 + provider 활성화 + Redirect URL). `@supabase/ssr` browser/server 분리(`lib/supabase/`), `proxy.ts`(세션 갱신, getUser), `/login`(signInWithOAuth), `/auth/callback`(코드→세션 교환), `/me`(서버 게이팅 + 로그아웃 server action), Nav "내 우주". 실브라우저 OAuth 검증 완료. vitest 82/82.
 20. ✅ **#25 (M3-2) 클라우드 저장/복원** — **DONE 2026-06-01, PR #29 머지 (`e57ede3`).** `spheres` 테이블(JSONB `tree` blob + owner_id FK·unique + is_public default false + short_code nullable + node_count + created/updated_at), owner-only RLS 4개 + updated_at 트리거(search_path 하드닝). `lib/sphere/serialize.ts`(`countNodes`=flattenDFS 재사용, D8) + 라운드트립 테스트. `app/me/SphereSync.tsx` 로컬 우선 sync(로드 maybeSingle→하이드레이트/seed, 디바운스 1.5s `upsert(onConflict owner_id)`, 언마운트 flush). `/me` → Scene 풀스크린 클라우드 편집기. vitest 85/85. 🚩 **RLS 4종 머지 게이트 통과**(음성 대조로 false-green 배제, 데이터 롤백 확인). **남은 HITL**: 실브라우저 편집→복원 왕복 데모(코드·DB·RLS 검증 완료, UI 왕복만 미확인).
 21. ✅ **#26 (M3-3) 공개 토글+공유 링크** — **DONE 2026-06-01, PR #30 머지 (`4fbe25d`), 데모 확인.** 마이그 0002(`is_flagged` + 공개읽기 RLS `is_public AND NOT is_flagged`, anon+authenticated, owner-select와 permissive OR). `lib/sphere/short-code.ts` `generateShortCode()` 8자 base62(crypto)+단위테스트, 충돌 23505 재시도는 PublishToggle update 루프. **store 주입 리팩터**(`app/scene/store/scene-store-context.tsx`: SceneReadState, context 기본값=싱글톤 → 편집 경로 무변; System/OrbitingBody/CameraController/FocusRing가 `useSceneStore`). `app/scene/PublicScene.tsx`(read-only store로 Scene 재사용) + `app/s/[short_code]/page.tsx`(anon fetch, 비공개/flagged/없음 404). `app/me/PublishToggle.tsx`(공개 토글, short_code 발급·재사용, 링크 복사; unpublish는 short_code 보존). vitest 87/87. 🚩 **RLS 게이트 통과**(owner 3 + 익명 공개읽기/flagged 2, 음성 대조).
-22. ⬜ **#27 (M3-4) 랜덤 공개 sphere 쿼리** — 다음 할 일. **M3 마지막**. `tablesample bernoulli(1)` 전략(D9), node_count>=3 필터(D8/M4). 익명 클라이언트로 랜덤 공개 sphere 1개 뽑는 백엔드. `/discover` UI·카메라 워프는 M4. ⚠️ cold-start 공개 풀 빔(D4) → M4 시딩 숙제.
+22. ✅ **#27 (M3-4) 랜덤 공개 sphere 쿼리** — **DONE 2026-06-01, PR #31 머지 (`f80f649`).** 마이그 0003: `random_public_sphere()` — TABLESAMPLE bernoulli(1) 1차 + not found fallback, 필터 `is_public AND NOT is_flagged AND node_count>=3`, security invoker + search_path 하드닝 + anon/authenticated execute. `lib/sphere/random-public.ts` `getRandomPublicSphere(client)` rpc 래퍼(빈 풀/에러 null). UI 없음(M4). SQL 검증(anon 40회, eligible만 반환, small001 노드부족 제외 입증, 음성 대조). **M3 완료.**
 
 ### M3 이슈 맵 (milestone M3 = #2)
 
@@ -50,7 +50,7 @@
 | ✅ #24 | M3-1 로그인/로그아웃 (Supabase+@supabase/ssr OAuth) — PR #28 머지 | 🙋 HITL(프로비저닝) | — | A |
 | ✅ #25 | M3-2 내 sphere 클라우드 저장/복원 (JSONB+주인 RLS+local-first sync) ⭐핵심 — PR #29 머지 | 🤖 AFK(RLS 게이트 ✅) | #24 | 합류 |
 | ✅ #26 | M3-3 공개 토글+공유 링크 (short_code+/s/[code]+공개읽기 RLS+anon) — PR #30 머지 | 🤖 AFK(RLS 게이트 ✅) | #25 | 합류 |
-| #27 | M3-4 랜덤 공개 sphere 쿼리 (tablesample, M4 토대) | 🤖 AFK·선택 | #26 | — |
+| ✅ #27 | M3-4 랜덤 공개 sphere 쿼리 (tablesample, M4 토대) — PR #31 머지 | 🤖 AFK·선택 | #26 | — |
 
 **🚩 RLS 머지 게이트**: #25(주인 CUD/타인 차단), #26(익명 4종) 통합 테스트 통과 후에만 머지.
 
@@ -77,16 +77,16 @@
 
 **다음 세션 시작 시 읽을 것**:
 - `PROGRESS.md` (이 파일)
-- **M3-3(#26) 머지 완료. 다음 = #27 (M3-4) 랜덤 공개 sphere 쿼리 — M3 마지막.** `tablesample bernoulli(1)`(D9) + node_count>=3 필터. 익명 클라이언트로 랜덤 공개 sphere 1개 뽑는 백엔드(쿼리/RPC). `/discover` UI·카메라 워프는 M4
-- `supabase/migrations/` — `0001_spheres.sql`(스키마+owner RLS) · `0002_public_read.sql`(is_flagged+공개읽기 RLS). 컬럼 다 있음(node_count·is_public·is_flagged·short_code)
-- `app/scene/store/scene-store-context.tsx` — **store 주입 패턴**. M4 워프(sphere 전환)는 이 provider를 갈아끼움. `createPublicSphereStore`로 read-only 인스턴스
-- `app/scene/PublicScene.tsx` — read-only 공개 뷰. M4 랜덤 탐험도 이 컴포넌트에 랜덤 tree 먹이면 됨
-- `lib/supabase/` — 클라이언트. `supabase/tests/rls_spheres.sql` = RLS 게이트 패턴(self-rollback DO 블록, role 전환 reset+set local)
+- **🎉 M3 완료. 다음 = M4 (탐험).** M4 진입 전 `/plan-eng-review` 재실행 권장(카메라 워프·세션 히스토리 설계). M4 = `/discover` UI + 랜덤 공개 sphere 넘겨보기 + sphere 간 카메라 워프 트랜지션 + 뒤로가기 히스토리
+- **M4 빌딩블록 이미 있음**: `lib/sphere/random-public.ts`(`getRandomPublicSphere`) · `app/scene/PublicScene.tsx`(read-only 뷰 — 랜덤 tree 먹이면 됨) · `app/scene/store/scene-store-context.tsx`(store 주입 — 워프는 provider/tree 교체)
+- ⚠️ **M4 선행 숙제**: 기본 비공개(D4)라 공개 풀이 비어 `getRandomPublicSphere`가 null → 데모 sphere 시딩 또는 온보딩 넛지 먼저
+- `supabase/migrations/` — `0001_spheres.sql`(스키마+owner RLS) · `0002_public_read.sql`(is_flagged+공개읽기 RLS) · `0003_random_public_sphere.sql`(랜덤 RPC). 컬럼: node_count·is_public·is_flagged·short_code
+- `supabase/tests/` — `rls_spheres.sql`(RLS 게이트) · `random_public_sphere.sql`(랜덤 검증). 패턴: self-rollback DO 블록 + role 전환(reset+set local) + 음성 대조
 - test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260601.md`
 - Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP는 OAuth 인증 필요(세션마다 만료 가능)** — 마이그레이션/SQL 적용 시 재인증
 
-**현재 브랜치**: `main` 최신 (`4fbe25d`). 오픈 PR 없음. **M2 #6~#13 + M3-1 #24 + M3-2 #25 + M3-3 #26 closed.** PR #14~#23, #28, #29, #30 머지 완료. 남은 M3 이슈: #27(M3 마지막).
-**HITL 검증**: #25·#26 실브라우저 데모 확인 완료.
+**현재 브랜치**: `main` 최신 (`f80f649`). 오픈 PR 없음. **M2 #6~#13 + M3 #24~#27 closed.** PR #14~#23, #28~#31 머지 완료. **M3 전 슬라이스 완료.**
+**HITL 검증**: #25·#26 실브라우저 데모 확인 완료. #27은 UI 없어 SQL 검증으로 충분.
 **참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
@@ -232,6 +232,14 @@ tentacle, spike, finned, conjoined, cluster.
 ---
 
 ## 5. Done
+
+### M3 — Auth + 백엔드 ✅ DONE (2026-06-01, PR #28~#31)
+- **인증(M3-1, #28)**: Supabase `@supabase/ssr` OAuth(Google/GitHub), 세션 proxy, `/login`·`/auth/callback`·`/me` 게이팅.
+- **클라우드 저장/복원(M3-2, #29)**: `spheres` JSONB tree blob(D2) + owner-only RLS + local-first debounce sync(`SphereSync`, D3). node_count는 push 시 계산(D8). 마이그 0001.
+- **공개 토글+공유(M3-3, #30)**: `is_flagged` + 공개읽기 RLS(`is_public AND NOT is_flagged`). short_code 8자 base62(앱측 생성+충돌 재시도, D7). store 주입 리팩터(`scene-store-context`)로 Scene을 read-only 재사용 → `PublicScene` + `/s/[short_code]`. `PublishToggle`. 마이그 0002.
+- **랜덤 쿼리(M3-4, #31)**: `random_public_sphere()` TABLESAMPLE bernoulli(1)+fallback, 필터 `is_public AND NOT is_flagged AND node_count>=3`(D9). `getRandomPublicSphere` 헬퍼. 마이그 0003.
+- **RLS 게이트**: owner CUD/타인 차단 + 익명 공개읽기/비공개·flagged 차단 — self-rollback SQL + 음성 대조 전부 통과. security advisor clean.
+- **테스트**: vitest 87개(+serialize, short-code). DB 로직은 `supabase/tests/` SQL 검증.
 
 ### M2 — Local CRUD + Interaction Variety ✅ DONE (2026-06-01, PR #14~#23)
 - **상태 기반**: zustand + `persist(temporal(immer(...)))`. `useSphereStore` 단일 source, `FocusContext` 삭제. localStorage `tous:sphere:v1`, 100ms throttle, 손상·version mismatch → SYSTEM fallback. mesh registry로 focus position을 store 밖에 유지.
