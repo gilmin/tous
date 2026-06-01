@@ -15,7 +15,7 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **다음 = M4 (탐험)** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리. ⚠️ cold-start 공개 풀 빔(D4) → M4에서 데모 sphere 시딩/넛지 선행.
+**현재 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **✅ M4 선행 숙제(cold-start 데모 시딩) 완료** — 마이그 0004 적용, 공개 풀에 데모 sphere 5개(서로 다른 성향: 여행자/만드는 사람/돌보는 사람/질문하는 사람/고요한 사람) 시딩. anon 관점에서 eligible=5, `random_public_sphere()` 다양성 확인. **다음 = M4 (탐험)** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리.
 
 **다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 — 전부 완료):
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
@@ -79,8 +79,8 @@
 - `PROGRESS.md` (이 파일)
 - **🎉 M3 완료. 다음 = M4 (탐험).** M4 진입 전 `/plan-eng-review` 재실행 권장(카메라 워프·세션 히스토리 설계). M4 = `/discover` UI + 랜덤 공개 sphere 넘겨보기 + sphere 간 카메라 워프 트랜지션 + 뒤로가기 히스토리
 - **M4 빌딩블록 이미 있음**: `lib/sphere/random-public.ts`(`getRandomPublicSphere`) · `app/scene/PublicScene.tsx`(read-only 뷰 — 랜덤 tree 먹이면 됨) · `app/scene/store/scene-store-context.tsx`(store 주입 — 워프는 provider/tree 교체)
-- ⚠️ **M4 선행 숙제**: 기본 비공개(D4)라 공개 풀이 비어 `getRandomPublicSphere`가 null → 데모 sphere 시딩 또는 온보딩 넛지 먼저
-- `supabase/migrations/` — `0001_spheres.sql`(스키마+owner RLS) · `0002_public_read.sql`(is_flagged+공개읽기 RLS) · `0003_random_public_sphere.sql`(랜덤 RPC). 컬럼: node_count·is_public·is_flagged·short_code
+- ✅ **M4 선행 숙제 완료**: 마이그 0004로 공개 풀에 데모 sphere 5개 시딩(`getRandomPublicSphere`가 이제 null 안 나옴). 제거하려면 `delete from auth.users where raw_app_meta_data->>'provider'='seed';`(spheres 연쇄 삭제). short_code: wanderer/themaker/caregivr/theseekr/stillone
+- `supabase/migrations/` — `0001_spheres.sql`(스키마+owner RLS) · `0002_public_read.sql`(is_flagged+공개읽기 RLS) · `0003_random_public_sphere.sql`(랜덤 RPC) · `0004_seed_demo_spheres.sql`(데모 5개 시딩 — 가짜 auth 유저 5명 FK 앵커). 컬럼: node_count·is_public·is_flagged·short_code
 - `supabase/tests/` — `rls_spheres.sql`(RLS 게이트) · `random_public_sphere.sql`(랜덤 검증). 패턴: self-rollback DO 블록 + role 전환(reset+set local) + 음성 대조
 - test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260601.md`
 - Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP는 OAuth 인증 필요(세션마다 만료 가능)** — 마이그레이션/SQL 적용 시 재인증
