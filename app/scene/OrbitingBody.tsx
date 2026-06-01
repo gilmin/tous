@@ -6,7 +6,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { PlanetMesh } from "../_components/Planet";
 import { LABEL_FADE_NEAR, LABEL_FADE_FAR } from "./constants";
-import { useSphereStore } from "./store/sphere-store";
+import { useSceneStore } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
 import {
   registerBodyMesh,
@@ -22,9 +22,9 @@ export const OrbitingBody = memo(function OrbitingBody({
   id: string;
   variant: SceneVariant;
 }) {
-  const body = useSphereStore((s) => selectBodyById(s.tree, id));
-  const focusedId = useSphereStore((s) => s.focusedId);
-  const setFocus = useSphereStore((s) => s.setFocus);
+  const body = useSceneStore((s) => selectBodyById(s.tree, id));
+  const focusedId = useSceneStore((s) => s.focusedId);
+  const setFocus = useSceneStore((s) => s.setFocus);
 
   const orbitRef = useRef<THREE.Group>(null);
   const selfRef = useRef<THREE.Mesh>(null);

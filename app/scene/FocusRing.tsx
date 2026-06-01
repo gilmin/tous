@@ -3,14 +3,14 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
-import { useSphereStore } from "./store/sphere-store";
+import { useSceneStore } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
 import { getBodyMesh } from "./store/body-mesh-registry";
 import type { SceneVariant } from "./types";
 
 export function FocusRing({ variant }: { variant: SceneVariant }) {
-  const focusedId = useSphereStore((s) => s.focusedId);
-  const focusedBody = useSphereStore((s) =>
+  const focusedId = useSceneStore((s) => s.focusedId);
+  const focusedBody = useSceneStore((s) =>
     s.focusedId ? selectBodyById(s.tree, s.focusedId) : null,
   );
   const groupRef = useRef<THREE.Group>(null);
