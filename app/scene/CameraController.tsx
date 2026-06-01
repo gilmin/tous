@@ -3,14 +3,14 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
-import { useSphereStore } from "./store/sphere-store";
+import { useSceneStore } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
 import { getBodyMesh } from "./store/body-mesh-registry";
 import { CAMERA_LERP, DEFAULT_CAM_POS, DEFAULT_LOOK_AT } from "./constants";
 
 export function CameraController() {
-  const focusedId = useSphereStore((s) => s.focusedId);
-  const focusedSize = useSphereStore((s) => {
+  const focusedId = useSceneStore((s) => s.focusedId);
+  const focusedSize = useSceneStore((s) => {
     const id = s.focusedId;
     if (!id) return null;
     return selectBodyById(s.tree, id)?.size ?? null;
