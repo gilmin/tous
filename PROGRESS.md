@@ -15,7 +15,7 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-01)**: **M2 (Local CRUD + 인터랙션) 전 슬라이스 완료.** #6~#13 머지 끝(PR #14~#23). 남은 것은 선택 항목(`/plan-design-review`)과 M2 전체 QA dogfood뿐. 다음 큰 마일스톤은 **M3 (Auth + 백엔드 / Supabase)**.
+**현재 상태 (2026-06-01)**: **M2 완료 + M3 eng-review 완료(설계 결정 D1~D9 락인).** M2 #6~#13 머지 끝(PR #14~#23). **M3 (Auth + Supabase) eng-review 통과** — 핵심 아키텍처 9개 결정 잠금. 다음 = `/to-issues`로 M3-1~M3-6 슬라이스 발행.
 
 **다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 — 전부 완료):
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
@@ -36,15 +36,49 @@
 14. ✅ **#13 (M2-7) 외형 편집** — PR #23 merged (`3e8531e`). FocusPanel EDIT 폼에 `AppearanceControls` 추가: 크기·자전·공전 range 슬라이더(드래그→coalesce, 공전은 궤도 있는 Body만), 모양 `<select>` PLANET_SHAPES 20종, 색 `<input type=color>`(cosmic 전용 — mono는 size 파생이라 dead control). 모두 `editBody`로 흐름. vitest 82/82, next build clean.
 15. ⬜ `/plan-design-review` — hydration flash, cosmic 폴리쉬, label length cap (선택)
 16. ⬜ **M2 전체 QA dogfood** — 외형 편집·nav·undo는 시각/인터랙션 검증 필요 (`/qa`)
-17. ⬜ **M3 킥오프** — Auth + Supabase 백엔드. §6 Backlog 참조.
+17. ✅ **M3 eng-review** — **DONE 2026-06-01.** 9개 결정(D1~D9) 락인. test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260601.md`
+18. ✅ **M3 `/to-issues`** — **DONE 2026-06-01.** milestone `M3`(#2) + 슬라이스 #24~#27 발행(ready-for-agent)
+19. ⬜ **#24 (M3-1) 구현** — 다음 할 일. 단, HITL 선행: Supabase 프로젝트 생성 + Google/GitHub OAuth 앱 등록 + env 키
+
+### M3 이슈 맵 (milestone M3 = #2)
+
+| 이슈 | 슬라이스 | 유형 | blocked by | 레인 |
+|---|---|---|---|---|
+| #24 | M3-1 로그인/로그아웃 (Supabase+@supabase/ssr OAuth) | 🙋 HITL(프로비저닝) | — | A |
+| #25 | M3-2 내 sphere 클라우드 저장/복원 (JSONB+주인 RLS+local-first sync) ⭐핵심 | 🤖 AFK(RLS 게이트) | #24 | 합류 |
+| #26 | M3-3 공개 토글+공유 링크 (short_code+/s/[code]+공개읽기 RLS+anon) | 🤖 AFK(RLS 게이트) | #25 | 합류 |
+| #27 | M3-4 랜덤 공개 sphere 쿼리 (tablesample, M4 토대) | 🤖 AFK·선택 | #26 | — |
+
+**🚩 RLS 머지 게이트**: #25(주인 CUD/타인 차단), #26(익명 4종) 통합 테스트 통과 후에만 머지.
+
+### M3 eng-review 락인 결정 (2026-06-01)
+
+| # | 결정 | 근거 |
+|---|---|---|
+| D1 | M3을 M3-1~M3-6으로 슬라이스 + 데이터 모델 선해결 | 본질적 복잡도, 점진 |
+| D2 | **JSONB 트리 blob** (`spheres.tree`) — 평면 nodes 테이블 안 씀 | 변환 레이어 0, RLS 단순, 색·모양 직접값 보존. ⚠️ 설계문서의 평면+seed 모델은 폐기(M2 구현이 hex/shape 직접값) |
+| D3 | **로컬 우선 + debounce 백그라운드 동기화** | M2 즉각 UX·오프라인 유지. store `partialize:{tree}` 재사용, 평행 직렬화 금지 |
+| D4 | **기본 비공개 + 명시적 공개 토글** | 프라이버시 우선. ⚠️ cold-start 공개 풀 비어있음 → M4 숙제(데모 시딩/넛지) |
+| D5 | `@supabase/ssr` (browser/server 분리 + middleware 세션갱신), Google+GitHub OAuth | [Layer 1] 현재 표준 |
+| D6 | blob 안 root id는 `"self"` 유지. `spheres.id`=별도 uuid. 노드 id=crypto.randomUUID(M2 그대로) | 변경 최소 |
+| D7 | `short_code`=8자 base62, unique 제약 + 충돌 재생성 | URL용 |
+| D8 | `node_count`는 sync가 스냅샷 푸시 시 blob에서 계산해 기록. M4 필터 `>=3` | 트리거보다 단순 |
+| D9 | 익명 읽기 클라이언트(anon key) M3 셋업, `/discover` UI는 M4. 랜덤쿼리 `tablesample bernoulli(1)` | [Layer 1] M4 토대 |
+
+**🚩 CRITICAL: RLS 4종 머지 게이트** — 익명→공개 읽기 OK / 익명→비공개 차단 / 주인 CUD / 타인 수정 차단. 통합(pgTAP/SQL) 테스트 통과 후에만 스키마 슬라이스 머지.
+
+**M3 슬라이스 + 병렬 레인**:
+- Lane A: M3-1(Supabase+`@supabase/ssr` 클라이언트 셋업) → M3-2(Auth/OAuth)
+- Lane B: M3-1 → M3-3(spheres 스키마+RLS) → {M3-5(공개토글+short_code+`/s/[code]`), M3-6(익명읽기+랜덤쿼리)}
+- 합류 후: M3-4(local-first sync 레이어 — auth+스키마 둘 다 필요)
 
 **다음 세션 시작 시 읽을 것**:
 - `PROGRESS.md` (이 파일)
-- M2 완료. 새 작업은 M3 (Supabase) — `/plan-eng-review`로 RLS/익명/랜덤쿼리 락인부터 권장
-- `app/scene/store/sphere-store.ts` — store 전체(persist+temporal+coalesce) 한눈에 봄. M3는 여기에 백엔드 sync 레이어 추가
-- `gh issue list --repo gilmin/tous` — M3 이슈 발행 전이면 `/to-issues`부터
+- **M3 eng-review 완료. 다음 = `/to-issues`로 M3-1~M3-6 발행.** test plan 문서 참조
+- `app/scene/store/sphere-store.ts` — M3 sync 레이어는 이 store를 구독(평행 저장 경로 금지)
+- `app/scene/types.ts` — `OrbitalBody`가 곧 JSONB blob 구조
 
-**현재 브랜치**: `main` 최신 (`531f6cf`). 오픈 PR 없음. **M2 이슈 #6~#13 전부 closed.** PR #14~#23 머지 완료.
+**현재 브랜치**: `main` 최신 (`c9920cd`). 오픈 PR 없음. **M2 이슈 #6~#13 전부 closed.** PR #14~#23 머지 완료.
 **참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
