@@ -38,6 +38,11 @@ export default function DiscoverPage() {
   // Session lists live in refs (drive fetches/back, no re-render of their own).
   const visitedRef = useRef<string[]>([]);
   const historyRef = useRef<Seen[]>([]);
+  // Mirror of `current` so commit/back know what sphere we're leaving without
+  // reading it inside a setState updater (updaters are deferred + double-invoked
+  // under StrictMode, which previously double-pushed history and left canGoBack
+  // one step stale).
+  const currentRef = useRef<Seen | null>(null);
   const busyRef = useRef(false);
 
   const persist = useCallback(() => {
@@ -62,10 +67,14 @@ export default function DiscoverPage() {
       const base = shouldReset(visitedRef.current, next.short_code)
         ? [] // exhaustion: server ignored exclude → restart the exclude window
         : visitedRef.current;
-      setCurrent((leaving) => {
-        if (leaving) historyRef.current = pushHistory(historyRef.current, leaving);
-        return { shortCode: next.short_code, tree: next.tree };
-      });
+      // Push the sphere we're leaving onto the back stack — synchronously and
+      // outside the updater, so it happens exactly once and canGoBack below
+      // reads the fresh stack.
+      const leaving = currentRef.current;
+      if (leaving) historyRef.current = pushHistory(historyRef.current, leaving);
+      const seen: Seen = { shortCode: next.short_code, tree: next.tree };
+      currentRef.current = seen;
+      setCurrent(seen);
       visitedRef.current = pushVisited(base, next.short_code);
       setCanGoBack(historyRef.current.length > 0);
       setStatus("ready");
@@ -112,6 +121,7 @@ export default function DiscoverPage() {
     const { history, entry } = back(historyRef.current);
     if (!entry) return; // empty stack → no-op (button is disabled anyway)
     historyRef.current = history;
+    currentRef.current = entry;
     setCurrent(entry);
     setCanGoBack(history.length > 0);
     syncUrl(entry.shortCode);
