@@ -41,12 +41,20 @@ export function useSceneStore<T>(selector: (s: SceneReadState) => T): T {
   return useStore(useContext(SceneStoreContext), selector);
 }
 
-// Read-only store for a foreign (public) sphere: tree is fixed, focus is local,
-// no persistence / undo / editing. Created once per /s/[code] view.
+// Read-only store for a foreign (public) sphere: focus is local, no persistence
+// / undo / editing. `setTree` lets /discover swap the displayed sphere in place
+// (ADR-0003 D1) without remounting the Canvas; swapping also clears focus so the
+// new sphere starts unfocused. The scene components only read the SceneReadState
+// slice via context, so the extra action is invisible to them.
+export type PublicSphereStore = SceneReadState & {
+  setTree: (tree: OrbitalBody) => void;
+};
+
 export function createPublicSphereStore(tree: OrbitalBody) {
-  return createStore<SceneReadState>((set) => ({
+  return createStore<PublicSphereStore>((set) => ({
     tree,
     focusedId: null,
     setFocus: (id) => set({ focusedId: id }),
+    setTree: (next) => set({ tree: next, focusedId: null }),
   }));
 }
