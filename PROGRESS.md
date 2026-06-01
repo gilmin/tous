@@ -104,7 +104,7 @@
 - Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP 두 종류 중 plugin 버전(`mcp__plugin_supabase_supabase__*`)이 OAuth로 이미 인증돼 동작**(`mcp__supabase__*`는 액세스 토큰 만료). 마이그/SQL은 plugin 쪽으로.
 - ⚠️ **이 환경에 `jq` 없음** → `gstack-review-log`/대시보드 바이너리 동작 안 함(부가 기능). JSONL은 node로 생성. bash 툴은 git-bash라 PowerShell here-string(`@'...'@`) 안 먹힘 — 멀티라인은 단일 따옴표.
 
-**현재 브랜치**: `main` 최신 (`9a848c9`, PR #32 머지). 오픈 PR 없음. **M2·M3 전 슬라이스 + M4 선행 시딩(#32) 완료. M4 eng-review 통과(미구현).**
+**현재 브랜치**: `feat/m4-discover` (`8198eed`). **PR #33 오픈 — M4 탐험 전 태스크(T1~T7) 구현 완료, 머지 대기.** main은 `9a848c9`(PR #32). **M2·M3 전 슬라이스 + M4 선행 시딩(#32) 완료. M4 구현(PR #33) = T3 마이그0005 exclude RPC+소진폴백 · T4 history.ts 순수함수(+9테스트) · T2 PublicScene tree 교체+registry clear · T1 /discover 지속 Canvas+다음/뒤로/Space/← · T5 암전 워프+WarpCamera 줌인 · T6 graceful(빈풀/실패/삭제) · T7 제외 RPC SQL 2케이스.** DB read-only 검증 통과(제외/소진 폴백), vitest 96/96, build clean. **남은 HITL: 워프/카메라 시각 QA(`/qa`).**
 **HITL 검증**: #25·#26 실브라우저 데모 확인 완료. #27은 UI 없어 SQL 검증으로 충분.
 **참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
