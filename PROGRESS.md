@@ -15,7 +15,7 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-01)**: **M2 완료 + M3 eng-review 완료(설계 결정 D1~D9 락인).** M2 #6~#13 머지 끝(PR #14~#23). **M3 (Auth + Supabase) eng-review 통과** — 핵심 아키텍처 9개 결정 잠금. 다음 = `/to-issues`로 M3-1~M3-6 슬라이스 발행.
+**현재 상태 (2026-06-01)**: **M3 진행 중 — M3-1(#24) 머지 완료(PR #28).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인) + 이슈 #24~#27 발행. **M3-1 인증 토대 출하**: Supabase `@supabase/ssr` OAuth(Google/GitHub) + 세션 proxy + `/login`·`/auth/callback`·`/me`. 다음 = **#25 (M3-2)**.
 
 **다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 — 전부 완료):
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
@@ -38,13 +38,14 @@
 16. ⬜ **M2 전체 QA dogfood** — 외형 편집·nav·undo는 시각/인터랙션 검증 필요 (`/qa`)
 17. ✅ **M3 eng-review** — **DONE 2026-06-01.** 9개 결정(D1~D9) 락인. test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260601.md`
 18. ✅ **M3 `/to-issues`** — **DONE 2026-06-01.** milestone `M3`(#2) + 슬라이스 #24~#27 발행(ready-for-agent)
-19. ⬜ **#24 (M3-1) 구현** — 다음 할 일. 단, HITL 선행: Supabase 프로젝트 생성 + Google/GitHub OAuth 앱 등록 + env 키
+19. ✅ **#24 (M3-1) 로그인/로그아웃** — **DONE 2026-06-01, PR #28 머지 (`f81402c`).** HITL 프로비저닝 완료(Supabase 프로젝트 `lrfucciojxrqctfswduk` + Google/GitHub OAuth 앱 + provider 활성화 + Redirect URL). `@supabase/ssr` browser/server 분리(`lib/supabase/`), `proxy.ts`(세션 갱신, getUser), `/login`(signInWithOAuth), `/auth/callback`(코드→세션 교환), `/me`(서버 게이팅 + 로그아웃 server action), Nav "내 우주". 실브라우저 OAuth 검증 완료. vitest 82/82.
+20. ⬜ **#25 (M3-2) 클라우드 저장/복원** — 다음 할 일. ⭐핵심. spheres 테이블(JSONB tree) + 주인 RLS + local-first sync. **Supabase 마이그레이션(테이블 생성)이 필요한 첫 슬라이스.** 🚩 RLS 주인/타인 테스트 머지 게이트.
 
 ### M3 이슈 맵 (milestone M3 = #2)
 
 | 이슈 | 슬라이스 | 유형 | blocked by | 레인 |
 |---|---|---|---|---|
-| #24 | M3-1 로그인/로그아웃 (Supabase+@supabase/ssr OAuth) | 🙋 HITL(프로비저닝) | — | A |
+| ✅ #24 | M3-1 로그인/로그아웃 (Supabase+@supabase/ssr OAuth) — PR #28 머지 | 🙋 HITL(프로비저닝) | — | A |
 | #25 | M3-2 내 sphere 클라우드 저장/복원 (JSONB+주인 RLS+local-first sync) ⭐핵심 | 🤖 AFK(RLS 게이트) | #24 | 합류 |
 | #26 | M3-3 공개 토글+공유 링크 (short_code+/s/[code]+공개읽기 RLS+anon) | 🤖 AFK(RLS 게이트) | #25 | 합류 |
 | #27 | M3-4 랜덤 공개 sphere 쿼리 (tablesample, M4 토대) | 🤖 AFK·선택 | #26 | — |
@@ -74,11 +75,14 @@
 
 **다음 세션 시작 시 읽을 것**:
 - `PROGRESS.md` (이 파일)
-- **M3 eng-review 완료. 다음 = `/to-issues`로 M3-1~M3-6 발행.** test plan 문서 참조
-- `app/scene/store/sphere-store.ts` — M3 sync 레이어는 이 store를 구독(평행 저장 경로 금지)
-- `app/scene/types.ts` — `OrbitalBody`가 곧 JSONB blob 구조
+- **M3-1(#24) 머지 완료. 다음 = #25 (M3-2) 클라우드 저장/복원.** ⭐핵심·Supabase 마이그레이션 첫 슬라이스
+- `lib/supabase/` — 인증 클라이언트(M3-1). M3-2 sync는 server client로 spheres 행을 읽고 씀
+- `app/scene/store/sphere-store.ts` — M3 sync 레이어는 이 store를 구독(평행 저장 경로 금지). `partialize:{tree}` 재사용
+- `app/scene/types.ts` — `OrbitalBody`가 곧 `spheres.tree` JSONB blob 구조
+- test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260601.md`
+- Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`
 
-**현재 브랜치**: `main` 최신 (`c9920cd`). 오픈 PR 없음. **M2 이슈 #6~#13 전부 closed.** PR #14~#23 머지 완료.
+**현재 브랜치**: `main` 최신 (`f81402c`). 오픈 PR 없음. **M2 #6~#13 + M3-1 #24 closed.** PR #14~#23, #28 머지 완료. 남은 M3 이슈: #25·#26·#27.
 **참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
 
