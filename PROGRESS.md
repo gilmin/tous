@@ -15,7 +15,7 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **✅ M4 선행 숙제(cold-start 데모 시딩) 완료** — 마이그 0004 적용, 공개 풀에 데모 sphere 5개(서로 다른 성향: 여행자/만드는 사람/돌보는 사람/질문하는 사람/고요한 사람) 시딩. anon 관점에서 eligible=5, `random_public_sphere()` 다양성 확인. **다음 = M4 (탐험)** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리.
+**현재 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **✅ M4 선행 숙제(cold-start 데모 시딩) 완료** — 마이그 0004 적용, 공개 풀에 데모 sphere 5개(서로 다른 성향: 여행자/만드는 사람/돌보는 사람/질문하는 사람/고요한 사람) 시딩. anon 관점에서 eligible=5, `random_public_sphere()` 다양성 확인. **✅ M4 eng-review 통과 (2026-06-01)** — 4개 결정(D1~D4) 락인, ADR-0003 작성, 구현 태스크 T1~T7 도출. **다음 = M4 (탐험) 구현** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리. (M4 슬라이스/결정 맵은 아래 §M4 참조)
 
 **다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 — 전부 완료):
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
@@ -75,17 +75,36 @@
 - Lane B: M3-1 → M3-3(spheres 스키마+RLS) → {M3-5(공개토글+short_code+`/s/[code]`), M3-6(익명읽기+랜덤쿼리)}
 - 합류 후: M3-4(local-first sync 레이어 — auth+스키마 둘 다 필요)
 
+### M4 eng-review 락인 결정 (2026-06-01) — ADR-0003
+
+| # | 결정 | 근거 |
+|---|---|---|
+| D1 | **지속 Canvas + 트리 교체** — `/discover`가 단일 Canvas/Scene을 들고 보여줄 tree를 discover store에 둠. "다음"=새 tree fetch→줌아웃→tree 교체→줌인. PublicScene이 "바뀌는 tree"를 받도록 소폭 수정(현재 마운트 시 useState 고정) | 설계가 줌 워프(M4b)를 원함. 재마운트는 카메라 끊김 |
+| D2 | **RPC에 제외 목록 인자** — 마이그 0005 `random_public_sphere(exclude text[])` + 소진 시 제외 무시 폴백. `getRandomPublicSphere`가 exclude 전달 | 설계 "최근 20개 NOT IN". 5개 풀 중복 회피. tablesample O(N) 회피 유지 |
+| D3 | **워프 교체 직전 mesh 레지스트리 `clear()`** | 모든 sphere 루트 id=`"self"` 충돌. 암전 틈 워프라 겹침 없음→clear로 충분. 크로스페이드 원하면 그때 네임스페이스/스코프드 |
+| D4 | **홈 `/` 개편은 M4에서 미룸** — `/discover`만 신설 | 홈 개편=랜딩+로그인 분기+온보딩, 별도 슬라이스(CEO 리뷰) |
+
+**M4 구현 태스크** (test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260601-214525.md`, tasks JSONL 동 디렉토리):
+- T1(P1) `/discover` 지속 Canvas + store + 다음/back/space — `app/discover/page.tsx`
+- T2(P1) PublicScene/store 바뀌는 tree 지원 + 워프 시 registry clear — `app/scene/*`
+- T3(P1) 마이그 0005 제외 RPC + 소진 폴백 + `getRandomPublicSphere` 확장
+- T4(P1) `lib/discover/history.ts` 순수함수(visited 20 cap·history 10 cap·back·shouldReset) + `history.test.ts` 7케이스
+- T5(P2) 카메라 워프 애니메이션(줌아웃→암전→줌인, M4b)
+- T6(P2) 에러 케이스(로딩 실패/삭제됨/빈 풀 graceful, M4c)
+- T7(P2) `supabase/tests/random_public_sphere_exclude.sql` 2케이스
+- **병렬 레인**: Lane A=T3+T7(DB) · Lane B=T4(순수 TS) · Lane C=T1+T2(app/scene). 셋은 모듈 안 겹침→병렬 가능. T5/T6은 T1·T2 이후.
+
+**M4 빌딩블록 이미 있음**: `lib/sphere/random-public.ts`(`getRandomPublicSphere` — D2서 exclude 확장) · `app/scene/PublicScene.tsx`(D1서 tree 교체 지원) · `app/scene/store/scene-store-context.tsx`(`createPublicSphereStore`) · `app/s/[short_code]/page.tsx`(워프 중 history.replace)
+
 **다음 세션 시작 시 읽을 것**:
-- `PROGRESS.md` (이 파일)
-- **🎉 M3 완료. 다음 = M4 (탐험).** M4 진입 전 `/plan-eng-review` 재실행 권장(카메라 워프·세션 히스토리 설계). M4 = `/discover` UI + 랜덤 공개 sphere 넘겨보기 + sphere 간 카메라 워프 트랜지션 + 뒤로가기 히스토리
-- **M4 빌딩블록 이미 있음**: `lib/sphere/random-public.ts`(`getRandomPublicSphere`) · `app/scene/PublicScene.tsx`(read-only 뷰 — 랜덤 tree 먹이면 됨) · `app/scene/store/scene-store-context.tsx`(store 주입 — 워프는 provider/tree 교체)
+- `PROGRESS.md` (이 파일) + `docs/adr/0003-discovery-warp-architecture.md` (M4 결정 전문)
 - ✅ **M4 선행 숙제 완료**: 마이그 0004로 공개 풀에 데모 sphere 5개 시딩(`getRandomPublicSphere`가 이제 null 안 나옴). 제거하려면 `delete from auth.users where raw_app_meta_data->>'provider'='seed';`(spheres 연쇄 삭제). short_code: wanderer/themaker/caregivr/theseekr/stillone
 - `supabase/migrations/` — `0001_spheres.sql`(스키마+owner RLS) · `0002_public_read.sql`(is_flagged+공개읽기 RLS) · `0003_random_public_sphere.sql`(랜덤 RPC) · `0004_seed_demo_spheres.sql`(데모 5개 시딩 — 가짜 auth 유저 5명 FK 앵커). 컬럼: node_count·is_public·is_flagged·short_code
 - `supabase/tests/` — `rls_spheres.sql`(RLS 게이트) · `random_public_sphere.sql`(랜덤 검증). 패턴: self-rollback DO 블록 + role 전환(reset+set local) + 음성 대조
-- test plan: `~/.gstack/projects/gilmin-tous/gilmin-main-eng-review-test-plan-20260601.md`
-- Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP는 OAuth 인증 필요(세션마다 만료 가능)** — 마이그레이션/SQL 적용 시 재인증
+- Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP 두 종류 중 plugin 버전(`mcp__plugin_supabase_supabase__*`)이 OAuth로 이미 인증돼 동작**(`mcp__supabase__*`는 액세스 토큰 만료). 마이그/SQL은 plugin 쪽으로.
+- ⚠️ **이 환경에 `jq` 없음** → `gstack-review-log`/대시보드 바이너리 동작 안 함(부가 기능). JSONL은 node로 생성. bash 툴은 git-bash라 PowerShell here-string(`@'...'@`) 안 먹힘 — 멀티라인은 단일 따옴표.
 
-**현재 브랜치**: `main` 최신 (`f80f649`). 오픈 PR 없음. **M2 #6~#13 + M3 #24~#27 closed.** PR #14~#23, #28~#31 머지 완료. **M3 전 슬라이스 완료.**
+**현재 브랜치**: `feat/m4-discover` (`8198eed`). **PR #33 오픈 — M4 탐험 전 태스크(T1~T7) 구현 완료, 머지 대기.** main은 `9a848c9`(PR #32). **M2·M3 전 슬라이스 + M4 선행 시딩(#32) 완료. M4 구현(PR #33) = T3 마이그0005 exclude RPC+소진폴백 · T4 history.ts 순수함수(+9테스트) · T2 PublicScene tree 교체+registry clear · T1 /discover 지속 Canvas+다음/뒤로/Space/← · T5 암전 워프+WarpCamera 줌인 · T6 graceful(빈풀/실패/삭제) · T7 제외 RPC SQL 2케이스.** DB read-only 검증 통과(제외/소진 폴백), vitest 96/96, build clean. **남은 HITL: 워프/카메라 시각 QA(`/qa`).**
 **HITL 검증**: #25·#26 실브라우저 데모 확인 완료. #27은 UI 없어 SQL 검증으로 충분.
 **참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료

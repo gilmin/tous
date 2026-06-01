@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/", label: "미니멀" },
   { href: "/v/cosmic", label: "우주" },
   { href: "/me", label: "내 우주" },
+  { href: "/discover", label: "탐험" },
 ];
 
 export default function Nav() {
