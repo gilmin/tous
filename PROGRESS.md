@@ -15,7 +15,9 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **✅ M4 선행 숙제(cold-start 데모 시딩) 완료** — 마이그 0004 적용, 공개 풀에 데모 sphere 5개(서로 다른 성향: 여행자/만드는 사람/돌보는 사람/질문하는 사람/고요한 사람) 시딩. anon 관점에서 eligible=5, `random_public_sphere()` 다양성 확인. **✅ M4 eng-review 통과 (2026-06-01)** — 4개 결정(D1~D4) 락인, ADR-0003 작성, 구현 태스크 T1~T7 도출. **다음 = M4 (탐험) 구현** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리. (M4 슬라이스/결정 맵은 아래 §M4 참조)
+**현재 상태 (2026-06-02)**: **🎉 M4 (탐험) 완료 + 누적 QA 통과.** `/discover` 랜덤 넘겨보기+암전 워프+세션 히스토리 (PR #33). 누적 QA에서 ISSUE-001(/discover 뒤로 버튼) 수정 (PR #34, Health 9/10). main `3e9919b`, 오픈 PR 없음. **다음 = 사용자 직접 dogfood → UI/UX taste 패스 → M5(폴리시+배포).** (자세한 건 아래 §0 끝의 "현재 브랜치" 블록)
+
+**이전 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **✅ M4 선행 숙제(cold-start 데모 시딩) 완료** — 마이그 0004 적용, 공개 풀에 데모 sphere 5개(서로 다른 성향: 여행자/만드는 사람/돌보는 사람/질문하는 사람/고요한 사람) 시딩. anon 관점에서 eligible=5, `random_public_sphere()` 다양성 확인. **✅ M4 eng-review 통과 (2026-06-01)** — 4개 결정(D1~D4) 락인, ADR-0003 작성, 구현 태스크 T1~T7 도출. **다음 = M4 (탐험) 구현** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리. (M4 슬라이스/결정 맵은 아래 §M4 참조)
 
 **다음에 가장 먼저 할 일** (M2 Phase 1 킥오프 — 전부 완료):
 1. ✅ `/plan-ceo-review` — **DONE 2026-05-25**, SELECTIVE EXPANSION, Undo/Redo 추가. CEO plan: `~/.gstack/projects/gilmin-tous/ceo-plans/2026-05-22-m2-local-crud.md`
@@ -104,7 +106,15 @@
 - Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP 두 종류 중 plugin 버전(`mcp__plugin_supabase_supabase__*`)이 OAuth로 이미 인증돼 동작**(`mcp__supabase__*`는 액세스 토큰 만료). 마이그/SQL은 plugin 쪽으로.
 - ⚠️ **이 환경에 `jq` 없음** → `gstack-review-log`/대시보드 바이너리 동작 안 함(부가 기능). JSONL은 node로 생성. bash 툴은 git-bash라 PowerShell here-string(`@'...'@`) 안 먹힘 — 멀티라인은 단일 따옴표.
 
-**현재 브랜치**: `feat/m4-discover` (`8198eed`). **PR #33 오픈 — M4 탐험 전 태스크(T1~T7) 구현 완료, 머지 대기.** main은 `9a848c9`(PR #32). **M2·M3 전 슬라이스 + M4 선행 시딩(#32) 완료. M4 구현(PR #33) = T3 마이그0005 exclude RPC+소진폴백 · T4 history.ts 순수함수(+9테스트) · T2 PublicScene tree 교체+registry clear · T1 /discover 지속 Canvas+다음/뒤로/Space/← · T5 암전 워프+WarpCamera 줌인 · T6 graceful(빈풀/실패/삭제) · T7 제외 RPC SQL 2케이스.** DB read-only 검증 통과(제외/소진 폴백), vitest 96/96, build clean. **남은 HITL: 워프/카메라 시각 QA(`/qa`).**
+**현재 브랜치**: `main` 최신 (`3e9919b`, PR #34 머지). 오픈 PR 없음. **M2·M3·M4 전부 완료 + 누적 QA 통과.**
+
+**M4 탐험 구현 완료 (PR #33, `8198eed`)** = T3 마이그0005 exclude RPC+소진폴백 · T4 `lib/discover/history.ts` 순수함수(+9테스트) · T2 PublicScene tree 교체+`clearBodyMeshRegistry` · T1 `/discover` 지속 Canvas+다음/뒤로/Space/← · T5 암전 워프+WarpCamera 줌인 · T6 graceful(빈풀/실패/삭제) · T7 제외 RPC SQL 2케이스. (ADR-0003 D1~D4)
+
+**누적 QA 통과 (2026-06-02, `/qa` 실브라우저, PR #34, `99880d3`)** — Health 9/10. **ISSUE-001(HIGH) 발견·수정**: `/discover` "뒤로" 버튼 off-by-one + StrictMode 히스토리 중복. 원인=`historyRef`를 `setCurrent` 업데이터 안에서 변형(지연+이중호출). 수정=`currentRef`로 떠나는 sphere 추적, push를 업데이터 밖 동기·1회. 검증: /discover 워프·다음/뒤로·키보드 · /s/[code] 유효200/무효404 · / 에디터 포커스패널·Self삭제가드·이름/외형편집·nav·undo/redo · /v/cosmic. 콘솔은 알려진 경고(THREE.Clock/GPU stall)+dev HMR 노이즈뿐. 리포트: `.gstack/qa-reports/qa-report-tous-2026-06-02.md`. **단위테스트 96개로 못 잡는 컴포넌트-호출 버그였음(pushHistory 순수함수는 정확, 호출 방식이 버그).**
+
+**남은 미검증(HITL)**: 워프 애니메이션의 *시각적 매끄러움*(블랙아웃→줌인 연속성) — 동작은 확인, 사람 눈 필요. **사용자가 직접 dogfood 예정.** `/me` 클라우드 왕복·공개토글은 OAuth라 headless 불가(이미 #25/#26 HITL 검증).
+
+**다음 단계 결정 (2026-06-02 논의)**: 사용자가 직접 써보며 UI/UX 개선·추가사항 확인 중. → 그 다음 = **(A) UI/UX taste 패스**(`/design-review` 보조, 사용자 직접 지적→surgical 수정) 먼저, 그 다음 **(B) M5(폴리시+배포)**. 근거: M5 폴리시=성능(InstancedMesh/LOD/온보딩/튜닝)이라 UX taste와 거의 직교 + 온보딩은 UX 굳은 뒤 + 성능튜닝은 최종 디자인 위에서. (M5 backlog는 §6 참조)
 **HITL 검증**: #25·#26 실브라우저 데모 확인 완료. #27은 UI 없어 SQL 검증으로 충분.
 **참고**: worktree 에이전트는 샌드박스 쓰기 차단 → 다음 병렬 작업 시 브랜치 직접 생성 방식 사용. 단 #10/#12/#13은 직렬이라 병렬 불가.
 **gh CLI**: 설치됨 (`C:\Program Files\GitHub CLI\gh.exe`), gilmin 계정 인증 완료
