@@ -41,6 +41,12 @@ export function useSceneStore<T>(selector: (s: SceneReadState) => T): T {
   return useStore(useContext(SceneStoreContext), selector);
 }
 
+// Raw store API for code that must read fresh state inside a frame loop
+// (e.g. the camera) rather than via a React subscription.
+export function useSceneStoreApi(): StoreApi<SceneReadState> {
+  return useContext(SceneStoreContext);
+}
+
 // Read-only store for a foreign (public) sphere: focus is local, no persistence
 // / undo / editing. `setTree` lets /discover swap the displayed sphere in place
 // (ADR-0003 D1) without remounting the Canvas; swapping also clears focus so the

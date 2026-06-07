@@ -343,3 +343,29 @@ tentacle, spike, finned, conjoined, cluster.
 - ✅ ~~`gh` CLI 미설치~~ — 설치+인증 완료(`C:\Program Files\GitHub CLI\gh.exe`, gilmin). PR 생성·머지 CLI로 가능.
 - **deprecation 경고**: `THREE.Clock` deprecated → THREE.Timer (R3F 내부 사용, v1에서 무시)
 - **`/v/cosmic`의 미니멀 nav 가독성** — Nav가 dark 테마 기준으로 디자인됨, mono에서 살짝 어색할 수 있음 (보고 결정)
+
+---
+
+## 9. 비주얼 리디자인 WIP — cartoon/kitsch/arcade (M5 전 선행, 2026-06-07)
+
+> **브랜치 `feat/cartoon-direction` (미커밋/미머지).** 사용자 주도 dogfood 중 "M5 전에 비주얼부터 바꾸자"로 시작. 키워드 = **cartoon · kitsch · arcade**. 레퍼런스 = 데스크톱 `Cartoon Space Wallpaper Top Background.png`(두꺼운 외곽선+파스텔 플랫 카툰 지구). 미리보기는 기존 `/` 에디터 보존 위해 **`/v/cosmic`** 에만 적용 중. 확정되면 mono 제거 → cosmic을 기본으로 굳히기로 함.
+
+**확정 방향(사용자 선택)**: 풀 카툰(툰 셰이딩 + 외곽선). 폰트 = **학교안심 둥근미소**(`app/fonts/Dunggeunmiso-{R,B}.ttf`, `next/font/local`, `--font-cute`). 사용자가 폰트는 "마음에 듦" 확정.
+
+**구현 완료(이 브랜치)**:
+- `layout.tsx`/`globals.css` — 둥근미소를 기본 UI 폰트로.
+- `_components/Planet.tsx` — `meshToonMaterial`(4단계 gradientMap) + drei `<Outlines>`(잉크 외곽선, screenspace `thickness={0.008}`). `toon` prop으로 cosmic만.
+- `_components/planet-pattern.ts` (신규) — **셰이더 절차적 표면 무늬** 7종(`bands·continents·spots·swirl·stripes·bubbles·marble`). meshToonMaterial `onBeforeCompile`로 모델 방향 기반 마스크 주입(이미지 텍스처 X — 변형 지오메트리 솔기 회피). `derivePattern(id,color)`로 기존 바디도 id 해시 자동 배정(localStorage 안 지워도 적용). 무늬색 기본=본체색 어두운 톤. 타입에 `pattern`/`patternColor` 옵셔널 필드 추가.
+- `scene/OrbitingBody.tsx` — 캔디 광택 `<sprite>`(좌상단 빌보드, AdditiveBlending) + 패턴 전달.
+- `scene/index.tsx` — 배경을 멀티컬러 그라데이션(보라 코어+마젠타/시안 누아주)으로, 카메라 `near 0.01`, ambient 0.45+키라이트로 셀 밴딩, drei `<Sparkles>` 2겹(노랑/하늘).
+- `scene/constants.ts` — `MOUSE_INFLUENCE 2.5 → 0.8`(회전 속도 과속 수정).
+- `scene/CameraController.tsx` — **매 프레임 `useSceneStoreApi().getState()`로 store 직접 읽기**(구독 타이밍 의존 제거). `scene-store-context.tsx`에 `useSceneStoreApi()` 추가.
+
+**🐛 해결한 버그**: 외곽선 `thickness`를 px로 오인해 3.5(=350%) 줬다가 외곽선 껍데기가 화면 전체를 덮어 별·배경이 가려졌음 → 0.008로 수정.
+
+**⚠️ 미검증 — 다음 세션 첫 확인**:
+- **issue 1 (키보드 nav 카메라)**: focus 상태에서 `←/→` 시 "패널 라벨은 바뀌는데 카메라가 안 따라감". CameraController를 getState 기반으로 리팩터한 게 유력한 수정이나 **사용자 확인 전 세션 종료**. 재현되면: `/v/cosmic`에서 focus 후 ←/→ → 두 store(`useSphereStore` vs `useSceneStore` 컨텍스트=싱글톤) focusedId가 일치하는데도 카메라 정지인지부터 확인(임시 HUD는 제거함).
+
+**사용자 다음 피드백 대기 중인 튜닝**: 무늬 종류 의미 매핑(자동→고정?) 또는 FocusPanel에 무늬 선택 드롭다운 추가 / 무늬 세기·색 / 외곽선 두께 / 배경 채도. 사용자가 레퍼런스 추가 제공 가능.
+
+**남은 정리(머지 전)**: mono 제거(현재 `/`·utils/FocusPanel/OrbitingBody에 `isMono` 분기 잔존), Nav 라벨에서 "미니멀" 제거, 테스트(현재 vitest는 미수정 — 렌더링/스타일 변경이라 영향 없었음, 빌드·tsc green).

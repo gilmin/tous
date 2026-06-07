@@ -1,6 +1,7 @@
 import { type PlanetShape } from "../_components/Planet";
+import { type PlanetPattern } from "../_components/planet-pattern";
 
-export type { PlanetShape };
+export type { PlanetShape, PlanetPattern };
 
 export type SceneVariant = "mono" | "cosmic";
 
@@ -16,6 +17,11 @@ export type OrbitalBody = {
    * set of 20 shape ids.
    */
   shape?: PlanetShape;
+  /** Procedural surface pattern (cartoon mode). Falls back to an id-derived
+   *  pattern when unset so existing bodies still get a surface. */
+  pattern?: PlanetPattern;
+  /** Pattern overlay color. Defaults to a darker shade of `color`. */
+  patternColor?: string;
   selfRotation?: number;
   orbitRadius?: number;
   orbitSpeed?: number;

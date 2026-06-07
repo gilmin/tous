@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 export const IDLE_ROTATION_SPEED = 0.05;
-export const MOUSE_INFLUENCE = 2.5;
+export const MOUSE_INFLUENCE = 0.8;
 export const LERP_FACTOR = 0.08;
 
 export const LABEL_FADE_NEAR = 6;

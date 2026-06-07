@@ -3,18 +3,16 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
-import { useSceneStore } from "./store/scene-store-context";
+import { useSceneStoreApi } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
 import { getBodyMesh } from "./store/body-mesh-registry";
 import { CAMERA_LERP, DEFAULT_CAM_POS, DEFAULT_LOOK_AT } from "./constants";
 
 export function CameraController() {
-  const focusedId = useSceneStore((s) => s.focusedId);
-  const focusedSize = useSceneStore((s) => {
-    const id = s.focusedId;
-    if (!id) return null;
-    return selectBodyById(s.tree, id)?.size ?? null;
-  });
+  // Read the store fresh each frame instead of via a React subscription, so a
+  // keyboard focus change retargets the camera with zero dependence on render
+  // or useFrame-closure timing.
+  const api = useSceneStoreApi();
   const { camera } = useThree();
   const lookAtRef = useRef(new THREE.Vector3().copy(DEFAULT_LOOK_AT));
   const worldPos = useRef(new THREE.Vector3());
@@ -22,14 +20,16 @@ export function CameraController() {
   const desiredLook = useRef(new THREE.Vector3());
 
   useFrame(() => {
+    const { tree, focusedId } = api.getState();
+    const body = focusedId ? selectBodyById(tree, focusedId) : null;
     const mesh = focusedId ? getBodyMesh(focusedId) : null;
 
-    if (focusedId && focusedSize !== null && mesh) {
+    if (focusedId && body && mesh) {
       mesh.getWorldPosition(worldPos.current);
       const offset = new THREE.Vector3(
         0,
-        focusedSize * 0.6,
-        focusedSize * 4 + 0.9,
+        body.size * 0.6,
+        body.size * 4 + 0.9,
       );
       desiredPos.current.copy(worldPos.current).add(offset);
       desiredLook.current.copy(worldPos.current);

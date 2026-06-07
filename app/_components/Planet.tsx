@@ -1,9 +1,34 @@
 "use client";
 
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { Outlines } from "@react-three/drei";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import {
+  makeToonPatternMaterial,
+  type PlanetPattern,
+} from "./planet-pattern";
+
+// ─────────────────────────────────────────────────────────
+// Toon (cartoon) shading — stepped gradient ramp shared by all bodies
+// ─────────────────────────────────────────────────────────
+let _toonGradient: THREE.DataTexture | null = null;
+function getToonGradient(): THREE.DataTexture {
+  if (_toonGradient) return _toonGradient;
+  // 4 flat steps → crisp cel-shaded banding instead of smooth falloff.
+  const steps = new Uint8Array([90, 150, 205, 255]);
+  const tex = new THREE.DataTexture(steps, steps.length, 1, THREE.RedFormat);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.needsUpdate = true;
+  _toonGradient = tex;
+  return tex;
+}
+
+// Outline color: a near-black with a touch of the cosmic purple so it reads as
+// hand-inked rather than pure black.
+const OUTLINE_COLOR = "#1c1430";
 
 // ─────────────────────────────────────────────────────────
 // 3D value noise
@@ -123,11 +148,29 @@ type Variant = {
   detail: number;
   flat?: boolean;
   build: (p: THREE.Vector3, r: number) => THREE.Vector3;
-  accessory?: (r: number, mat: AccessoryMaterialProps) => THREE.Object3D[];
+  accessory?: (
+    r: number,
+    mat: AccessoryMaterialProps,
+    toon: boolean,
+  ) => THREE.Object3D[];
   breath: number;
 };
 
-function makeAccessoryMaterial(props: AccessoryMaterialProps): THREE.MeshStandardMaterial {
+function makeAccessoryMaterial(
+  props: AccessoryMaterialProps,
+  toon = false,
+): THREE.Material {
+  if (toon) {
+    return new THREE.MeshToonMaterial({
+      color: props.color,
+      emissive: props.emissive,
+      emissiveIntensity: props.emissiveIntensity * 0.6,
+      gradientMap: getToonGradient(),
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.92,
+    });
+  }
   return new THREE.MeshStandardMaterial({
     color: props.color,
     emissive: props.emissive,
@@ -282,10 +325,10 @@ const VARIANTS: Variant[] = [
     id: "ringed",
     detail: 4,
     build: (p, r) => p.clone().multiplyScalar(r * (1 + 0.03 * fbm(p.x * 2, p.y * 2, p.z * 2, 2))),
-    accessory: (r, mat) => {
+    accessory: (r, mat, toon) => {
       const ring = new THREE.Mesh(
         new THREE.TorusGeometry(r * 1.7, r * 0.025, 10, 96),
-        makeAccessoryMaterial(mat),
+        makeAccessoryMaterial(mat, toon),
       );
       ring.rotation.x = Math.PI / 2 + 0.22;
       ring.rotation.z = 0.05;
@@ -307,8 +350,8 @@ const VARIANTS: Variant[] = [
     id: "doubleRing",
     detail: 4,
     build: (p, r) => p.clone().multiplyScalar(r * (1 + 0.025 * fbm(p.x * 2.4, p.y * 2.4, p.z * 2.4, 2))),
-    accessory: (r, mat) => {
-      const m = makeAccessoryMaterial(mat);
+    accessory: (r, mat, toon) => {
+      const m = makeAccessoryMaterial(mat, toon);
       const ring1 = new THREE.Mesh(new THREE.TorusGeometry(r * 1.65, r * 0.022, 10, 96), m);
       ring1.rotation.x = Math.PI / 2 + 0.15;
       const ring2 = new THREE.Mesh(new THREE.TorusGeometry(r * 1.4, r * 0.022, 10, 96), m.clone());
@@ -488,6 +531,11 @@ type PlanetMeshProps = {
   emissiveIntensity: number;
   roughness: number;
   metalness: number;
+  // Cartoon mode: cel-shaded toon material + inked outline (cosmic theme).
+  toon?: boolean;
+  // Procedural surface pattern (cartoon toon mode only).
+  pattern?: PlanetPattern;
+  patternColor?: string;
   // Fires on pointerdown — onClick would miss when the body is orbiting,
   // because pointerup lands off-target by the time the user releases.
   onSelect?: (e: ThreeEvent<PointerEvent>) => void;
@@ -502,9 +550,31 @@ export function PlanetMesh({
   emissiveIntensity,
   roughness,
   metalness,
+  toon = false,
+  pattern = "none",
+  patternColor = "#000000",
   onSelect,
 }: PlanetMeshProps) {
   const variant = VARIANT_BY_ID[shape] ?? VARIANT_BY_ID.smooth;
+
+  // Toon material is built imperatively because the pattern is baked into the
+  // shader at compile. Rebuild + dispose when appearance/pattern changes.
+  const toonMaterial = useMemo(() => {
+    if (!toon) return null;
+    return makeToonPatternMaterial({
+      color,
+      emissive,
+      emissiveIntensity,
+      gradientMap: getToonGradient(),
+      pattern,
+      patternColor,
+    });
+  }, [toon, color, emissive, emissiveIntensity, pattern, patternColor]);
+  useEffect(() => {
+    return () => {
+      toonMaterial?.dispose();
+    };
+  }, [toonMaterial]);
 
   // Build the deformed geometry once per (shape, size). Dispose on swap.
   const geometry = useMemo(() => buildGeometry(shape, size), [shape, size]);
@@ -518,8 +588,8 @@ export function PlanetMesh({
   const accessoryRoot = useRef<THREE.Group>(null);
   const accessories = useMemo(() => {
     if (!variant.accessory) return [];
-    return variant.accessory(size, { color, emissive, emissiveIntensity });
-  }, [variant, size, color, emissive, emissiveIntensity]);
+    return variant.accessory(size, { color, emissive, emissiveIntensity }, toon);
+  }, [variant, size, color, emissive, emissiveIntensity, toon]);
 
   useEffect(() => {
     return () => {
@@ -543,15 +613,32 @@ export function PlanetMesh({
   });
 
   return (
-    <mesh ref={meshRef} geometry={geometry} onPointerDown={onSelect}>
-      <meshStandardMaterial
-        color={color}
-        emissive={emissive}
-        emissiveIntensity={emissiveIntensity}
-        roughness={roughness}
-        metalness={metalness}
-        flatShading={!!variant.flat}
-      />
+    <mesh
+      ref={meshRef}
+      geometry={geometry}
+      onPointerDown={onSelect}
+      material={toonMaterial ?? undefined}
+    >
+      {!toon && (
+        <meshStandardMaterial
+          color={color}
+          emissive={emissive}
+          emissiveIntensity={emissiveIntensity}
+          roughness={roughness}
+          metalness={metalness}
+          flatShading={!!variant.flat}
+        />
+      )}
+      {toon && (
+        // Inverted-hull outline → sticker/cartoon ink. screenspace thickness is
+        // a fraction of screen height (NOT pixels), so this stays small.
+        <Outlines
+          thickness={0.008}
+          color={OUTLINE_COLOR}
+          screenspace
+          toneMapped={false}
+        />
+      )}
       <group ref={accessoryRoot}>
         {accessories.map((obj, i) => (
           <primitive key={i} object={obj} />
