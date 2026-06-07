@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Nav from "./_components/Nav";
 
@@ -11,6 +12,15 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// 둥근미소 — 동글동글 손글씨풍 한글 폰트. 카툰 무드의 기본 UI 글꼴.
+const dunggeunmiso = localFont({
+  variable: "--font-cute",
+  src: [
+    { path: "./fonts/Dunggeunmiso-R.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/Dunggeunmiso-B.ttf", weight: "700", style: "normal" },
+  ],
 });
 
 export const metadata: Metadata = {
@@ -26,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${dunggeunmiso.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-neutral-100 overflow-hidden">
         <Nav />

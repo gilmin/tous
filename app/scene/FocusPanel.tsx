@@ -196,8 +196,8 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
   if (!focusedBody) return null;
 
   const isMono = variant === "mono";
-  const buttonBg = isMono ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.1)";
-  const buttonColor = isMono ? "#1a1a1a" : "#f5f5f7";
+  const buttonBg = isMono ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.14)";
+  const buttonColor = isMono ? "#1a1a1a" : "#f7f3ff";
   const inputBg = isMono ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.08)";
   const inputBorder = isMono
     ? "1px solid rgba(0,0,0,0.15)"
@@ -214,18 +214,20 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
         padding: "14px 22px",
         minWidth: 220,
         textAlign: "center",
-        background: isMono ? "rgba(255,255,255,0.85)" : "rgba(15,15,20,0.7)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        background: isMono
+          ? "rgba(255,255,255,0.85)"
+          : "rgba(38,25,72,0.72)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
         border: isMono
           ? "1px solid rgba(0,0,0,0.08)"
-          : "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 14,
-        color: isMono ? "#1a1a1a" : "#f5f5f7",
-        fontFamily: "system-ui, sans-serif",
+          : "2px solid rgba(255,255,255,0.2)",
+        borderRadius: isMono ? 14 : 24,
+        color: isMono ? "#1a1a1a" : "#f7f3ff",
+        fontFamily: "var(--font-cute), system-ui, sans-serif",
         boxShadow: isMono
           ? "0 8px 24px rgba(0,0,0,0.06)"
-          : "0 8px 24px rgba(0,0,0,0.4)",
+          : "0 10px 30px rgba(15,8,40,0.5)",
       }}
     >
       {isEditing ? (
@@ -314,11 +316,12 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
             <button
               onClick={() => setMode("edit")}
               style={{
-                padding: "4px 12px",
-                fontSize: 12,
+                padding: "6px 16px",
+                fontSize: 13,
+                fontWeight: 700,
                 background: buttonBg,
                 border: "none",
-                borderRadius: 6,
+                borderRadius: 999,
                 color: buttonColor,
                 cursor: "pointer",
                 fontFamily: "inherit",
@@ -329,11 +332,12 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
             <button
               onClick={() => setMode("add")}
               style={{
-                padding: "4px 12px",
-                fontSize: 12,
+                padding: "6px 16px",
+                fontSize: 13,
+                fontWeight: 700,
                 background: buttonBg,
                 border: "none",
-                borderRadius: 6,
+                borderRadius: 999,
                 color: buttonColor,
                 cursor: "pointer",
                 fontFamily: "inherit",

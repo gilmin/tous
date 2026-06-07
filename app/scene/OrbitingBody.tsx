@@ -13,7 +13,25 @@ import {
   unregisterBodyMesh,
 } from "./store/body-mesh-registry";
 import { getBodyColor, getEmissiveSettings, getLineColor } from "./utils";
+import { derivePattern } from "../_components/planet-pattern";
 import type { SceneVariant } from "./types";
+
+// Soft circular gloss sprite shared by every cartoon body → candy/arcade shine.
+let _glossTex: THREE.CanvasTexture | null = null;
+function getGlossTexture(): THREE.CanvasTexture {
+  if (_glossTex) return _glossTex;
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const ctx = c.getContext("2d")!;
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, "rgba(255,255,255,0.95)");
+  g.addColorStop(0.45, "rgba(255,255,255,0.3)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  _glossTex = new THREE.CanvasTexture(c);
+  return _glossTex;
+}
 
 export const OrbitingBody = memo(function OrbitingBody({
   id,
@@ -87,6 +105,12 @@ export const OrbitingBody = memo(function OrbitingBody({
   const color = getBodyColor(body, variant);
   const emissive = getEmissiveSettings(body, variant);
   const lineColor = getLineColor(body, variant);
+  const { pattern, patternColor } = derivePattern(
+    body.id,
+    body.color,
+    body.pattern,
+    body.patternColor,
+  );
 
   const labelYOffset = body.size + 0.18;
   const labelMono = variant === "mono";
@@ -125,8 +149,27 @@ export const OrbitingBody = memo(function OrbitingBody({
           emissiveIntensity={emissive.intensity}
           roughness={variant === "mono" ? 0.75 : 0.5}
           metalness={variant === "mono" ? 0.05 : 0.1}
+          toon={variant !== "mono"}
+          pattern={variant === "mono" ? "none" : pattern}
+          patternColor={patternColor}
           onSelect={handleSelect}
         />
+        {variant !== "mono" && (
+          // Glossy cartoon shine — billboarded sprite pinned to the upper-left
+          // (top-left light convention). Doesn't spin with the body.
+          <sprite
+            position={[-body.size * 0.34, body.size * 0.36, body.size * 0.6]}
+            scale={[body.size * 0.95, body.size * 0.95, 1]}
+          >
+            <spriteMaterial
+              map={getGlossTexture()}
+              transparent
+              opacity={0.55}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </sprite>
+        )}
         {body.label && focusedId !== body.id && (
           <Html
             position={[0, labelYOffset, 0]}
