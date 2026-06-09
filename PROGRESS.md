@@ -348,7 +348,7 @@ tentacle, spike, finned, conjoined, cluster.
 
 ## 9. 비주얼 리디자인 WIP — cartoon/kitsch/arcade (M5 전 선행, 2026-06-07)
 
-> **브랜치 `feat/cartoon-direction` (미커밋/미머지).** 사용자 주도 dogfood 중 "M5 전에 비주얼부터 바꾸자"로 시작. 키워드 = **cartoon · kitsch · arcade**. 레퍼런스 = 데스크톱 `Cartoon Space Wallpaper Top Background.png`(두꺼운 외곽선+파스텔 플랫 카툰 지구). 미리보기는 기존 `/` 에디터 보존 위해 **`/v/cosmic`** 에만 적용 중. 확정되면 mono 제거 → cosmic을 기본으로 굳히기로 함.
+> **브랜치 `feat/cartoon-direction` (커밋됨 `1b8819f`, 미머지).** 사용자 주도 dogfood 중 "M5 전에 비주얼부터 바꾸자"로 시작. 키워드 = **cartoon · kitsch · arcade**. 레퍼런스 = 데스크톱 `Cartoon Space Wallpaper Top Background.png`(두꺼운 외곽선+파스텔 플랫 카툰 지구). 미리보기는 기존 `/` 에디터 보존 위해 **`/v/cosmic`** 에만 적용 중. 확정되면 mono 제거 → cosmic을 기본으로 굳히기로 함.
 
 **확정 방향(사용자 선택)**: 풀 카툰(툰 셰이딩 + 외곽선). 폰트 = **학교안심 둥근미소**(`app/fonts/Dunggeunmiso-{R,B}.ttf`, `next/font/local`, `--font-cute`). 사용자가 폰트는 "마음에 듦" 확정.
 
@@ -363,9 +363,32 @@ tentacle, spike, finned, conjoined, cluster.
 
 **🐛 해결한 버그**: 외곽선 `thickness`를 px로 오인해 3.5(=350%) 줬다가 외곽선 껍데기가 화면 전체를 덮어 별·배경이 가려졌음 → 0.008로 수정.
 
-**⚠️ 미검증 — 다음 세션 첫 확인**:
-- **issue 1 (키보드 nav 카메라)**: focus 상태에서 `←/→` 시 "패널 라벨은 바뀌는데 카메라가 안 따라감". CameraController를 getState 기반으로 리팩터한 게 유력한 수정이나 **사용자 확인 전 세션 종료**. 재현되면: `/v/cosmic`에서 focus 후 ←/→ → 두 store(`useSphereStore` vs `useSceneStore` 컨텍스트=싱글톤) focusedId가 일치하는데도 카메라 정지인지부터 확인(임시 HUD는 제거함).
+**✅ 해결 확인 (issue 1, 2026-06-09 사용자 검증)**: focus 상태 `←/→` 키보드 nav 시 카메라가 따라감 — CameraController를 매 프레임 `getState()`로 직접 읽는 리팩터가 수정이었음. 실브라우저 dogfood로 정상 동작 확인.
 
 **사용자 다음 피드백 대기 중인 튜닝**: 무늬 종류 의미 매핑(자동→고정?) 또는 FocusPanel에 무늬 선택 드롭다운 추가 / 무늬 세기·색 / 외곽선 두께 / 배경 채도. 사용자가 레퍼런스 추가 제공 가능.
 
 **남은 정리(머지 전)**: mono 제거(현재 `/`·utils/FocusPanel/OrbitingBody에 `isMono` 분기 잔존), Nav 라벨에서 "미니멀" 제거, 테스트(현재 vitest는 미수정 — 렌더링/스타일 변경이라 영향 없었음, 빌드·tsc green).
+
+---
+
+## 10. 추가 요청 큐 (2026-06-09, 사용자 dogfood)
+
+> 사용자가 dogfood 중 추가 요청 7건. 규모별로 묶음. 7~10=비주얼(cartoon 브랜치 연속), 11=UX 정리, 12~13=백엔드 신기능(Supabase, M3급 — eng-review 필요).
+
+**A. 비주얼 폴리시 (cartoon 브랜치 위, 바로 가능)**
+- ✅ **#7 우주선 컨셉 화면 전환** (1차 구현, dogfood 대기) — `app/_components/WarpOverlay.tsx` 신규: 2D 캔버스 하이퍼스페이스 스트릭 오버레이(방사형 별빛+인디고 틴트, idle 시 투명, pointer-events none). `warping` prop으로 전환 중 sphere 교체 은폐, `bootOnMount`로 진입 "감속 도착" 연출. `/discover` 기존 검정 암전 → 워프 오버레이 교체. `/v/cosmic` 진입 boot 연출. tsc+build green. ⚠️ /discover PublicScene 배경 아직 mono 흰색 → cosmic 적용은 #11(mono 제거)과 함께.
+- ✅ **#8 배경 미세 오브젝트** (dogfood 반영, 별똥별만 유지) — `app/scene/BackgroundLife.tsx`: **별똥별 2개**(둥근 head glow + 둥근 점 7개 꼬리, 높은 곳서 느리게 낙하, 4~12s 간격, cosmic 전용). 외계인·로켓 이미지 flyer는 사용자가 "별로"라 **전부 제거**(Flyer 컴포넌트·`public/alien.png`·`public/rocket.png`·`scripts/prep-flyers.mjs` 삭제). 튜닝: `STAR_SIZE`/`TAIL`/`TAIL_GAP` + spawn 범위. tsc green.
+- ✅ **#9 행성 투톤 대비** (10%만, dogfood 반영) — `planet-pattern.ts` `deriveColor()`: `hashStr(id+"twotone")%10===0`인 **~10%만** `twoTone()`(hue 45~80° 회전+채도↑·명도↓ → 대륙/해양 대비), 나머지 90%는 기존 동일톤(본체색 ×0.62). 결정적. 비율/세기 튜닝은 함수 내 상수. cosmic 전용.
+- ✅ **#10 생성 시 패턴 자동 매칭** — `sphere-store.ts` `addChild`에서 `derivePattern(id, child color)`로 `pattern`/`patternColor`를 생성 시 body에 직접 baking → 렌더 파생이 아닌 실데이터로 영속(클라우드 blob 포함)+편집 가능. mono는 렌더 시 "none" 오버라이드라 무영향.
+- ✅ **생성/외형 추가 튜닝 (dogfood)** — (1) **루트 '나' 무늬 제거**: `OrbitingBody` `isRoot` 셀렉터 → 루트 pattern="none". (2) **자식 색 동일금지**: `childColor()` — 루트 자식은 기존 hue서 가장 먼 색(24분할 스캔)으로 새 패밀리, 그 외는 부모 hue 유지+명도/약간 hue 변형. (3) **생성 거리**: `orbitRadius`를 `max(형제반경)+자식지름+0.6`(최소 parent.size+size+0.4)로 → 태양/형제 겹침 해소. tsc+vitest 96 green.
+
+**B. UX 정리**
+- **#11 불필요한 UX 제거** — ⚠️ *어떤 UX인지 확정 필요* (후보: mono `/`·"미니멀" nav, undo/redo, 외형 슬라이더 등)
+
+**C. 백엔드 신기능 (eng-review/설계 필요 — M3급 Supabase 작업)**
+- **#12 친구 그룹**: setlog 앱처럼 **코드를 보내 그룹 생성/참여**. 친구끼리 묶기. → 새 테이블(groups, memberships)+RLS+초대코드+UI. 마일스톤급.
+- 🟡 **#13 하트(좋아요)** (코드 완성, **마이그 적용 HITL 대기**) — 익명 "누구나" 하트. 핵심 난점=익명 신원검증 불가 → 직접 RLS `delete using(true)`는 `.delete().eq('sphere_id',X)` 대량삭제 취약 → **테이블 RLS 무정책 락다운 + SECURITY DEFINER RPC**(단일 (sphere_id,voter)만 조작)로 해결. `voter`=localStorage 랜덤 uuid(익명·로그인 공통, 추측불가 → unheart 스코핑 가능).
+  - `supabase/migrations/0006_sphere_hearts.sql` — `sphere_hearts(sphere_id,voter,created_at)` PK(sphere_id,voter) dedup + RPC `heart_sphere`/`unheart_sphere`/`sphere_heart_state`(공개+미flagged만, search_path 하드닝, anon/auth grant) + 내부 helper `heartable_sphere_id`.
+  - `supabase/tests/sphere_hearts.sql` — 게이트: 익명하트·dedup·idempotent·unheart 스코핑·비공개차단·직접DML거부(음성대조), self-rollback.
+  - `lib/sphere/hearts.ts`(voter+RPC 래퍼) · `app/_components/HeartButton.tsx`(우상단 토글, 낙관적+서버 reconcile) · `/s/[code]`+`/discover` 연결(전환마다 remount).
+  - tsc+build green. **✅ 마이그 0006 적용 완료(2026-06-09) + anon RPC로 라이브 검증**(heart/unheart/state 정상 카운트, dedup·hearted 정상). `/discover`·`/s/[code]` 우상단 하트 동작. 폰트 둥근미소로 통일(discover 버튼/오버레이/토스트/공개라벨). 테스트 SQL은 `select count` 모호성 버그 수정(별칭 `hs.count`)—재실행 시 `hearts: all checks passed`. **남은 HITL: security advisor clean 확인(선택).**

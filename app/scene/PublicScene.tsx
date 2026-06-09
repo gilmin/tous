@@ -109,7 +109,7 @@ export default function PublicScene({
             border: "1px solid rgba(0,0,0,0.08)",
             borderRadius: 14,
             color: "#1a1a1a",
-            fontFamily: "system-ui, sans-serif",
+            fontFamily: "var(--font-cute), system-ui, sans-serif",
             fontSize: 18,
             fontWeight: 600,
             letterSpacing: "0.01em",

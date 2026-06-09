@@ -166,11 +166,30 @@ export function derivePattern(
   explicitColor?: string,
 ): { pattern: PlanetPattern; patternColor: string } {
   const pattern = explicit ?? FALLBACK_PATTERNS[hashStr(id) % FALLBACK_PATTERNS.length];
-  const patternColor =
-    explicitColor ??
-    "#" +
-      new THREE.Color(baseColor)
-        .multiplyScalar(0.62)
-        .getHexString();
+  const patternColor = explicitColor ?? deriveColor(id, baseColor);
   return { pattern, patternColor };
+}
+
+// Pattern colour: ~10% of bodies get a bold two-tone (continents-on-ocean)
+// contrast; the rest keep a subtle same-hue darker shade so the field stays
+// calm and the two-tone ones feel special.
+function deriveColor(id: string, baseColor: string): string {
+  if (hashStr(id + "twotone") % 10 === 0) return twoTone(id, baseColor);
+  return "#" + new THREE.Color(baseColor).multiplyScalar(0.62).getHexString();
+}
+
+// A *contrasting* second colour for the surface pattern: a hue-rotated, more
+// saturated, slightly darker sibling of the base. This gives planets a two-tone
+// continents-on-ocean read (e.g. green land over blue sea) instead of a flat
+// single hue. Deterministic per id, so a body keeps its look across reloads.
+function twoTone(id: string, baseColor: string): string {
+  const hsl = { h: 0, s: 0, l: 0 };
+  new THREE.Color(baseColor).getHSL(hsl);
+  const h32 = hashStr(id + "tone");
+  const sign = h32 & 1 ? 1 : -1;
+  const shift = 0.12 + (((h32 >>> 1) % 100) / 100) * 0.1; // ~0.12..0.22 turn (~45-80°)
+  const h2 = (hsl.h + sign * shift + 1) % 1;
+  const s2 = Math.min(1, hsl.s * 1.15 + 0.28); // bolder so the contrast reads
+  const l2 = THREE.MathUtils.clamp(hsl.l * 0.72, 0.24, 0.6);
+  return "#" + new THREE.Color().setHSL(h2, s2, l2).getHexString();
 }

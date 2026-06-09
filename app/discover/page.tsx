@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import PublicScene from "@/app/scene/PublicScene";
+import { WarpOverlay } from "@/app/_components/WarpOverlay";
+import { HeartButton } from "@/app/_components/HeartButton";
 import { createClient } from "@/lib/supabase/client";
 import { getRandomPublicSphere } from "@/lib/sphere/random-public";
 import {
@@ -156,20 +158,13 @@ export default function DiscoverPage() {
   return (
     <div className="w-screen h-screen">
       {current && <PublicScene tree={current.tree as OrbitalBody} warp />}
+      {status === "ready" && current && (
+        <HeartButton key={current.shortCode} shortCode={current.shortCode} />
+      )}
 
-      {/* Warp blackout — covers the tree swap + registry clear (D3). */}
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 35,
-          background: "#0a0a0c",
-          opacity: dark ? 1 : 0,
-          transition: `opacity ${BLACKOUT_MS}ms ease`,
-          pointerEvents: "none",
-        }}
-      />
+      {/* Spaceship warp — hyperspace streaks + tint cover the tree swap +
+          registry clear (D3), and a boot burst plays on entry ("켜질 때"). */}
+      <WarpOverlay warping={dark} bootOnMount />
 
       {status === "loading" && <Overlay>우주를 찾는 중…</Overlay>}
       {status === "empty" && (
@@ -188,7 +183,7 @@ export default function DiscoverPage() {
             borderRadius: 999,
             background: "rgba(20,20,24,0.8)",
             color: "#fff",
-            fontFamily: "system-ui, sans-serif",
+            fontFamily: "var(--font-cute), system-ui, sans-serif",
             fontSize: 13,
           }}
         >
@@ -206,7 +201,7 @@ export default function DiscoverPage() {
             zIndex: 40,
             display: "flex",
             gap: 10,
-            fontFamily: "system-ui, sans-serif",
+            fontFamily: "var(--font-cute), system-ui, sans-serif",
           }}
         >
           <button onClick={goBack} disabled={!canGoBack} style={btnStyle(!canGoBack)}>
@@ -232,7 +227,7 @@ function Overlay({ children }: { children: React.ReactNode }) {
         alignItems: "center",
         justifyContent: "center",
         color: "#555",
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "var(--font-cute), system-ui, sans-serif",
         fontSize: 16,
         background: "#f4f4f2",
       }}
