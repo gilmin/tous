@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PublicScene from "@/app/scene/PublicScene";
+import { HeartButton } from "@/app/_components/HeartButton";
 import type { OrbitalBody } from "@/app/scene/types";
 
 // Public share link. Anyone (incl. anonymous) can read a published, non-flagged
@@ -26,6 +27,7 @@ export default async function PublicSpherePage({
   return (
     <div className="w-screen h-screen">
       <PublicScene tree={data.tree as OrbitalBody} />
+      <HeartButton shortCode={short_code} />
     </div>
   );
 }

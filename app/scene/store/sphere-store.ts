@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
+import * as THREE from "three";
 import type { OrbitalBody } from "../types";
 import { SYSTEM } from "../seed";
 import {
@@ -15,6 +16,74 @@ import {
   selectBodyById,
 } from "./tree-ops";
 import { generateOrbitParams } from "./orbit-gen";
+import { derivePattern } from "../../_components/planet-pattern";
+
+function hueOf(hex: string): number {
+  const hsl = { h: 0, s: 0, l: 0 };
+  new THREE.Color(hex).getHSL(hsl);
+  return hsl.h;
+}
+
+function circularHueDist(a: number, b: number): number {
+  const d = Math.abs(a - b) % 1;
+  return Math.min(d, 1 - d);
+}
+
+// Colour for a newly added child. A child should echo its parent's tone but
+// never be an exact copy:
+//  • Under the root ("나"): hand each top-level planet a *fresh* colour family —
+//    the hue furthest from the ones already in use → varied, distinct planets.
+//  • Deeper: keep the parent's hue but nudge lightness (and a hair of hue) so
+//    it's clearly related yet not identical.
+function childColor(parent: OrbitalBody, isRootParent: boolean): string {
+  const hsl = { h: 0, s: 0, l: 0 };
+  new THREE.Color(parent.color).getHSL(hsl);
+
+  if (isRootParent) {
+    const used = (parent.children ?? []).map((c) => hueOf(c.color));
+    if (used.length === 0) return "#" + new THREE.Color().setHSL(0.58, 0.5, 0.66).getHexString();
+    let bestHue = 0;
+    let bestGap = -1;
+    for (let i = 0; i < 24; i++) {
+      const cand = i / 24;
+      const gap = Math.min(...used.map((u) => circularHueDist(cand, u)));
+      if (gap > bestGap) {
+        bestGap = gap;
+        bestHue = cand;
+      }
+    }
+    return "#" + new THREE.Color().setHSL(bestHue, 0.5, 0.66).getHexString();
+  }
+
+  const n = parent.children?.length ?? 0;
+  const lOff = ((n % 3) - 1) * 0.1 + (hsl.l > 0.55 ? -0.06 : 0.06);
+  const l2 = THREE.MathUtils.clamp(hsl.l + lOff, 0.32, 0.82);
+  const h2 = (hsl.h + (n % 2 ? 0.03 : -0.03) + 1) % 1;
+  const s2 = THREE.MathUtils.clamp(hsl.s, 0.25, 0.9);
+  return "#" + new THREE.Color().setHSL(h2, s2, l2).getHexString();
+}
+
+// Orbit radius for a new child: placed freely (random) within a band, with the
+// only hard rule being a minimum spacing so it can't overlap the parent or any
+// sibling (radial gap ≥ both radii + margin). Falls back to just outside the
+// outermost sibling if a free slot isn't found.
+function pickOrbitRadius(parent: OrbitalBody, size: number): number {
+  const minR = parent.size + size + 0.4; // clears the parent body
+  const sibs = parent.children ?? [];
+  const clears = (r: number) =>
+    sibs.every(
+      (c) => Math.abs((c.orbitRadius ?? 0) - r) >= (c.size ?? 0) + size + 0.3,
+    );
+  const maxR = minR + (sibs.length + 2) * (size * 2 + 0.7);
+  for (let i = 0; i < 24; i++) {
+    const r = minR + Math.random() * (maxR - minR);
+    if (clears(r)) return r;
+  }
+  const outer = sibs.length
+    ? Math.max(...sibs.map((c) => c.orbitRadius ?? 0))
+    : minR;
+  return Math.max(minR, outer + size * 2 + 0.6);
+}
 
 export type Mode = "normal" | "edit" | "add" | "delete-confirm";
 
@@ -138,13 +207,26 @@ export const useSphereStore = create<SphereState>()(
             const parent = selectBodyById(s.tree, parentId);
             if (!parent) return;
             const id = crypto.randomUUID();
+            const isRootParent = parentId === s.tree.id;
+            const size = childSize(parent.size);
+            // Related-but-distinct colour (varied new family under the root).
+            const color = childColor(parent, isRootParent);
+            // Bake a surface pattern in at creation (auto-matched from the
+            // child's own colour), persisted as real data — not just derived at
+            // render — and editable later (#10).
+            const { pattern, patternColor } = derivePattern(id, color);
+            const params = generateOrbitParams(id);
+            // Free placement, constrained only by a minimum non-overlap spacing.
+            params.orbitRadius = pickOrbitRadius(parent, size);
             const child: OrbitalBody = {
               id,
               label,
-              size: childSize(parent.size),
-              color: parent.color,
+              size,
+              color,
               shape: "smooth",
-              ...generateOrbitParams(id),
+              pattern,
+              patternColor,
+              ...params,
             };
             if (!parent.children) parent.children = [];
             parent.children.push(child);

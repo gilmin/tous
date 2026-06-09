@@ -7,6 +7,7 @@ import { CameraController } from "./CameraController";
 import { FocusPanel } from "./FocusPanel";
 import { FocusRing } from "./FocusRing";
 import { System } from "./System";
+import { BackgroundLife } from "./BackgroundLife";
 import { useSphereStore } from "./store/sphere-store";
 import { keyReducer } from "./store/key-reducer";
 import type { SceneVariant } from "./types";
@@ -159,6 +160,8 @@ export default function Scene({
               opacity={0.7}
               color="#9fe8ff"
             />
+            {/* Sparse, tiny, far-back drifters → subtle living background (#8). */}
+            <BackgroundLife />
           </>
         )}
         <CameraController />

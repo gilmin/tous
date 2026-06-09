@@ -43,6 +43,7 @@ export const OrbitingBody = memo(function OrbitingBody({
   const body = useSceneStore((s) => selectBodyById(s.tree, id));
   const focusedId = useSceneStore((s) => s.focusedId);
   const setFocus = useSceneStore((s) => s.setFocus);
+  const isRoot = useSceneStore((s) => s.tree.id === id);
 
   const orbitRef = useRef<THREE.Group>(null);
   const selfRef = useRef<THREE.Mesh>(null);
@@ -150,7 +151,7 @@ export const OrbitingBody = memo(function OrbitingBody({
           roughness={variant === "mono" ? 0.75 : 0.5}
           metalness={variant === "mono" ? 0.05 : 0.1}
           toon={variant !== "mono"}
-          pattern={variant === "mono" ? "none" : pattern}
+          pattern={variant === "mono" || isRoot ? "none" : pattern}
           patternColor={patternColor}
           onSelect={handleSelect}
         />
