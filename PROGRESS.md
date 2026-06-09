@@ -348,7 +348,7 @@ tentacle, spike, finned, conjoined, cluster.
 
 ## 9. 비주얼 리디자인 WIP — cartoon/kitsch/arcade (M5 전 선행, 2026-06-07)
 
-> **브랜치 `feat/cartoon-direction` (커밋됨 `1b8819f`, 미머지).** 사용자 주도 dogfood 중 "M5 전에 비주얼부터 바꾸자"로 시작. 키워드 = **cartoon · kitsch · arcade**. 레퍼런스 = 데스크톱 `Cartoon Space Wallpaper Top Background.png`(두꺼운 외곽선+파스텔 플랫 카툰 지구). 미리보기는 기존 `/` 에디터 보존 위해 **`/v/cosmic`** 에만 적용 중. 확정되면 mono 제거 → cosmic을 기본으로 굳히기로 함.
+> **브랜치 `feat/cartoon-direction` (origin 푸시됨 `f708cee`, 미머지/미PR).** 커밋: `1b8819f`(카툰 리디자인 WIP) + `f708cee`(#7~#10 비주얼 + #13 하트 + 폰트 통일). 사용자 주도 dogfood 중 "M5 전에 비주얼부터 바꾸자"로 시작. 키워드 = **cartoon · kitsch · arcade**. 레퍼런스 = 데스크톱 `Cartoon Space Wallpaper Top Background.png`(두꺼운 외곽선+파스텔 플랫 카툰 지구). 미리보기는 기존 `/` 에디터 보존 위해 **`/v/cosmic`** 에만 적용 중. 확정되면 mono 제거 → cosmic을 기본으로 굳히기로 함.
 
 **확정 방향(사용자 선택)**: 풀 카툰(툰 셰이딩 + 외곽선). 폰트 = **학교안심 둥근미소**(`app/fonts/Dunggeunmiso-{R,B}.ttf`, `next/font/local`, `--font-cute`). 사용자가 폰트는 "마음에 듦" 확정.
 
