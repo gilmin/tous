@@ -30,6 +30,18 @@ export const PLANET_PATTERNS: PlanetPattern[] = [
   "marble",
 ];
 
+// Korean labels for the FocusPanel pattern picker.
+export const PATTERN_LABELS: Record<PlanetPattern, string> = {
+  none: "없음",
+  bands: "줄무늬",
+  continents: "대륙",
+  spots: "점박이",
+  swirl: "소용돌이",
+  stripes: "세로줄",
+  bubbles: "방울",
+  marble: "마블",
+};
+
 const PATTERN_TO_INT: Record<PlanetPattern, number> = {
   none: 0,
   bands: 1,
