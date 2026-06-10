@@ -141,13 +141,16 @@ export default function DiscoverPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keyboard: Space → next, ArrowLeft → back. preventDefault stops page scroll.
+  // Keyboard (sphere-level): Space → next universe, Backspace → previous. The
+  // ←/→ arrows steer focus between bodies within the current sphere instead —
+  // PublicScene owns those (keyboardFocus), mirroring the editor. preventDefault
+  // stops page scroll and the browser's Backspace-back.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "Space") {
         e.preventDefault();
         void goNext(true);
-      } else if (e.code === "ArrowLeft") {
+      } else if (e.code === "Backspace") {
         e.preventDefault();
         goBack();
       }
@@ -158,7 +161,9 @@ export default function DiscoverPage() {
 
   return (
     <div className="w-screen h-screen">
-      {current && <PublicScene tree={current.tree as OrbitalBody} warp />}
+      {current && (
+        <PublicScene tree={current.tree as OrbitalBody} warp keyboardFocus />
+      )}
       {status === "ready" && current && (
         <HeartButton key={current.shortCode} shortCode={current.shortCode} />
       )}
