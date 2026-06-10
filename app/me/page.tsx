@@ -4,6 +4,7 @@ import Scene from "@/app/scene";
 import { signOut } from "./actions";
 import SphereSync from "./SphereSync";
 import PublishToggle from "./PublishToggle";
+import { HeartButton } from "@/app/_components/HeartButton";
 
 // Owner page. Auth-gated: a logged-out visitor is bounced to /login. This is the
 // cloud-synced sphere editor (M3-2) — the same Scene as "/", but SphereSync
@@ -27,8 +28,14 @@ export default async function MePage() {
 
   return (
     <div className="w-screen h-screen">
-      <Scene variant="mono" />
+      <Scene />
       <SphereSync userId={user.id} />
+      {/* Owner can see (and toggle) hearts on their own universe — only once
+          published, since hearts only exist for public spheres. Pinned top-left
+          to clear the publish/sign-out controls top-right. */}
+      {sphere?.is_public && sphere.short_code && (
+        <HeartButton shortCode={sphere.short_code} side="left" />
+      )}
       <div
         style={{
           position: "fixed",

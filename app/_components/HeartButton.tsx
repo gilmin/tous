@@ -4,11 +4,20 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getHeartState, toggleHeart } from "@/lib/sphere/hearts";
 
-// Heart (like) toggle for someone else's published sphere (#13). Fixed top-right
-// so it stays clear of the nav (top-left) and the /discover controls (bottom).
-// Anyone can press it; the count + my-heart state load on mount and update
-// optimistically, reconciling with the server's returned count.
-export function HeartButton({ shortCode }: { shortCode: string }) {
+// Heart (like) toggle for a published sphere (#13). Fixed top corner so it stays
+// clear of the nav and the /discover controls (bottom). `side` picks which top
+// corner — default "right" for discover/share views; "left" on /me where the
+// owner's publish + sign-out controls already sit top-right.
+// Anyone can press it (including the owner viewing their own universe); the count
+// + my-heart state load on mount and update optimistically, reconciling with the
+// server's returned count.
+export function HeartButton({
+  shortCode,
+  side = "right",
+}: {
+  shortCode: string;
+  side?: "left" | "right";
+}) {
   const [supabase] = useState(() => createClient());
   const [count, setCount] = useState(0);
   const [hearted, setHearted] = useState(false);
@@ -52,7 +61,7 @@ export function HeartButton({ shortCode }: { shortCode: string }) {
       style={{
         position: "fixed",
         top: 16,
-        right: 16,
+        ...(side === "left" ? { left: 16 } : { right: 16 }),
         zIndex: 45,
         display: "flex",
         alignItems: "center",
