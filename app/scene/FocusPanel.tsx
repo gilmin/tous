@@ -8,6 +8,12 @@ import {
 } from "./store/sphere-store";
 import { selectBodyById } from "./store/tree-ops";
 import { PLANET_SHAPES, type PlanetShape } from "../_components/Planet";
+import {
+  PATTERN_LABELS,
+  PLANET_PATTERNS,
+  derivePattern,
+  type PlanetPattern,
+} from "../_components/planet-pattern";
 import type { OrbitalBody } from "./types";
 
 // Appearance editors shown inside the EDIT form (#13). Every change flows
@@ -17,15 +23,25 @@ import type { OrbitalBody } from "./types";
 function AppearanceControls({
   body,
   editBody,
+  isRoot,
 }: {
   body: OrbitalBody;
   editBody: (id: string, patch: Partial<OrbitalBody>) => void;
+  isRoot: boolean;
 }) {
   const labelColor = "rgba(255,255,255,0.6)";
   const controlBg = "rgba(255,255,255,0.08)";
   const controlBorder = "1px solid rgba(255,255,255,0.2)";
   const valueColor = "#f5f5f7";
   const hasOrbit = (body.orbitRadius ?? 0) > 0;
+  // Mirror the rendered pattern: when `pattern` is unset the body shows an
+  // id-derived one, so display that rather than a misleading default.
+  const effectivePattern = derivePattern(
+    body.id,
+    body.color,
+    body.pattern,
+    body.patternColor,
+  ).pattern;
 
   // Collapse a pointer drag into one undo entry: open the coalesce window on
   // pointerdown, close it on the next global pointerup so it fires even when
@@ -60,6 +76,13 @@ function AppearanceControls({
     background: controlBg,
     border: controlBorder,
     borderRadius: 6,
+    color: valueColor,
+  } as const;
+  // The native option popup is an OS layer — it doesn't composite over the
+  // translucent panel, so a solid dark bg + light text keeps it readable
+  // (matching the nav toggle tone) instead of the browser's white default.
+  const optionStyle = {
+    background: "#2a1d4d",
     color: valueColor,
   } as const;
 
@@ -142,12 +165,31 @@ function AppearanceControls({
           style={selectStyle}
         >
           {PLANET_SHAPES.map((s) => (
-            <option key={s} value={s}>
+            <option key={s} value={s} style={optionStyle}>
               {s}
             </option>
           ))}
         </select>
       </label>
+      {!isRoot && (
+        <label style={rowStyle}>
+          <span style={tagStyle}>무늬</span>
+          <select
+            value={effectivePattern}
+            onChange={(e) =>
+              editBody(body.id, { pattern: e.target.value as PlanetPattern })
+            }
+            aria-label="무늬"
+            style={selectStyle}
+          >
+            {PLANET_PATTERNS.map((p) => (
+              <option key={p} value={p} style={optionStyle}>
+                {PATTERN_LABELS[p]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <label style={rowStyle}>
         <span style={tagStyle}>색</span>
         <input
@@ -263,7 +305,11 @@ export function FocusPanel() {
               fontFamily: "inherit",
             }}
           />
-          <AppearanceControls body={focusedBody} editBody={editBody} />
+          <AppearanceControls
+            body={focusedBody}
+            editBody={editBody}
+            isRoot={focusedBody.id === rootId}
+          />
         </>
       ) : (
         <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "0.01em" }}>
