@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -180,24 +181,41 @@ export default function GroupsClient({
                   ))}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => copyCode(g.invite_code)}
-                  title="초대 코드 복사"
-                  style={{
-                    padding: "5px 13px",
-                    borderRadius: 999,
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.16)",
-                    color: "rgba(255,255,255,0.7)",
-                    fontFamily: "inherit",
-                    fontSize: 12,
-                    letterSpacing: "0.04em",
-                    cursor: "pointer",
-                  }}
-                >
-                  {copied === g.invite_code ? "복사됨!" : `초대 코드: ${g.invite_code}`}
-                </button>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => copyCode(g.invite_code)}
+                    title="초대 코드 복사"
+                    style={{
+                      padding: "5px 13px",
+                      borderRadius: 999,
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.16)",
+                      color: "rgba(255,255,255,0.7)",
+                      fontFamily: "inherit",
+                      fontSize: 12,
+                      letterSpacing: "0.04em",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {copied === g.invite_code ? "복사됨!" : `초대 코드: ${g.invite_code}`}
+                  </button>
+                  <Link
+                    href={`/groups/${g.id}`}
+                    style={{
+                      padding: "5px 14px",
+                      borderRadius: 999,
+                      background: "linear-gradient(180deg,#ffe2ad,#ffc97a)",
+                      color: "#3a1f6b",
+                      fontFamily: "inherit",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      textDecoration: "none",
+                    }}
+                  >
+                    이 그룹 탐험 →
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
