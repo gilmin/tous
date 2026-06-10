@@ -8,28 +8,23 @@ import {
 } from "./store/sphere-store";
 import { selectBodyById } from "./store/tree-ops";
 import { PLANET_SHAPES, type PlanetShape } from "../_components/Planet";
-import type { OrbitalBody, SceneVariant } from "./types";
+import type { OrbitalBody } from "./types";
 
 // Appearance editors shown inside the EDIT form (#13). Every change flows
 // through editBody → instant render + persist. Size/speed are drags, so they
 // open a coalesce window (one undo entry per drag, #12); shape/color are
-// single events. Color is cosmic-only — mono derives shade from size, so a
-// picker there would be a dead control.
+// single events.
 function AppearanceControls({
   body,
-  isMono,
   editBody,
 }: {
   body: OrbitalBody;
-  isMono: boolean;
   editBody: (id: string, patch: Partial<OrbitalBody>) => void;
 }) {
-  const labelColor = isMono ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.6)";
-  const controlBg = isMono ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.08)";
-  const controlBorder = isMono
-    ? "1px solid rgba(0,0,0,0.15)"
-    : "1px solid rgba(255,255,255,0.2)";
-  const valueColor = isMono ? "#1a1a1a" : "#f5f5f7";
+  const labelColor = "rgba(255,255,255,0.6)";
+  const controlBg = "rgba(255,255,255,0.08)";
+  const controlBorder = "1px solid rgba(255,255,255,0.2)";
+  const valueColor = "#f5f5f7";
   const hasOrbit = (body.orbitRadius ?? 0) > 0;
 
   // Collapse a pointer drag into one undo entry: open the coalesce window on
@@ -101,22 +96,40 @@ function AppearanceControls({
         />
       </label>
       {hasOrbit && (
-        <label style={rowStyle}>
-          <span style={tagStyle}>공전</span>
-          <input
-            type="range"
-            min={0}
-            max={3}
-            step={0.05}
-            value={body.orbitSpeed ?? 0}
-            onPointerDown={startSliderDrag}
-            onChange={(e) =>
-              editBody(body.id, { orbitSpeed: Number(e.target.value) })
-            }
-            aria-label="공전 속도"
-            style={{ flex: 1 }}
-          />
-        </label>
+        <>
+          <label style={rowStyle}>
+            <span style={tagStyle}>궤도</span>
+            <input
+              type="range"
+              min={0.3}
+              max={8}
+              step={0.05}
+              value={body.orbitRadius ?? 0}
+              onPointerDown={startSliderDrag}
+              onChange={(e) =>
+                editBody(body.id, { orbitRadius: Number(e.target.value) })
+              }
+              aria-label="궤도 길이"
+              style={{ flex: 1 }}
+            />
+          </label>
+          <label style={rowStyle}>
+            <span style={tagStyle}>공전</span>
+            <input
+              type="range"
+              min={0}
+              max={3}
+              step={0.05}
+              value={body.orbitSpeed ?? 0}
+              onPointerDown={startSliderDrag}
+              onChange={(e) =>
+                editBody(body.id, { orbitSpeed: Number(e.target.value) })
+              }
+              aria-label="공전 속도"
+              style={{ flex: 1 }}
+            />
+          </label>
+        </>
       )}
       <label style={rowStyle}>
         <span style={tagStyle}>모양</span>
@@ -135,31 +148,29 @@ function AppearanceControls({
           ))}
         </select>
       </label>
-      {!isMono && (
-        <label style={rowStyle}>
-          <span style={tagStyle}>색</span>
-          <input
-            type="color"
-            value={body.color}
-            onChange={(e) => editBody(body.id, { color: e.target.value })}
-            aria-label="색"
-            style={{
-              flex: 1,
-              height: 26,
-              padding: 0,
-              background: "transparent",
-              border: controlBorder,
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          />
-        </label>
-      )}
+      <label style={rowStyle}>
+        <span style={tagStyle}>색</span>
+        <input
+          type="color"
+          value={body.color}
+          onChange={(e) => editBody(body.id, { color: e.target.value })}
+          aria-label="색"
+          style={{
+            flex: 1,
+            height: 26,
+            padding: 0,
+            background: "transparent",
+            border: controlBorder,
+            borderRadius: 6,
+            cursor: "pointer",
+          }}
+        />
+      </label>
     </div>
   );
 }
 
-export function FocusPanel({ variant }: { variant: SceneVariant }) {
+export function FocusPanel() {
   const focusedBody = useSphereStore((s) =>
     s.focusedId ? selectBodyById(s.tree, s.focusedId) : null,
   );
@@ -195,13 +206,10 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
 
   if (!focusedBody) return null;
 
-  const isMono = variant === "mono";
-  const buttonBg = isMono ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.14)";
-  const buttonColor = isMono ? "#1a1a1a" : "#f7f3ff";
-  const inputBg = isMono ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.08)";
-  const inputBorder = isMono
-    ? "1px solid rgba(0,0,0,0.15)"
-    : "1px solid rgba(255,255,255,0.2)";
+  const buttonBg = "rgba(255,255,255,0.14)";
+  const buttonColor = "#f7f3ff";
+  const inputBg = "rgba(255,255,255,0.08)";
+  const inputBorder = "1px solid rgba(255,255,255,0.2)";
 
   return (
     <div
@@ -214,20 +222,14 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
         padding: "14px 22px",
         minWidth: 220,
         textAlign: "center",
-        background: isMono
-          ? "rgba(255,255,255,0.85)"
-          : "rgba(38,25,72,0.72)",
+        background: "rgba(38,25,72,0.72)",
         backdropFilter: "blur(14px)",
         WebkitBackdropFilter: "blur(14px)",
-        border: isMono
-          ? "1px solid rgba(0,0,0,0.08)"
-          : "2px solid rgba(255,255,255,0.2)",
-        borderRadius: isMono ? 14 : 24,
-        color: isMono ? "#1a1a1a" : "#f7f3ff",
+        border: "2px solid rgba(255,255,255,0.2)",
+        borderRadius: 24,
+        color: "#f7f3ff",
         fontFamily: "var(--font-cute), system-ui, sans-serif",
-        boxShadow: isMono
-          ? "0 8px 24px rgba(0,0,0,0.06)"
-          : "0 10px 30px rgba(15,8,40,0.5)",
+        boxShadow: "0 10px 30px rgba(15,8,40,0.5)",
       }}
     >
       {isEditing ? (
@@ -261,11 +263,7 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
               fontFamily: "inherit",
             }}
           />
-          <AppearanceControls
-            body={focusedBody}
-            isMono={isMono}
-            editBody={editBody}
-          />
+          <AppearanceControls body={focusedBody} editBody={editBody} />
         </>
       ) : (
         <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: "0.01em" }}>
@@ -392,7 +390,7 @@ export function FocusPanel({ variant }: { variant: SceneVariant }) {
           padding: 0,
           background: "transparent",
           border: "none",
-          color: isMono ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.5)",
+          color: "rgba(255,255,255,0.5)",
           cursor: "pointer",
           fontSize: 16,
           lineHeight: 1,

@@ -6,9 +6,8 @@ import * as THREE from "three";
 import { useSceneStore } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
 import { getBodyMesh } from "./store/body-mesh-registry";
-import type { SceneVariant } from "./types";
 
-export function FocusRing({ variant }: { variant: SceneVariant }) {
+export function FocusRing() {
   const focusedId = useSceneStore((s) => s.focusedId);
   const focusedBody = useSceneStore((s) =>
     s.focusedId ? selectBodyById(s.tree, s.focusedId) : null,
@@ -36,14 +35,13 @@ export function FocusRing({ variant }: { variant: SceneVariant }) {
 
   const inner = focusedBody.size * 1.5;
   const outer = focusedBody.size * 1.54;
-  const color = variant === "mono" ? "#1a1a1a" : "#ffffff";
 
   return (
     <group ref={groupRef}>
       <mesh ref={ringRef}>
         <ringGeometry args={[inner, outer, 96]} />
         <meshBasicMaterial
-          color={color}
+          color="#ffffff"
           transparent
           opacity={0.28}
           side={THREE.DoubleSide}

@@ -3,8 +3,6 @@ import { type PlanetPattern } from "../_components/planet-pattern";
 
 export type { PlanetShape, PlanetPattern };
 
-export type SceneVariant = "mono" | "cosmic";
-
 export type OrbitalBody = {
   id: string;
   label?: string;

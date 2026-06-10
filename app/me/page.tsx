@@ -4,6 +4,7 @@ import Scene from "@/app/scene";
 import { signOut } from "./actions";
 import SphereSync from "./SphereSync";
 import PublishToggle from "./PublishToggle";
+import { HeartButton } from "@/app/_components/HeartButton";
 
 // Owner page. Auth-gated: a logged-out visitor is bounced to /login. This is the
 // cloud-synced sphere editor (M3-2) — the same Scene as "/", but SphereSync
@@ -27,8 +28,14 @@ export default async function MePage() {
 
   return (
     <div className="w-screen h-screen">
-      <Scene variant="mono" />
+      <Scene />
       <SphereSync userId={user.id} />
+      {/* Owner can see (and toggle) hearts on their own universe — only once
+          published, since hearts only exist for public spheres. Pinned top-left
+          to clear the publish/sign-out controls top-right. */}
+      {sphere?.is_public && sphere.short_code && (
+        <HeartButton shortCode={sphere.short_code} side="left" />
+      )}
       <div
         style={{
           position: "fixed",
@@ -49,7 +56,20 @@ export default async function MePage() {
         <form action={signOut}>
           <button
             type="submit"
-            className="rounded-full border border-neutral-300 bg-white/80 px-3 py-1.5 text-xs text-neutral-700 backdrop-blur transition hover:bg-white"
+            style={{
+              padding: "8px 18px",
+              borderRadius: 999,
+              fontFamily: "var(--font-cute), system-ui, sans-serif",
+              fontSize: 13,
+              fontWeight: 700,
+              color: "rgba(255,255,255,0.85)",
+              background: "rgba(43,28,84,0.55)",
+              border: "2px solid rgba(255,255,255,0.22)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              boxShadow: "0 6px 20px rgba(20,10,50,0.35)",
+              cursor: "pointer",
+            }}
           >
             로그아웃
           </button>

@@ -5,6 +5,7 @@ import PublicScene from "@/app/scene/PublicScene";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { createClient } from "@/lib/supabase/client";
+import { COSMIC_BG } from "@/app/scene/cosmic-env";
 import { getRandomPublicSphere } from "@/lib/sphere/random-public";
 import {
   loadDiscoverState,
@@ -226,10 +227,10 @@ function Overlay({ children }: { children: React.ReactNode }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "#555",
+        color: "rgba(255,255,255,0.85)",
         fontFamily: "var(--font-cute), system-ui, sans-serif",
         fontSize: 16,
-        background: "#f4f4f2",
+        background: COSMIC_BG,
       }}
     >
       {children}
@@ -241,14 +242,14 @@ function btnStyle(disabled: boolean): React.CSSProperties {
   return {
     padding: "10px 20px",
     borderRadius: 999,
-    border: "1px solid rgba(0,0,0,0.1)",
-    background: disabled ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.9)",
+    border: "2px solid rgba(255,255,255,0.22)",
+    background: disabled ? "rgba(43,28,84,0.35)" : "rgba(43,28,84,0.55)",
     backdropFilter: "blur(10px)",
     WebkitBackdropFilter: "blur(10px)",
-    color: disabled ? "#aaa" : "#1a1a1a",
+    color: disabled ? "rgba(255,255,255,0.4)" : "#fff",
     fontSize: 15,
     fontWeight: 600,
     cursor: disabled ? "default" : "pointer",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+    boxShadow: "0 6px 18px rgba(20,10,50,0.35)",
   };
 }

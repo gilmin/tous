@@ -12,9 +12,8 @@ import {
   registerBodyMesh,
   unregisterBodyMesh,
 } from "./store/body-mesh-registry";
-import { getBodyColor, getEmissiveSettings, getLineColor } from "./utils";
+import { getEmissiveSettings } from "./utils";
 import { derivePattern } from "../_components/planet-pattern";
-import type { SceneVariant } from "./types";
 
 // Soft circular gloss sprite shared by every cartoon body → candy/arcade shine.
 let _glossTex: THREE.CanvasTexture | null = null;
@@ -33,13 +32,7 @@ function getGlossTexture(): THREE.CanvasTexture {
   return _glossTex;
 }
 
-export const OrbitingBody = memo(function OrbitingBody({
-  id,
-  variant,
-}: {
-  id: string;
-  variant: SceneVariant;
-}) {
+export const OrbitingBody = memo(function OrbitingBody({ id }: { id: string }) {
   const body = useSceneStore((s) => selectBodyById(s.tree, id));
   const focusedId = useSceneStore((s) => s.focusedId);
   const setFocus = useSceneStore((s) => s.setFocus);
@@ -103,9 +96,7 @@ export const OrbitingBody = memo(function OrbitingBody({
   if (!body) return null;
 
   const hasOrbit = (body.orbitRadius ?? 0) > 0;
-  const color = getBodyColor(body, variant);
-  const emissive = getEmissiveSettings(body, variant);
-  const lineColor = getLineColor(body, variant);
+  const emissive = getEmissiveSettings(body);
   const { pattern, patternColor } = derivePattern(
     body.id,
     body.color,
@@ -114,7 +105,6 @@ export const OrbitingBody = memo(function OrbitingBody({
   );
 
   const labelYOffset = body.size + 0.18;
-  const labelMono = variant === "mono";
 
   return (
     <group ref={orbitRef} rotation={[body.inclination ?? 0, body.phase ?? 0, 0]}>
@@ -124,9 +114,9 @@ export const OrbitingBody = memo(function OrbitingBody({
             [0, 0, 0],
             [body.orbitRadius ?? 0, 0, 0],
           ]}
-          color={lineColor}
-          lineWidth={variant === "mono" ? 1.2 : 1}
-          opacity={variant === "mono" ? 0.5 : 0.25}
+          color={body.color}
+          lineWidth={1}
+          opacity={0.25}
           transparent
         />
       )}
@@ -145,32 +135,30 @@ export const OrbitingBody = memo(function OrbitingBody({
           meshRef={selfRef}
           shape={body.shape ?? "smooth"}
           size={body.size}
-          color={color}
+          color={body.color}
           emissive={emissive.color}
           emissiveIntensity={emissive.intensity}
-          roughness={variant === "mono" ? 0.75 : 0.5}
-          metalness={variant === "mono" ? 0.05 : 0.1}
-          toon={variant !== "mono"}
-          pattern={variant === "mono" || isRoot ? "none" : pattern}
+          roughness={0.5}
+          metalness={0.1}
+          toon
+          pattern={isRoot ? "none" : pattern}
           patternColor={patternColor}
           onSelect={handleSelect}
         />
-        {variant !== "mono" && (
-          // Glossy cartoon shine — billboarded sprite pinned to the upper-left
-          // (top-left light convention). Doesn't spin with the body.
-          <sprite
-            position={[-body.size * 0.34, body.size * 0.36, body.size * 0.6]}
-            scale={[body.size * 0.95, body.size * 0.95, 1]}
-          >
-            <spriteMaterial
-              map={getGlossTexture()}
-              transparent
-              opacity={0.55}
-              depthWrite={false}
-              blending={THREE.AdditiveBlending}
-            />
-          </sprite>
-        )}
+        {/* Glossy cartoon shine — billboarded sprite pinned to the upper-left
+            (top-left light convention). Doesn't spin with the body. */}
+        <sprite
+          position={[-body.size * 0.34, body.size * 0.36, body.size * 0.6]}
+          scale={[body.size * 0.95, body.size * 0.95, 1]}
+        >
+          <spriteMaterial
+            map={getGlossTexture()}
+            transparent
+            opacity={0.55}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </sprite>
         {body.label && focusedId !== body.id && (
           <Html
             position={[0, labelYOffset, 0]}
@@ -182,15 +170,11 @@ export const OrbitingBody = memo(function OrbitingBody({
             <div
               ref={labelRef}
               style={{
-                color: labelMono
-                  ? "rgba(30,30,30,0.9)"
-                  : "rgba(255,255,255,0.94)",
+                color: "rgba(255,255,255,0.94)",
                 fontSize: "11px",
                 fontWeight: 500,
                 whiteSpace: "nowrap",
-                textShadow: labelMono
-                  ? "none"
-                  : "0 0 5px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)",
+                textShadow: "0 0 5px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)",
                 letterSpacing: "0.02em",
                 userSelect: "none",
                 transform: "translate(-50%, -50%)",
@@ -201,7 +185,7 @@ export const OrbitingBody = memo(function OrbitingBody({
           </Html>
         )}
         {body.children?.map((child) => (
-          <OrbitingBody key={child.id} id={child.id} variant={variant} />
+          <OrbitingBody key={child.id} id={child.id} />
         ))}
       </group>
     </group>

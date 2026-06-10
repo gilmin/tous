@@ -6,6 +6,7 @@ import { useStore } from "zustand";
 import { CameraController } from "./CameraController";
 import { FocusRing } from "./FocusRing";
 import { System } from "./System";
+import { COSMIC_BG, CosmicScenery } from "./cosmic-env";
 import { clearBodyMeshRegistry } from "./store/body-mesh-registry";
 import {
   SceneStoreProvider,
@@ -75,21 +76,19 @@ export default function PublicScene({
   return (
     <>
       <Canvas
-        camera={{ position: [0, 2, 8], fov: 50 }}
-        style={{ background: "#f4f4f2" }}
+        camera={{ position: [0, 2, 8], fov: 50, near: 0.01, far: 200 }}
+        style={{ background: COSMIC_BG }}
         onPointerMissed={() => {
           if (performance.now() - lastSelectAtRef.current < 300) return;
           setFocus(null);
         }}
       >
-        <ambientLight intensity={0.55} />
-        <directionalLight position={[4, 6, 5]} intensity={1.4} />
-        <directionalLight position={[-3, -2, -4]} intensity={0.4} />
+        <CosmicScenery />
         <SceneStoreProvider store={store}>
           {warp && <WarpCamera />}
           <CameraController />
-          <System variant="mono" />
-          <FocusRing variant="mono" />
+          <System />
+          <FocusRing />
         </SceneStoreProvider>
       </Canvas>
       {focusedLabel && (
@@ -103,17 +102,17 @@ export default function PublicScene({
             padding: "12px 22px",
             minWidth: 180,
             textAlign: "center",
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            border: "1px solid rgba(0,0,0,0.08)",
-            borderRadius: 14,
-            color: "#1a1a1a",
+            background: "rgba(38,25,72,0.72)",
+            backdropFilter: "blur(14px)",
+            WebkitBackdropFilter: "blur(14px)",
+            border: "2px solid rgba(255,255,255,0.2)",
+            borderRadius: 24,
+            color: "#f7f3ff",
             fontFamily: "var(--font-cute), system-ui, sans-serif",
             fontSize: 18,
             fontWeight: 600,
             letterSpacing: "0.01em",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+            boxShadow: "0 10px 30px rgba(15,8,40,0.5)",
           }}
         >
           {focusedLabel}

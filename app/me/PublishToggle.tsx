@@ -101,14 +101,38 @@ export default function PublishToggle({
         flexDirection: "column",
         gap: 6,
         alignItems: "flex-end",
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "var(--font-cute), system-ui, sans-serif",
       }}
     >
       <button
         type="button"
         onClick={toggle}
         disabled={busy}
-        className="rounded-full border border-neutral-300 bg-white/80 px-3 py-1.5 text-xs text-neutral-700 backdrop-blur transition hover:bg-white disabled:opacity-50"
+        style={{
+          padding: "8px 18px",
+          borderRadius: 999,
+          fontFamily: "inherit",
+          fontSize: 13,
+          fontWeight: 700,
+          cursor: busy ? "default" : "pointer",
+          opacity: busy ? 0.6 : 1,
+          border: "2px solid rgba(255,255,255,0.22)",
+          transition: "background 0.15s, color 0.15s",
+          ...(isPublic
+            ? {
+                // "On" — same gold-active nuance as the active nav toggle.
+                background: "linear-gradient(180deg,#ffe2ad,#ffc97a)",
+                color: "#3a1f6b",
+                boxShadow: "0 4px 14px rgba(255,180,90,0.4)",
+              }
+            : {
+                background: "rgba(43,28,84,0.55)",
+                color: "rgba(255,255,255,0.85)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                boxShadow: "0 6px 20px rgba(20,10,50,0.35)",
+              }),
+        }}
       >
         {busy ? "처리 중…" : isPublic ? "공개됨 · 비공개로" : "공개하기"}
       </button>
@@ -117,13 +141,36 @@ export default function PublishToggle({
           type="button"
           onClick={copyLink}
           title="링크 복사"
-          className="max-w-[200px] truncate rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-[11px] text-neutral-500 backdrop-blur transition hover:bg-white"
+          style={{
+            maxWidth: 200,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            padding: "6px 14px",
+            borderRadius: 999,
+            fontFamily: "inherit",
+            fontSize: 11,
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.7)",
+            background: "rgba(43,28,84,0.45)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            cursor: "pointer",
+          }}
         >
           {copied ? "복사됨!" : sharePath}
         </button>
       )}
       {error && (
-        <span className="max-w-[200px] text-right text-[11px] text-red-500">
+        <span
+          style={{
+            maxWidth: 200,
+            textAlign: "right",
+            fontSize: 11,
+            color: "#ff9aa8",
+          }}
+        >
           {error}
         </span>
       )}
