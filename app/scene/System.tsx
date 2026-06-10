@@ -6,9 +6,8 @@ import * as THREE from "three";
 import { IDLE_ROTATION_SPEED, MOUSE_INFLUENCE, LERP_FACTOR } from "./constants";
 import { OrbitingBody } from "./OrbitingBody";
 import { useSceneStore } from "./store/scene-store-context";
-import type { SceneVariant } from "./types";
 
-export function System({ variant }: { variant: SceneVariant }) {
+export function System() {
   const rootId = useSceneStore((s) => s.tree.id);
   const focusedId = useSceneStore((s) => s.focusedId);
   const systemRef = useRef<THREE.Group>(null);
@@ -29,7 +28,7 @@ export function System({ variant }: { variant: SceneVariant }) {
 
   return (
     <group ref={systemRef}>
-      <OrbitingBody id={rootId} variant={variant} />
+      <OrbitingBody id={rootId} />
     </group>
   );
 }

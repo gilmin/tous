@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LINKS = [
-  { href: "/", label: "미니멀" },
-  { href: "/v/cosmic", label: "우주" },
+  { href: "/", label: "우주" },
   { href: "/me", label: "내 우주" },
   { href: "/discover", label: "탐험" },
 ];

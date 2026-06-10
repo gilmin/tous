@@ -15,7 +15,9 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-02)**: **🎉 M4 (탐험) 완료 + 누적 QA 통과.** `/discover` 랜덤 넘겨보기+암전 워프+세션 히스토리 (PR #33). 누적 QA에서 ISSUE-001(/discover 뒤로 버튼) 수정 (PR #34, Health 9/10). main `3e9919b`, 오픈 PR 없음. **다음 = 사용자 직접 dogfood → UI/UX taste 패스 → M5(폴리시+배포).** (자세한 건 아래 §0 끝의 "현재 브랜치" 블록)
+**현재 상태 (2026-06-10)**: **카툰 dogfood 계속 — cosmic 단일화 + 랜딩 + 하트/궤도 편집.** 브랜치 `feat/cartoon-direction` (로컬 `bc09db3`, origin보다 2커밋 앞섬·미푸시·미PR). 이번 세션 4건: (1) **/me 내 우주에 하트 표시**(공개 시 좌상단, HeartButton `side` prop), (2) **편집 패널에 궤도 길이 슬라이더**(hasOrbit일 때 0.3~8), (3) **mono(미니멀) 테마 완전 제거 → cosmic 단일**(SceneVariant/variant prop 전부 삭제, `app/scene/cosmic-env.tsx` 공유 배경, PublicScene·/discover도 cosmic화, `/v/cosmic` 라우트 삭제, Nav "미니멀" 제거, utils는 `getEmissiveSettings`만), (4) **`/` 를 유입 랜딩으로 교체**(박동하는 '나' 행성 + "당신의 우주는 어떤 모양인가요?" + 탐험 CTA→/discover; 로컬 샌드박스 에디터 제거 → 제작은 로그인 후 /me에서만, `LandingScene.tsx` 신규). tsc green, vitest 91, mono 잔여물 0건. **다음 = 미정**(#12 친구그룹 / M5 등). 상세는 §9·§10.
+
+**이전 상태 (2026-06-02)**: **🎉 M4 (탐험) 완료 + 누적 QA 통과.** `/discover` 랜덤 넘겨보기+암전 워프+세션 히스토리 (PR #33). 누적 QA에서 ISSUE-001(/discover 뒤로 버튼) 수정 (PR #34, Health 9/10). main `3e9919b`, 오픈 PR 없음. **다음 = 사용자 직접 dogfood → UI/UX taste 패스 → M5(폴리시+배포).** (자세한 건 아래 §0 끝의 "현재 브랜치" 블록)
 
 **이전 상태 (2026-06-01)**: **🎉 M3 (Auth + 백엔드) 전 슬라이스 완료 (#24~#27 머지, PR #28~#31).** M2 전 슬라이스 완료(PR #14~#23). M3 eng-review 통과(D1~D9 락인). M3-1 인증(#28) · M3-2 클라우드 저장/복원(#29) · M3-3 공개 토글+공유 링크(#30) · M3-4 랜덤 공개 쿼리(#31). 마이그 0001~0003 적용. RLS 게이트 전부 통과. **✅ M4 선행 숙제(cold-start 데모 시딩) 완료** — 마이그 0004 적용, 공개 풀에 데모 sphere 5개(서로 다른 성향: 여행자/만드는 사람/돌보는 사람/질문하는 사람/고요한 사람) 시딩. anon 관점에서 eligible=5, `random_public_sphere()` 다양성 확인. **✅ M4 eng-review 통과 (2026-06-01)** — 4개 결정(D1~D4) 락인, ADR-0003 작성, 구현 태스크 T1~T7 도출. **다음 = M4 (탐험) 구현** — `/discover` UI + 랜덤 넘겨보기 + sphere 간 카메라 워프 + 세션 히스토리. (M4 슬라이스/결정 맵은 아래 §M4 참조)
 
@@ -106,7 +108,7 @@
 - Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP 두 종류 중 plugin 버전(`mcp__plugin_supabase_supabase__*`)이 OAuth로 이미 인증돼 동작**(`mcp__supabase__*`는 액세스 토큰 만료). 마이그/SQL은 plugin 쪽으로.
 - ⚠️ **이 환경에 `jq` 없음** → `gstack-review-log`/대시보드 바이너리 동작 안 함(부가 기능). JSONL은 node로 생성. bash 툴은 git-bash라 PowerShell here-string(`@'...'@`) 안 먹힘 — 멀티라인은 단일 따옴표.
 
-**현재 브랜치**: `main` 최신 (`3e9919b`, PR #34 머지). 오픈 PR 없음. **M2·M3·M4 전부 완료 + 누적 QA 통과.**
+**현재 브랜치**: `feat/cartoon-direction` (로컬 HEAD `bc09db3`, origin보다 2커밋 앞섬·미푸시·미PR). main은 `3e9919b`(M2·M3·M4 완료 + 누적 QA). 카툰 리디자인 + 이번 세션 작업(cosmic 단일화/랜딩/하트 on me/궤도 편집)이 이 브랜치에 누적 — 머지 전 정리 필요(§9). 오픈 PR 없음.
 
 **M4 탐험 구현 완료 (PR #33, `8198eed`)** = T3 마이그0005 exclude RPC+소진폴백 · T4 `lib/discover/history.ts` 순수함수(+9테스트) · T2 PublicScene tree 교체+`clearBodyMeshRegistry` · T1 `/discover` 지속 Canvas+다음/뒤로/Space/← · T5 암전 워프+WarpCamera 줌인 · T6 graceful(빈풀/실패/삭제) · T7 제외 RPC SQL 2케이스. (ADR-0003 D1~D4)
 
@@ -348,7 +350,7 @@ tentacle, spike, finned, conjoined, cluster.
 
 ## 9. 비주얼 리디자인 WIP — cartoon/kitsch/arcade (M5 전 선행, 2026-06-07)
 
-> **브랜치 `feat/cartoon-direction` (origin 푸시됨 `f708cee`, 미머지/미PR).** 커밋: `1b8819f`(카툰 리디자인 WIP) + `f708cee`(#7~#10 비주얼 + #13 하트 + 폰트 통일). 사용자 주도 dogfood 중 "M5 전에 비주얼부터 바꾸자"로 시작. 키워드 = **cartoon · kitsch · arcade**. 레퍼런스 = 데스크톱 `Cartoon Space Wallpaper Top Background.png`(두꺼운 외곽선+파스텔 플랫 카툰 지구). 미리보기는 기존 `/` 에디터 보존 위해 **`/v/cosmic`** 에만 적용 중. 확정되면 mono 제거 → cosmic을 기본으로 굳히기로 함.
+> **브랜치 `feat/cartoon-direction` (미머지/미PR, 로컬이 origin보다 2커밋 앞섬·미푸시).** 커밋: `1b8819f`(카툰 리디자인 WIP) + `f708cee`(#7~#10 비주얼 + #13 하트 + 폰트 통일) + `a5dc5d1`(하트 on /me) + `bc09db3`(cosmic 단일화 + 랜딩 + 궤도 편집 — 2026-06-10). 사용자 주도 dogfood 중 "M5 전에 비주얼부터 바꾸자"로 시작. 키워드 = **cartoon · kitsch · arcade**. 레퍼런스 = 데스크톱 `Cartoon Space Wallpaper Top Background.png`(두꺼운 외곽선+파스텔 플랫 카툰 지구). 미리보기는 기존 `/` 에디터 보존 위해 **`/v/cosmic`** 에만 적용 중. 확정되면 mono 제거 → cosmic을 기본으로 굳히기로 함.
 
 **확정 방향(사용자 선택)**: 풀 카툰(툰 셰이딩 + 외곽선). 폰트 = **학교안심 둥근미소**(`app/fonts/Dunggeunmiso-{R,B}.ttf`, `next/font/local`, `--font-cute`). 사용자가 폰트는 "마음에 듦" 확정.
 
@@ -367,7 +369,7 @@ tentacle, spike, finned, conjoined, cluster.
 
 **사용자 다음 피드백 대기 중인 튜닝**: 무늬 종류 의미 매핑(자동→고정?) 또는 FocusPanel에 무늬 선택 드롭다운 추가 / 무늬 세기·색 / 외곽선 두께 / 배경 채도. 사용자가 레퍼런스 추가 제공 가능.
 
-**남은 정리(머지 전)**: mono 제거(현재 `/`·utils/FocusPanel/OrbitingBody에 `isMono` 분기 잔존), Nav 라벨에서 "미니멀" 제거, 테스트(현재 vitest는 미수정 — 렌더링/스타일 변경이라 영향 없었음, 빌드·tsc green).
+**남은 정리(머지 전)**: ✅ **mono 제거 완료**(2026-06-10, `bc09db3` — `isMono`/SceneVariant/variant prop 전부 삭제, cosmic 단일) + ✅ **Nav "미니멀" 제거**. 남은 건 **브랜치 머지/PR**뿐. 테스트는 vitest 91 green(utils 테스트는 `getEmissiveSettings`로 교체), tsc green.
 
 ---
 
@@ -383,7 +385,7 @@ tentacle, spike, finned, conjoined, cluster.
 - ✅ **생성/외형 추가 튜닝 (dogfood)** — (1) **루트 '나' 무늬 제거**: `OrbitingBody` `isRoot` 셀렉터 → 루트 pattern="none". (2) **자식 색 동일금지**: `childColor()` — 루트 자식은 기존 hue서 가장 먼 색(24분할 스캔)으로 새 패밀리, 그 외는 부모 hue 유지+명도/약간 hue 변형. (3) **생성 거리**: `orbitRadius`를 `max(형제반경)+자식지름+0.6`(최소 parent.size+size+0.4)로 → 태양/형제 겹침 해소. tsc+vitest 96 green.
 
 **B. UX 정리**
-- **#11 불필요한 UX 제거** — ⚠️ *어떤 UX인지 확정 필요* (후보: mono `/`·"미니멀" nav, undo/redo, 외형 슬라이더 등)
+- 🟡 **#11 불필요한 UX 제거** — ✅ **mono(미니멀) 테마 + 로컬 `/` 에디터 제거 완료**(2026-06-10): `/`를 유입 랜딩(박동 '나' + 문구 + 탐험 CTA)으로 교체, `/v/cosmic`·Nav "미니멀" 삭제, cosmic 단일. **남은 후보는 여전히 미확정**(undo/redo, 외형 슬라이더 등 — 뺄지 말지 사용자 결정 대기).
 
 **C. 백엔드 신기능 (eng-review/설계 필요 — M3급 Supabase 작업)**
 - **#12 친구 그룹**: setlog 앱처럼 **코드를 보내 그룹 생성/참여**. 친구끼리 묶기. → 새 테이블(groups, memberships)+RLS+초대코드+UI. 마일스톤급.
@@ -392,3 +394,11 @@ tentacle, spike, finned, conjoined, cluster.
   - `supabase/tests/sphere_hearts.sql` — 게이트: 익명하트·dedup·idempotent·unheart 스코핑·비공개차단·직접DML거부(음성대조), self-rollback.
   - `lib/sphere/hearts.ts`(voter+RPC 래퍼) · `app/_components/HeartButton.tsx`(우상단 토글, 낙관적+서버 reconcile) · `/s/[code]`+`/discover` 연결(전환마다 remount).
   - tsc+build green. **✅ 마이그 0006 적용 완료(2026-06-09) + anon RPC로 라이브 검증**(heart/unheart/state 정상 카운트, dedup·hearted 정상). `/discover`·`/s/[code]` 우상단 하트 동작. 폰트 둥근미소로 통일(discover 버튼/오버레이/토스트/공개라벨). 테스트 SQL은 `select count` 모호성 버그 수정(별칭 `hs.count`)—재실행 시 `hearts: all checks passed`. **남은 HITL: security advisor clean 확인(선택).**
+
+**D. 2026-06-10 세션 완료** (커밋 `a5dc5d1`·`bc09db3`, 브랜치 `feat/cartoon-direction`)
+- ✅ **하트 on /me** — 공개된 내 우주에서도 하트 표시(좌상단). `HeartButton`에 `side?: "left"|"right"`(기본 right) 추가, `/me`는 `is_public && short_code`일 때만 좌상단 렌더(우상단 공개토글/로그아웃과 비충돌). (`a5dc5d1`)
+- ✅ **궤도 길이 편집** — FocusPanel 편집 폼 `AppearanceControls`에 "궤도" 슬라이더(`hasOrbit`일 때, 0.3~8, `editBody`→즉시/영속/undo coalesce). 공전 슬라이더 위. 생성은 기존 자동배치 유지. (`bc09db3`)
+- ✅ **mono(미니멀) 테마 완전 제거 → cosmic 단일** (#11 일부, `bc09db3`): `SceneVariant` 타입 + 모든 `variant` prop 삭제. `app/scene/cosmic-env.tsx` 신규(`COSMIC_BG` + `<CosmicScenery>` 공유) → Scene·PublicScene 공용 → `/discover`·`/s/[code]`도 cosmic. `utils.ts`는 `getEmissiveSettings`만 남김(`monoShade`/`getBodyColor`/`getLineColor` 삭제, 테스트 교체). `/v/cosmic` 라우트 삭제(부트 워프는 `/`로 이관), Nav "미니멀" 제거. `/discover` 흰 오버레이·버튼도 cosmic화. **안 건드림**: `layout.tsx` `--font-geist-mono`(폰트), `Planet.tsx`(shape variant/toon은 자체 기능).
+- ✅ **`/` 유입 랜딩** (#11 일부, `bc09db3`): `app/scene/LandingScene.tsx` 신규 — 자식·스토어·상호작용 없이 '나' 행성 하나만 박동(scale sine)+느린 회전. `page.tsx`는 박동 행성 + "당신의 우주는 어떤 모양인가요?" + 골드 그라데이션 **탐험** CTA(→/discover). **로컬 샌드박스 에디터 제거** — 우주 제작은 로그인 후 `/me`에서만(에디터 `Scene`은 /me 전용으로 잔존). Nav 3항목(우주`/`·내 우주`/me`·탐험`/discover`).
+- 검증: tsc green, vitest 91/91, mono 잔여물 스캔(`SceneVariant`/`isMono`/`variant=`/`미니멀`/`/v/cosmic`/`mono`) **0건**. 데브 서버 `/`·`/discover` 200, `/v/cosmic` 404.
+- **남은 일**: 브랜치 머지/PR · #11 잔여 후보 UX(undo/redo·외형 슬라이더) 결정 · 랜딩 Nav 표시 여부 · 박동 세기/문구 튜닝(사용자 보고 결정).
