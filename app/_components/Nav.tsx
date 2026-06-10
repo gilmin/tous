@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/", label: "우주" },
   { href: "/me", label: "내 우주" },
   { href: "/discover", label: "탐험" },
+  { href: "/groups", label: "그룹" },
 ];
 
 export default function Nav() {
