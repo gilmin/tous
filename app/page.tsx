@@ -38,27 +38,55 @@ export default function Home() {
           당신의 우주는 어떤 모양인가요?
         </p>
 
-        <Link
-          href="/discover"
+        <div
           style={{
             position: "absolute",
             bottom: "17%",
             left: "50%",
             transform: "translateX(-50%)",
-            pointerEvents: "auto",
-            padding: "14px 40px",
-            borderRadius: 999,
-            background: "linear-gradient(180deg,#ffe2ad,#ffc97a)",
-            color: "#3a1f6b",
-            fontSize: 20,
-            fontWeight: 700,
-            textDecoration: "none",
-            boxShadow:
-              "0 8px 26px rgba(255,180,90,0.45), 0 2px 6px rgba(20,10,50,0.4)",
+            display: "flex",
+            gap: 12,
+            alignItems: "center",
           }}
         >
-          탐험
-        </Link>
+          <Link
+            href="/discover"
+            style={{
+              pointerEvents: "auto",
+              padding: "14px 40px",
+              borderRadius: 999,
+              background: "linear-gradient(180deg,#ffe2ad,#ffc97a)",
+              color: "#3a1f6b",
+              fontSize: 20,
+              fontWeight: 700,
+              textDecoration: "none",
+              boxShadow:
+                "0 8px 26px rgba(255,180,90,0.45), 0 2px 6px rgba(20,10,50,0.4)",
+            }}
+          >
+            탐험
+          </Link>
+          <Link
+            href="/why"
+            style={{
+              pointerEvents: "auto",
+              padding: "14px 26px",
+              borderRadius: 999,
+              background: "rgba(43,28,84,0.55)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              border: "2px solid rgba(255,255,255,0.22)",
+              color: "rgba(255,255,255,0.85)",
+              fontSize: 20,
+              fontWeight: 700,
+              textDecoration: "none",
+              boxShadow: "0 6px 20px rgba(20,10,50,0.35)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            절대 누르지 마시오.
+          </Link>
+        </div>
       </div>
     </main>
   );
