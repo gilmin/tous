@@ -14,6 +14,7 @@ import {
   useSceneStore,
 } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
+import { focusForKey } from "./store/focus-key";
 import type { OrbitalBody } from "./types";
 
 // /discover only: on each tree swap (behind the blackout), snap the camera far
@@ -38,9 +39,11 @@ function WarpCamera() {
 export default function PublicScene({
   tree,
   warp = false,
+  keyboardFocus = false,
 }: {
   tree: OrbitalBody;
   warp?: boolean;
+  keyboardFocus?: boolean;
 }) {
   // One store per Canvas (lazy init → created once, never on rerender). On
   // /discover the same component instance stays mounted while the `tree` prop
@@ -72,6 +75,24 @@ export default function PublicScene({
   useEffect(() => {
     if (focusedId !== null) lastSelectAtRef.current = performance.now();
   }, [focusedId]);
+
+  // /discover only: ←/→ cycle focus through this sphere's bodies, Esc clears.
+  // Gated by prop so /s/[code] (a stable single sphere) stays keyboard-free.
+  // Reads fresh tree/focus from the store so it never closes over a stale tree
+  // across warp swaps. Sphere-level keys (Space=next, Backspace=back) live in
+  // the discover page; the two key sets are disjoint.
+  useEffect(() => {
+    if (!keyboardFocus) return;
+    const onKey = (e: KeyboardEvent) => {
+      const { tree: t, focusedId: f, setFocus: set } = store.getState();
+      const result = focusForKey(t, f, e.code);
+      if (!result) return;
+      e.preventDefault();
+      set(result.focusId);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [keyboardFocus, store]);
 
   return (
     <>
