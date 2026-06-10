@@ -15,7 +15,7 @@
 - `~/.gstack/projects/gilmin-tous/rlfal-main-design-20260518-163947.md` — M1 전체 설계, APPROVED
 - `~/.gstack/projects/gilmin-tous/gilmin-main-design-20260520-174056.md` — **M2 설계, APPROVED (2026-05-20)**
 
-**현재 상태 (2026-06-10)**: **카툰 dogfood 계속 — cosmic 단일화 + 랜딩 + 하트/궤도 편집.** 브랜치 `feat/cartoon-direction` (로컬 `bc09db3`, origin보다 2커밋 앞섬·미푸시·미PR). 이번 세션 4건: (1) **/me 내 우주에 하트 표시**(공개 시 좌상단, HeartButton `side` prop), (2) **편집 패널에 궤도 길이 슬라이더**(hasOrbit일 때 0.3~8), (3) **mono(미니멀) 테마 완전 제거 → cosmic 단일**(SceneVariant/variant prop 전부 삭제, `app/scene/cosmic-env.tsx` 공유 배경, PublicScene·/discover도 cosmic화, `/v/cosmic` 라우트 삭제, Nav "미니멀" 제거, utils는 `getEmissiveSettings`만), (4) **`/` 를 유입 랜딩으로 교체**(박동하는 '나' 행성 + "당신의 우주는 어떤 모양인가요?" + 탐험 CTA→/discover; 로컬 샌드박스 에디터 제거 → 제작은 로그인 후 /me에서만, `LandingScene.tsx` 신규). tsc green, vitest 91, mono 잔여물 0건. **다음 = 미정**(#12 친구그룹 / M5 등). 상세는 §9·§10.
+**현재 상태 (2026-06-10)**: **카툰 dogfood + #12 친구 그룹 완성.** 브랜치 `feat/cartoon-direction` (이 세션 작업 전부 누적, origin 푸시 완료 → 사용자 PR 머지 예정). main은 `3e9919b`(M2·M3·M4 완료). 이 세션: (A) **/me 하트 표시**(공개 시 좌상단, HeartButton `side` prop) · (B) **궤도 길이 슬라이더**(hasOrbit, 0.3~8) · (C) **mono 제거 → cosmic 단일**(SceneVariant/variant prop 삭제, `cosmic-env.tsx` 공유, /discover·PublicScene cosmic화, `/v/cosmic`·Nav '미니멀' 삭제, utils는 `getEmissiveSettings`만) · (D) **`/` 유입 랜딩**(박동 '나'+"당신의 우주는 어떤 모양인가요?"+탐험 CTA, 로컬 에디터 제거→제작은 /me, `LandingScene.tsx`) · (E) **`/why` 매니페스토**(랜딩 '절대 누르지 마시오' 버튼) · (F) **/me 버튼 nav 토글 톤+둥근미소** · (G) **#12 친구 그룹 전 슬라이스**(코드 그룹 생성/참여 + 그룹원 비공개 우주 공유 + 그룹 전용 워프 탐험; 마이그 0007·0008, RLS 게이트 2종 통과 — 아래 §10 E 참조). tsc green, vitest 91. **다음 = 두 계정 dogfood(그룹 비공개 공유 실검증) → M5(폴리시+배포).** 상세 §9·§10.
 
 **이전 상태 (2026-06-02)**: **🎉 M4 (탐험) 완료 + 누적 QA 통과.** `/discover` 랜덤 넘겨보기+암전 워프+세션 히스토리 (PR #33). 누적 QA에서 ISSUE-001(/discover 뒤로 버튼) 수정 (PR #34, Health 9/10). main `3e9919b`, 오픈 PR 없음. **다음 = 사용자 직접 dogfood → UI/UX taste 패스 → M5(폴리시+배포).** (자세한 건 아래 §0 끝의 "현재 브랜치" 블록)
 
@@ -108,7 +108,7 @@
 - Supabase 프로젝트 id `lrfucciojxrqctfswduk`, env는 `.env.local`(gitignore)·템플릿 `.env.example`. **Supabase MCP 두 종류 중 plugin 버전(`mcp__plugin_supabase_supabase__*`)이 OAuth로 이미 인증돼 동작**(`mcp__supabase__*`는 액세스 토큰 만료). 마이그/SQL은 plugin 쪽으로.
 - ⚠️ **이 환경에 `jq` 없음** → `gstack-review-log`/대시보드 바이너리 동작 안 함(부가 기능). JSONL은 node로 생성. bash 툴은 git-bash라 PowerShell here-string(`@'...'@`) 안 먹힘 — 멀티라인은 단일 따옴표.
 
-**현재 브랜치**: `feat/cartoon-direction` (로컬 HEAD `bc09db3`, origin보다 2커밋 앞섬·미푸시·미PR). main은 `3e9919b`(M2·M3·M4 완료 + 누적 QA). 카툰 리디자인 + 이번 세션 작업(cosmic 단일화/랜딩/하트 on me/궤도 편집)이 이 브랜치에 누적 — 머지 전 정리 필요(§9). 오픈 PR 없음.
+**현재 브랜치**: `feat/cartoon-direction` (origin 푸시 완료 → **사용자 PR 머지 예정**). 마지막 기능 커밋 `0e64da7`(#12 slice 3). main은 `3e9919b`(M2·M3·M4 완료 + 누적 QA). 카툰 리디자인 + 이 세션 작업(cosmic 단일화/랜딩/`/why`/하트·/me 폴리시/**#12 친구 그룹 전 슬라이스**)이 누적. **머지된 뒤 이 '현재 브랜치' 블록을 main 기준으로 되돌릴 것.**
 
 **M4 탐험 구현 완료 (PR #33, `8198eed`)** = T3 마이그0005 exclude RPC+소진폴백 · T4 `lib/discover/history.ts` 순수함수(+9테스트) · T2 PublicScene tree 교체+`clearBodyMeshRegistry` · T1 `/discover` 지속 Canvas+다음/뒤로/Space/← · T5 암전 워프+WarpCamera 줌인 · T6 graceful(빈풀/실패/삭제) · T7 제외 RPC SQL 2케이스. (ADR-0003 D1~D4)
 
@@ -388,7 +388,7 @@ tentacle, spike, finned, conjoined, cluster.
 - 🟡 **#11 불필요한 UX 제거** — ✅ **mono(미니멀) 테마 + 로컬 `/` 에디터 제거 완료**(2026-06-10): `/`를 유입 랜딩(박동 '나' + 문구 + 탐험 CTA)으로 교체, `/v/cosmic`·Nav "미니멀" 삭제, cosmic 단일. **남은 후보는 여전히 미확정**(undo/redo, 외형 슬라이더 등 — 뺄지 말지 사용자 결정 대기).
 
 **C. 백엔드 신기능 (eng-review/설계 필요 — M3급 Supabase 작업)**
-- **#12 친구 그룹**: setlog 앱처럼 **코드를 보내 그룹 생성/참여**. 친구끼리 묶기. → 새 테이블(groups, memberships)+RLS+초대코드+UI. 마일스톤급.
+- ✅ **#12 친구 그룹** (2026-06-10 완료, 3슬라이스) — 코드로 그룹 생성/참여, 그룹원끼리 비공개 우주 공유 + 그룹 전용 워프 탐험. 마이그 0007(테이블·RLS·create/join RPC·닉네임)+0008(`random_group_sphere`). RLS 게이트 2종 통과(`groups.sql`·`random_group_sphere.sql`). 상세는 아래 §10 'E'.
 - 🟡 **#13 하트(좋아요)** (코드 완성, **마이그 적용 HITL 대기**) — 익명 "누구나" 하트. 핵심 난점=익명 신원검증 불가 → 직접 RLS `delete using(true)`는 `.delete().eq('sphere_id',X)` 대량삭제 취약 → **테이블 RLS 무정책 락다운 + SECURITY DEFINER RPC**(단일 (sphere_id,voter)만 조작)로 해결. `voter`=localStorage 랜덤 uuid(익명·로그인 공통, 추측불가 → unheart 스코핑 가능).
   - `supabase/migrations/0006_sphere_hearts.sql` — `sphere_hearts(sphere_id,voter,created_at)` PK(sphere_id,voter) dedup + RPC `heart_sphere`/`unheart_sphere`/`sphere_heart_state`(공개+미flagged만, search_path 하드닝, anon/auth grant) + 내부 helper `heartable_sphere_id`.
   - `supabase/tests/sphere_hearts.sql` — 게이트: 익명하트·dedup·idempotent·unheart 스코핑·비공개차단·직접DML거부(음성대조), self-rollback.
@@ -402,3 +402,13 @@ tentacle, spike, finned, conjoined, cluster.
 - ✅ **`/` 유입 랜딩** (#11 일부, `bc09db3`): `app/scene/LandingScene.tsx` 신규 — 자식·스토어·상호작용 없이 '나' 행성 하나만 박동(scale sine)+느린 회전. `page.tsx`는 박동 행성 + "당신의 우주는 어떤 모양인가요?" + 골드 그라데이션 **탐험** CTA(→/discover). **로컬 샌드박스 에디터 제거** — 우주 제작은 로그인 후 `/me`에서만(에디터 `Scene`은 /me 전용으로 잔존). Nav 3항목(우주`/`·내 우주`/me`·탐험`/discover`).
 - 검증: tsc green, vitest 91/91, mono 잔여물 스캔(`SceneVariant`/`isMono`/`variant=`/`미니멀`/`/v/cosmic`/`mono`) **0건**. 데브 서버 `/`·`/discover` 200, `/v/cosmic` 404.
 - **남은 일**: 브랜치 머지/PR · #11 잔여 후보 UX(undo/redo·외형 슬라이더) 결정 · 랜딩 Nav 표시 여부 · 박동 세기/문구 튜닝(사용자 보고 결정).
+
+**E. 2026-06-10 세션 — `/why` + /me 폴리시 + #12 친구 그룹**
+- ✅ **`/why` 매니페스토 페이지** (`db80d26`) — 프로젝트 의의 설명(사용자 작성 원문). 자체 스크롤 다크 cosmic 리딩 페이지(둥근미소). 랜딩 '탐험' 옆 **'절대 누르지 마시오.'** 역심리 버튼으로 진입. 하단 탐험 CTA + 돌아가기.
+- ✅ **/me 버튼 폴리시** (`7c09692`) — 공개토글/복사/로그아웃을 mono 흰색 → cosmic 글래스 + nav 토글 뉘앙스(공개 ON=골드 그라데이션). PublishToggle `system-ui` 폰트를 둥근미소로 교정.
+- ✅ **#12 친구 그룹 — 3 슬라이스** (코드로 친구 묶기, 비공개 우주 사적 공유 + 그룹 전용 워프 탐험. 설계 = 사용자 선택 "옵션 1+3", 닉네임=그룹별):
+  - **슬라이스 1 백엔드** (`2274264`, 마이그 `0007_groups.sql`): `groups`(id·name·invite_code unique·created_by) + `group_members`(PK group_id+user_id·nickname). DEFINER 헬퍼 `is_group_member`/`shares_group_with`(RLS 재귀 회피). RLS: groups/group_members 멤버 읽기, 멤버 자기 닉네임 update·탈퇴 delete, **`spheres`에 "그룹 코멤버 읽기" SELECT 정책**(비공개도 같은 그룹원이면 읽힘 — 민감 권한). 쓰기는 `create_group`/`join_group` RPC(초대코드 6자 base62 `gen_invite_code`, 충돌 재시도, on conflict 닉네임 갱신). **RLS 게이트 `groups.sql` 통과**(비멤버 차단→가입후 비공개읽기→탈퇴후 차단, 음성 대조, self-rollback).
+  - **슬라이스 2 UI** (`9538788`): `/groups`(auth-gated) — 내 그룹 카드(닉네임 칩·내 건 골드+"(나)"·초대코드 복사·나가기) + 그룹 만들기 + 코드 참여. `lib/group/groups.ts`(createGroup/joinGroup/leaveGroup). Nav에 '그룹' 추가. cosmic 글래스.
+  - **슬라이스 3 그룹 탐험** (`0e64da7`, 마이그 `0008_random_group_sphere.sql`): `random_group_sphere(group, exclude[])` RPC(DEFINER+is_group_member 가드, 본인·기방문 제외, 소진 시 exclude 무시 폴백). `/groups/[id]` = `/discover` 트림 워프(인메모리 visited/back, 하트 없음, "○○의 우주" 닉네임 라벨). 그룹 카드에 "이 그룹 탐험 →". `lib/group/group-discover.ts`. **게이트 `random_group_sphere.sql` 통과**(멤버 코멤버 우주·본인 제외, 비멤버 차단).
+  - 마이그 0007·0008 **라이브 DB 적용 완료**(사용자가 SQL 에디터로). ⚠️ Supabase MCP가 이 세션엔 미로드라 적용은 HITL이었음.
+- **남은 HITL**: **두 계정 dogfood** — 실제 그룹 만들어 친구 비공개 우주가 워프로 보이는지(OAuth라 헤드리스 불가). security advisor clean 확인(선택).
