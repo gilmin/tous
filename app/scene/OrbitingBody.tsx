@@ -6,6 +6,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { PlanetMesh } from "../_components/Planet";
 import { LABEL_FADE_NEAR, LABEL_FADE_FAR } from "./constants";
+import { nextLabelVisible } from "./label-cull";
 import { useSceneStore } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
 import {
@@ -44,6 +45,9 @@ export const OrbitingBody = memo(function OrbitingBody({ id }: { id: string }) {
   const worldPos = useRef(new THREE.Vector3());
   const isPaused = focusedId !== null;
   const [hovered, setHovered] = useState(false);
+  // Mounted lazily by the culling check below — starting hidden avoids a
+  // 100-label DOM burst on the first frame of a big sphere.
+  const [labelVisible, setLabelVisible] = useState(false);
 
   useEffect(() => {
     const mesh = selfRef.current;
@@ -71,16 +75,23 @@ export const OrbitingBody = memo(function OrbitingBody({ id }: { id: string }) {
       );
       selfRef.current.scale.setScalar(next);
     }
-    if (selfRef.current && labelRef.current) {
+    if (selfRef.current && body.label) {
       selfRef.current.getWorldPosition(worldPos.current);
       const distance = state.camera.position.distanceTo(worldPos.current);
-      const opacity = THREE.MathUtils.clamp(
-        1 - (distance - LABEL_FADE_NEAR) / (LABEL_FADE_FAR - LABEL_FADE_NEAR),
-        0,
-        1,
-      );
-      // Hover forces the label visible, ignoring distance fade.
-      labelRef.current.style.opacity = hovered ? "1" : opacity.toFixed(3);
+      // Cull: unmount labels too small on screen to read (perf — 100 mounted
+      // DOM labels halve the frame rate; see label-cull.ts). State only
+      // changes on threshold crossings, so this doesn't re-render per frame.
+      const visible = nextLabelVisible(labelVisible, body.size, distance);
+      if (visible !== labelVisible) setLabelVisible(visible);
+      if (labelRef.current) {
+        const opacity = THREE.MathUtils.clamp(
+          1 - (distance - LABEL_FADE_NEAR) / (LABEL_FADE_FAR - LABEL_FADE_NEAR),
+          0,
+          1,
+        );
+        // Hover forces the label visible, ignoring distance fade.
+        labelRef.current.style.opacity = hovered ? "1" : opacity.toFixed(3);
+      }
     }
   });
 
@@ -159,7 +170,7 @@ export const OrbitingBody = memo(function OrbitingBody({ id }: { id: string }) {
             blending={THREE.AdditiveBlending}
           />
         </sprite>
-        {body.label && focusedId !== body.id && (
+        {body.label && focusedId !== body.id && (labelVisible || hovered) && (
           <Html
             position={[0, labelYOffset, 0]}
             center
