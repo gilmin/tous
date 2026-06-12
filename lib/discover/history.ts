@@ -29,21 +29,19 @@ export function pushVisited(
   return next.slice(-cap);
 }
 
-// Push a seen sphere onto the back stack. Trimmed to the last HISTORY_CAP.
-// No dedup — revisiting the same sphere is a legitimate stack entry.
-export function pushHistory(
-  history: Seen[],
-  entry: Seen,
-  cap = HISTORY_CAP,
-): Seen[] {
+// Push an entry onto the back stack. Trimmed to the last HISTORY_CAP. No dedup —
+// revisiting the same Universe is a legitimate stack entry. Generic over the
+// entry shape: /discover stacks `Seen` (short_code-keyed); the shared Warp
+// session stacks `WarpEntry` (key-agnostic). Same list mechanics either way.
+export function pushHistory<T>(history: T[], entry: T, cap = HISTORY_CAP): T[] {
   return [...history, entry].slice(-cap);
 }
 
 // Pop the most-recent entry off the back stack. Returns the popped entry (or
 // null when empty) plus the shrunk stack.
-export function back(history: Seen[]): {
-  history: Seen[];
-  entry: Seen | null;
+export function back<T>(history: T[]): {
+  history: T[];
+  entry: T | null;
 } {
   if (history.length === 0) return { history, entry: null };
   return { history: history.slice(0, -1), entry: history[history.length - 1] };
