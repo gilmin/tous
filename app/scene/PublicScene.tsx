@@ -40,10 +40,14 @@ export default function PublicScene({
   tree,
   warp = false,
   keyboardFocus = false,
+  bottomNav = false,
 }: {
   tree: OrbitalBody;
   warp?: boolean;
   keyboardFocus?: boolean;
+  // When the host page renders a bottom-center nav row (/discover, group warp),
+  // lift the focused-body name label above it so the buttons don't cover it.
+  bottomNav?: boolean;
 }) {
   // One store per Canvas (lazy init → created once, never on rerender). On
   // /discover the same component instance stays mounted while the `tree` prop
@@ -117,7 +121,7 @@ export default function PublicScene({
           style={{
             position: "fixed",
             left: "50%",
-            bottom: 36,
+            bottom: bottomNav ? 92 : 36,
             transform: "translateX(-50%)",
             zIndex: 30,
             padding: "12px 22px",
