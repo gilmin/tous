@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Architecture review — tous</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #dc2626; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .ifc { background: repeating-linear-gradient(45deg, #c7d2fe, #c7d2fe 6px, #e0e7ff 6px, #e0e7ff 12px); }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-12">
+
+      <header class="space-y-3">
+        <h1 class="font-serif text-3xl">Architecture review — <span class="font-mono">tous</span></h1>
+        <p class="text-sm text-slate-500">2026-06-12 · main @ M5 완료 시점 · 소스 64파일 / 테스트 10파일(순수 모듈에 집중) · 최대 파일: Planet.tsx 623 · FocusPanel.tsx 450 · 탐험 호스트 2개 합 538줄</p>
+        <div class="flex flex-wrap gap-4 text-xs text-slate-600">
+          <span class="inline-flex items-center gap-1"><span class="inline-block w-4 h-3 border border-slate-500 bg-white"></span> module</span>
+          <span class="inline-flex items-center gap-1"><svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#475569" stroke-width="1.5" class="seam"/></svg> seam</span>
+          <span class="inline-flex items-center gap-1"><svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#dc2626" stroke-width="2"/></svg> 누수(leak)</span>
+          <span class="inline-flex items-center gap-1"><span class="inline-block w-4 h-3 deep rounded-sm"></span> deep module</span>
+          <span class="inline-flex items-center gap-1"><span class="inline-block w-4 h-3 ifc border border-indigo-300"></span> interface 표면적</span>
+        </div>
+      </header>
+
+      <section id="candidates" class="space-y-10">
+
+        <!-- ════════════════ CANDIDATE 1 ════════════════ -->
+        <article id="c1" class="rounded-xl border border-slate-200 bg-white shadow-sm p-8 space-y-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
+            <h2 class="font-serif text-2xl">1. 워프 세션을 하나의 deep module로</h2>
+            <div class="flex gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">Strong</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-sm text-slate-600 space-y-0.5">
+            <div>app/discover/page.tsx <span class="text-slate-400">(277줄)</span></div>
+            <div>app/groups/[id]/GroupDiscover.tsx <span class="text-slate-400">(261줄)</span></div>
+            <div>lib/discover/history.ts <span class="text-slate-400">(~90줄 · 테스트됨 · 두 번째 호출자가 우회)</span></div>
+          </div>
+
+          <!-- before / after -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-2">Before — 같은 세션 로직이 두 채</p>
+              <pre class="mermaid">
+flowchart TB
+  DP["/discover 호스트<br/>blackout·back스택·exclude·키보드·nav버튼·toast"]
+  GD["GroupDiscover 호스트<br/>blackout·back스택·exclude·키보드·nav버튼·toast"]
+  H["history.ts<br/>순수·테스트 통과"]
+  PS["PublicScene"]
+  DP --> H
+  DP --> PS
+  GD --> PS
+  GD -. "우회: 인라인 재구현" .-> H
+  classDef leak stroke:#dc2626,stroke-width:2px,color:#dc2626;
+  classDef dup fill:#fef2f2,stroke:#fca5a5;
+  class GD dup
+  linkStyle 3 stroke:#dc2626,stroke-width:2px;
+              </pre>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-2">After — 워프 세션 한 채 + 공급원 어댑터 둘</p>
+              <pre class="mermaid">
+flowchart TB
+  DP2["/discover 호스트 (얇음)"]
+  GD2["그룹 호스트 (얇음)"]
+  WS["워프 세션 — deep<br/>blackout·back스택·exclude·키보드·nav·toast"]
+  A1["공개 풀 어댑터"]
+  A2["그룹 풀 어댑터"]
+  PS2["PublicScene"]
+  DP2 --> WS
+  GD2 --> WS
+  WS -.-> A1
+  WS -.-> A2
+  WS --> PS2
+  classDef deepc fill:#0f172a,color:#f8fafc,stroke:#0f172a;
+  class WS deepc
+              </pre>
+            </div>
+          </div>
+
+          <!-- evidence -->
+          <div class="grid md:grid-cols-2 gap-4 text-xs font-mono">
+            <div class="rounded border border-slate-200 bg-slate-50 p-3 overflow-x-auto">
+              <p class="text-slate-400 mb-1">discover/page.tsx:79 — 테스트된 모듈 사용</p>
+              <pre>historyRef.current = pushHistory(historyRef.current, leaving);</pre>
+            </div>
+            <div class="rounded border border-red-200 bg-red-50 p-3 overflow-x-auto">
+              <p class="text-red-400 mb-1">GroupDiscover.tsx:50 — 같은 로직 인라인 재구현</p>
+              <pre>historyRef.current = [...historyRef.current, leaving].slice(-10);</pre>
+            </div>
+          </div>
+
+          <p><strong>Problem</strong> — 탐험 워프 세션(블랙아웃 320ms·busy 잠금·back 스택·exclude 윈도·키보드·하단 nav·에러 toast)이 두 호스트에 통째로 중복되고, 두 번째 호스트는 테스트된 history module을 우회해 cap 상수(10/20)까지 인라인으로 다시 박았다 — locality 없음.</p>
+          <p><strong>Solution</strong> — 워프 세션을 하나의 deep module로 모으고, 호스트는 "다음 Universe 공급" adapter(공개 풀 / 그룹 풀)만 끼운다 — adapter가 이미 둘이므로 real seam.</p>
+
+          <ul class="grid md:grid-cols-2 gap-x-6 gap-y-1 text-sm list-disc list-inside text-slate-700">
+            <li>locality: ISSUE-001류 수정이 한 곳</li>
+            <li>leverage: 한 interface, 호스트 N개</li>
+            <li>fake adapter로 세션 자체 테스트 가능</li>
+            <li>키 드리프트 해소(Backspace vs ←)</li>
+            <li>중복 ~150줄 삭제</li>
+            <li>Overlay·btnStyle 사본 2벌 → 1벌</li>
+          </ul>
+
+          <div class="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            ADR-0003(지속 Canvas·registry clear·exclude RPC)와 충돌 없음 — 오히려 락인 사항을 두 곳 대신 한 곳에서 집행하게 된다.
+          </div>
+        </article>
+
+        <!-- ════════════════ CANDIDATE 2 ════════════════ -->
+        <article id="c2" class="rounded-xl border border-slate-200 bg-white shadow-sm p-8 space-y-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
+            <h2 class="font-serif text-2xl">2. PublicScene의 seam 누수 — boolean 프롭 누적</h2>
+            <div class="flex gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">Worth exploring</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-sm text-slate-600 space-y-0.5">
+            <div>app/scene/PublicScene.tsx <span class="text-slate-400">(149줄 · 테스트 없음)</span></div>
+            <div>호스트 3곳: app/s/[short_code]/page.tsx · app/discover/page.tsx · GroupDiscover.tsx</div>
+          </div>
+
+          <!-- mass diagram, hand-built -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-slate-200 p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — interface가 호스트 사정을 인코딩 (shallow)</p>
+              <div class="relative">
+                <div class="ifc border border-indigo-300 rounded-t px-3 py-2 text-xs font-mono">
+                  tree · warp · keyboardFocus · <span class="text-red-600 font-bold">bottomNav</span>
+                  <div class="text-[10px] text-indigo-900 mt-1">프롭마다 "어느 호스트인가"를 알아야 함</div>
+                </div>
+                <div class="border border-t-0 border-slate-300 rounded-b px-3 py-3 text-xs text-slate-500 space-y-1">
+                  <div>Canvas + 카메라 + System</div>
+                  <div class="text-red-600">focused Body 라벨 (호스트 크롬인데 뷰어 안)</div>
+                  <div>focus-key 배선 (테스트 없음)</div>
+                </div>
+                <svg class="absolute -right-2 top-10" width="20" height="60">
+                  <line x1="10" y1="0" x2="10" y2="60" stroke="#dc2626" stroke-width="2"/>
+                  <polygon points="5,52 15,52 10,60" fill="#dc2626"/>
+                </svg>
+              </div>
+              <p class="text-[11px] text-red-600 mt-2">실증: 라벨이 호스트 버튼에 가린 버그(<span class="font-mono">7b13c94</span>) — 수정도 boolean 프롭 추가로, 누수가 한 칸 더 깊어짐</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — 뷰어는 Universe 렌더만 (deep)</p>
+              <div>
+                <div class="ifc border border-indigo-300 rounded-t px-3 py-1.5 text-xs font-mono">tree (+ Focus 상태 노출)</div>
+                <div class="deep text-slate-100 border border-t-0 border-slate-700 rounded-b px-3 py-6 text-xs space-y-1">
+                  <div>Canvas + 카메라 + System + 워프 카메라</div>
+                  <div class="text-slate-400">focus 가드·registry clear — 내부로 흡수</div>
+                </div>
+                <div class="mt-3 border border-dashed border-slate-400 rounded px-3 py-2 text-xs text-slate-600">
+                  라벨·키보드·nav 크롬 → 호스트(후보 1의 워프 세션) 한 곳에서 — 서로를 아는 채로 배치
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p><strong>Problem</strong> — PublicScene의 interface가 호스트당 boolean 프롭을 하나씩 늘리는 중이고(warp → keyboardFocus → bottomNav), focused Body 라벨이라는 호스트 크롬이 뷰어 implementation 안에 있어 seam 양쪽이 서로의 레이아웃을 모른다 — 방금 고친 라벨 가림 버그가 그 직접 증거.</p>
+          <p><strong>Solution</strong> — 뷰어는 Universe 렌더와 Focus 상태 노출까지만 책임지고, 크롬(라벨·키보드·하단 nav)은 호스트 쪽 한 곳으로 모은다.</p>
+
+          <ul class="grid md:grid-cols-2 gap-x-6 gap-y-1 text-sm list-disc list-inside text-slate-700">
+            <li>interface 축소: 프롭 4 → 1~2</li>
+            <li>locality: 크롬 충돌이 한 파일 안</li>
+            <li>같은 버그 클래스 재발 차단</li>
+            <li>/s/[code] 경로 더 단순해짐</li>
+          </ul>
+
+          <div class="rounded border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
+            후보 1과 자연스럽게 한 묶음 — 워프 세션 module이 생기면 크롬의 귀속처가 저절로 정해진다.
+          </div>
+        </article>
+
+        <!-- ════════════════ CANDIDATE 3 ════════════════ -->
+        <article id="c3" class="rounded-xl border border-slate-200 bg-white shadow-sm p-8 space-y-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
+            <h2 class="font-serif text-2xl">3. SphereSync — 동기화 정책이 useEffect 클로저에 갇힘</h2>
+            <div class="flex gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">Worth exploring</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">local-substitutable</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-sm text-slate-600">
+            app/me/SphereSync.tsx <span class="text-slate-400">(106줄 · 테스트 0)</span>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-slate-200 p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — 정책 6가지가 한 클로저에</p>
+              <div class="ifc border border-indigo-300 rounded-t px-3 py-1.5 text-xs font-mono">&lt;SphereSync userId /&gt; — 아무것도 말하지 않는 interface</div>
+              <div class="border border-t-0 border-red-300 bg-red-50/40 rounded-b px-3 py-3 text-xs text-slate-600 space-y-1">
+                <div>· 에코 억제 (serverTree 비교)</div>
+                <div>· 1.5s 디바운스 + pending 관리</div>
+                <div>· 로드 윈도 동안 server-wins</div>
+                <div>· 첫 로그인 → 로컬을 시드로 push</div>
+                <div>· 언마운트 시 flush (유실 방지)</div>
+                <div>· 하이드레이트 후 undo 스택 clear</div>
+                <div class="text-red-600 pt-1">전부 클로저 변수 — interface 밖에서 검증 불가</div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — 프레임워크 없는 sync 세션 module</p>
+              <div class="deep text-slate-100 rounded px-3 py-3 text-xs space-y-1">
+                <div class="font-mono text-indigo-200">sync 세션 (순수 TS) — deep</div>
+                <div class="text-slate-400">에코 억제·디바운스·server-wins·시드·flush 전부 내부</div>
+                <div class="text-slate-400">transport는 seam 너머 adapter (supabase / fake)</div>
+              </div>
+              <div class="mt-2 border border-slate-300 rounded px-3 py-2 text-xs text-slate-600">
+                SphereSync 컴포넌트 = 10줄 adapter (mount/unmount → start/stop)
+              </div>
+              <p class="text-[11px] text-slate-500 mt-2">fake transport + fake timer로 6개 정책 시나리오를 vitest에서 직접 검증</p>
+            </div>
+          </div>
+
+          <p><strong>Problem</strong> — local-first 동기화의 실질 정책(에코 억제·디바운스·server-wins·시드·flush·undo clear)이 전부 한 useEffect 클로저 안이라 interface가 아무것도 드러내지 않고 테스트가 0 — QA ISSUE-001과 같은 패턴(순수부 <span class="font-mono text-xs">countNodes</span>만 테스트, 배선은 비테스트)이 앱에서 가장 미묘한 module에 그대로 남아 있다.</p>
+          <p><strong>Solution</strong> — 정책을 프레임워크 없는 sync 세션 module로 추출하고 transport(supabase)는 adapter로 주입, 컴포넌트는 얇은 adapter로 남긴다.</p>
+
+          <ul class="grid md:grid-cols-2 gap-x-6 gap-y-1 text-sm list-disc list-inside text-slate-700">
+            <li>interface가 정책을 드러냄</li>
+            <li>테스트가 interface를 통과</li>
+            <li>유실 시나리오(편집 후 이탈) 검증 가능</li>
+            <li>멀티탭(D7 연기분) 착수 지점이 한 곳</li>
+          </ul>
+
+          <div class="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            eng-review D3는 "local-first + 디바운스"만 락인 — 구현 형태는 자유. 충돌 없음.
+          </div>
+        </article>
+
+        <!-- ════════════════ CANDIDATE 4 ════════════════ -->
+        <article id="c4" class="rounded-xl border border-slate-200 bg-white shadow-sm p-8 space-y-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
+            <h2 class="font-serif text-2xl">4. lib/ 데이터 접근 — 패스스루를 adapter로 승격하거나 인라인</h2>
+            <div class="flex gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-700 border border-slate-300">Speculative</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">ports &amp; adapters</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-sm text-slate-600 space-y-0.5">
+            <div>lib/sphere/random-public.ts <span class="text-slate-400">(24줄 → 호출자 1곳)</span></div>
+            <div>lib/group/group-discover.ts <span class="text-slate-400">(22줄 → 호출자 1곳)</span></div>
+            <div>lib/sphere/hearts.ts <span class="text-slate-400">(51줄 → 호출자 1곳)</span> · lib/group/groups.ts <span class="text-slate-400">(53줄)</span> · lib/sphere/serialize.ts <span class="text-slate-400">(17줄)</span></div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-2">Before — 1:1 랩, hypothetical seam</p>
+              <pre class="mermaid">
+flowchart LR
+  C1["discover 호스트"] --> W1["random-public.ts"] --> R1["RPC"]
+  C2["그룹 호스트"] --> W2["group-discover.ts"] --> R2["RPC"]
+  C3["HeartButton"] --> W3["hearts.ts"] --> R3["RPC"]
+              </pre>
+              <p class="text-[11px] text-slate-500 mt-2">deletion test: 지우면 복잡도가 사라진다 — 패스스루</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-2">After — 같은 interface의 두 adapter (real seam)</p>
+              <pre class="mermaid">
+flowchart LR
+  WS["워프 세션 (후보 1)"] -.-> I["다음 Universe 공급 seam"]
+  I --- A1["공개 풀 adapter"]
+  I --- A2["그룹 풀 adapter"]
+  I --- A3["fake adapter (테스트)"]
+  classDef deepc fill:#0f172a,color:#f8fafc;
+  class WS deepc
+              </pre>
+              <p class="text-[11px] text-slate-500 mt-2">hearts·serialize는 인라인 또는 현상 유지 (저비용)</p>
+            </div>
+          </div>
+
+          <p><strong>Problem</strong> — 다섯 module이 전부 단일 호출자용 1:1 RPC 랩이라 deletion test를 통과 못 하는 패스스루 — adapter가 하나뿐인 hypothetical seam.</p>
+          <p><strong>Solution</strong> — 후보 1의 "다음 Universe 공급" seam이 생기면 random-public과 group-discover는 같은 interface의 두 adapter로 승격되어 밥값을 하게 되고, 나머지는 인라인하거나 그대로 둔다.</p>
+
+          <ul class="grid md:grid-cols-2 gap-x-6 gap-y-1 text-sm list-disc list-inside text-slate-700">
+            <li>seam이 real이 됨 (adapter 2개)</li>
+            <li>fake adapter → 세션 테스트 토대</li>
+          </ul>
+
+          <div class="rounded border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
+            단독으로는 손대지 말 것 — 후보 1에 딸려갈 때만 의미가 생긴다.
+          </div>
+        </article>
+
+        <!-- ════════════════ CANDIDATE 5 ════════════════ -->
+        <article id="c5" class="rounded-xl border border-slate-200 bg-white shadow-sm p-8 space-y-6">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
+            <h2 class="font-serif text-2xl">5. 용어 드리프트 — 코드의 "sphere" ≠ 도메인의 Universe</h2>
+            <div class="flex gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-700 border border-slate-300">Speculative</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-sm text-slate-600 space-y-0.5">
+            <div>useSphereStore · createPublicSphereStore · SphereSync · OrbitalBody 타입 · "tree" 변수 전반</div>
+            <div class="text-slate-400">CONTEXT.md: «"sphere"는 개별 노드를 가리킬 때도 쓰지 않는다» — 이미 락인된 금칙어</div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-slate-200 p-4 text-sm">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — 한 개념, 세 이름</p>
+              <div class="space-y-2 font-mono text-xs">
+                <div class="flex items-center gap-2"><span class="px-2 py-1 bg-red-50 border border-red-200 rounded">sphere</span><span class="px-2 py-1 bg-red-50 border border-red-200 rounded">tree</span><span class="px-2 py-1 bg-red-50 border border-red-200 rounded">universe</span><span class="text-slate-400">→ Universe</span></div>
+                <div class="flex items-center gap-2"><span class="px-2 py-1 bg-red-50 border border-red-200 rounded">OrbitalBody</span><span class="px-2 py-1 bg-red-50 border border-red-200 rounded">node</span><span class="px-2 py-1 bg-red-50 border border-red-200 rounded">body</span><span class="text-slate-400">→ Body</span></div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-3">개념 하나를 추적하려면 grep을 세 번 — AI 탐색성·신규 합류 비용 모두에 마찰</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-4 text-sm">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — 용어집이 곧 코드 인덱스</p>
+              <div class="space-y-2 font-mono text-xs">
+                <div><span class="px-2 py-1 bg-emerald-50 border border-emerald-200 rounded">Universe</span> <span class="text-slate-400">— 스토어·타입·프롭 전부</span></div>
+                <div><span class="px-2 py-1 bg-emerald-50 border border-emerald-200 rounded">Body</span> <span class="text-slate-400">— 노드 타입과 변수</span></div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-3">DB 테이블 <span class="font-mono">spheres</span>는 그대로 — 코드 레벨 이름만 수렴</p>
+            </div>
+          </div>
+
+          <p><strong>Problem</strong> — CONTEXT.md가 금지한 "sphere"가 코드 표면 전체(스토어·타입·컴포넌트 이름)에 남아 있어 도메인 용어집과 코드가 서로 다른 언어를 쓴다.</p>
+          <p><strong>Solution</strong> — 코드 레벨 이름을 Universe/Body로 수렴한다(기계적 rename, DB는 제외).</p>
+
+          <ul class="grid md:grid-cols-2 gap-x-6 gap-y-1 text-sm list-disc list-inside text-slate-700">
+            <li>한 개념 = grep 한 번</li>
+            <li>용어집과 코드 일치</li>
+          </ul>
+
+          <div class="rounded border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
+            rename 전용 PR은 열린 브랜치와 충돌 비용이 큼 — 후보 1/2를 건드릴 때 그 파일들만 함께 개명하는 점진 방식 권장.
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ════════════════ TOP RECOMMENDATION ════════════════ -->
+      <section id="top-recommendation">
+        <div class="rounded-xl deep text-slate-100 p-8 space-y-3 shadow-lg">
+          <p class="text-xs uppercase tracking-wider text-indigo-300">Top recommendation</p>
+          <h2 class="font-serif text-2xl"><a href="#c1" class="underline decoration-indigo-400 underline-offset-4">후보 1 — 워프 세션 deep module</a></h2>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            증거가 가장 신선하다: 직전 두 버그(ISSUE-001 back 스택, 라벨 가림 <span class="font-mono">7b13c94</span>)가 모두 이 seam에서 났고, 후자는 두 호스트에 똑같이 적용해야 했다.
+            adapter가 이미 둘(공개 풀·그룹 풀)이라 seam이 real이고, 후보 2(크롬 귀속)와 후보 4(adapter 승격)가 공짜로 딸려온다.
+            세 번째 탐험 모드(예: M6에서 테마별·팔로우 탐험)가 생기는 순간 중복은 세 채가 된다 — 지금이 가장 싸다.
+          </p>
+        </div>
+      </section>
+
+      <footer class="text-xs text-slate-400 pt-4">
+        tous architecture review · 생성 2026-06-12 · 어휘: CONTEXT.md(Universe/Body/Self/Orbit/Focus) + LANGUAGE.md(module/interface/depth/seam/adapter/leverage/locality)
+      </footer>
+    </main>
+  </body>
+</html>
