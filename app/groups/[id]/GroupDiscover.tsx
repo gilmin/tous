@@ -114,7 +114,7 @@ export default function GroupDiscover({
 
   return (
     <div className="w-screen h-screen">
-      {current && <PublicScene tree={current.tree} warp />}
+      {current && <PublicScene tree={current.tree} warp bottomNav />}
 
       <WarpOverlay warping={dark} bootOnMount />
 

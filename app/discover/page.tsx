@@ -164,7 +164,7 @@ export default function DiscoverPage() {
   return (
     <div className="w-screen h-screen">
       {current && (
-        <PublicScene tree={current.tree as OrbitalBody} warp keyboardFocus />
+        <PublicScene tree={current.tree as OrbitalBody} warp keyboardFocus bottomNav />
       )}
       {status === "ready" && current && (
         <HeartButton key={current.shortCode} shortCode={current.shortCode} />
