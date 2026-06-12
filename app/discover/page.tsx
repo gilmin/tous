@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import PublicScene from "@/app/scene/PublicScene";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import { HeartButton } from "@/app/_components/HeartButton";
+import { OnboardingHint } from "@/app/_components/OnboardingHint";
+import { MobileGuard } from "@/app/_components/MobileGuard";
 import { createClient } from "@/lib/supabase/client";
 import { COSMIC_BG } from "@/app/scene/cosmic-env";
 import { getRandomPublicSphere } from "@/lib/sphere/random-public";
@@ -196,6 +198,20 @@ export default function DiscoverPage() {
           {flash}
         </div>
       )}
+
+      {status === "ready" && (
+        <OnboardingHint
+          storageKey="tous:onboarding:discover:v1"
+          title="낯선 우주를 탐험하는 법"
+          lines={[
+            ["클릭 · ←/→", "행성 하나를 살펴보기"],
+            ["Esc", "살펴보기 끝내기"],
+            ["Space", "다음 우주로 워프"],
+            ["Backspace", "이전 우주로 돌아가기"],
+          ]}
+        />
+      )}
+      <MobileGuard />
 
       {status === "ready" && (
         <div

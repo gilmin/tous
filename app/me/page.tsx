@@ -5,6 +5,8 @@ import { signOut } from "./actions";
 import SphereSync from "./SphereSync";
 import PublishToggle from "./PublishToggle";
 import { HeartButton } from "@/app/_components/HeartButton";
+import { OnboardingHint } from "@/app/_components/OnboardingHint";
+import { MobileGuard } from "@/app/_components/MobileGuard";
 
 // Owner page. Auth-gated: a logged-out visitor is bounced to /login. This is the
 // cloud-synced sphere editor (M3-2) — the same Scene as "/", but SphereSync
@@ -30,6 +32,17 @@ export default async function MePage() {
     <div className="w-screen h-screen">
       <Scene />
       <SphereSync userId={user.id} />
+      <OnboardingHint
+        storageKey="tous:onboarding:me:v1"
+        title="내 우주를 만드는 법"
+        lines={[
+          ["행성 클릭", "포커스 — 패널에서 편집·자식 추가·삭제"],
+          ["←/→", "행성 차례로 이동"],
+          ["Ctrl+Z · Ctrl+Y", "실행 취소 · 다시 실행"],
+          ["Esc", "포커스 해제"],
+        ]}
+      />
+      <MobileGuard />
       {/* Owner can see (and toggle) hearts on their own universe — only once
           published, since hearts only exist for public spheres. Pinned top-left
           to clear the publish/sign-out controls top-right. */}
