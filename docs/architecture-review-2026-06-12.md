@@ -40,7 +40,7 @@
 
 **메모** — 후보 1과 한 묶음. 워프 세션 module이 생긴 지금 크롬의 귀속처가 저절로 정해짐 → **다음 착수 1순위**.
 
-**구현 결과** (2026-06-13) — 뷰어 interface 4프롭(`tree/warp/keyboardFocus/bottomNav`)→1(`store`). 신규 `app/scene/useForeignSphereStore.ts`(호스트가 read-only store 소유 + 트리 스왑 동기화 — D3 registry clear가 swap 옆으로 이동) · `app/_components/FocusLabel.tsx`(`lifted`로 하단 nav 위 배치 → 라벨 가림 버그 클래스 구조적 차단) · `app/_components/warp/useFocusKeys.ts`(←/→/Esc) · `app/s/[short_code]/SphereView.tsx`(서버 페이지용 client 래퍼). `warp` 프롭은 WarpCamera가 store-구동 self-gating이라 소멸. 호스트 3곳 배선 교체. tsc green, vitest 117. ⚠️ R3F 배선이라 런타임/육안 미검증 → `/qa` dogfood 필요.
+**구현 결과** (2026-06-13) — 뷰어 interface 4프롭(`tree/warp/keyboardFocus/bottomNav`)→1(`store`). 신규 `app/scene/useForeignSphereStore.ts`(호스트가 read-only store 소유 + 트리 스왑 동기화 — D3 registry clear가 swap 옆으로 이동) · `app/_components/FocusLabel.tsx`(`lifted`로 하단 nav 위 배치 → 라벨 가림 버그 클래스 구조적 차단) · `app/_components/warp/useFocusKeys.ts`(←/→/Esc) · `app/s/[short_code]/SphereView.tsx`(서버 페이지용 client 래퍼). `warp` 프롭은 WarpCamera가 store-구동 self-gating이라 소멸. 호스트 3곳 배선 교체. tsc green, vitest 117. ✅ **2026-06-13 사용자 수동 dogfood 통과** — 이름표 위치·←/→ 키보드·`/s/[code]` 클릭 육안 확인 완료.
 
 ---
 
