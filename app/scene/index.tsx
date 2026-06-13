@@ -7,16 +7,16 @@ import { FocusPanel } from "./FocusPanel";
 import { FocusRing } from "./FocusRing";
 import { System } from "./System";
 import { COSMIC_BG, CosmicScenery } from "./cosmic-env";
-import { useSphereStore } from "./store/sphere-store";
+import { useUniverseStore } from "./store/universe-store";
 import { keyReducer } from "./store/key-reducer";
 
 export default function Scene() {
-  const focusedId = useSphereStore((s) => s.focusedId);
-  const mode = useSphereStore((s) => s.mode);
-  const setFocus = useSphereStore((s) => s.setFocus);
-  const focusNext = useSphereStore((s) => s.focusNext);
-  const focusPrev = useSphereStore((s) => s.focusPrev);
-  const setMode = useSphereStore((s) => s.setMode);
+  const focusedId = useUniverseStore((s) => s.focusedId);
+  const mode = useUniverseStore((s) => s.mode);
+  const setFocus = useUniverseStore((s) => s.setFocus);
+  const focusNext = useUniverseStore((s) => s.focusNext);
+  const focusPrev = useUniverseStore((s) => s.focusPrev);
+  const setMode = useUniverseStore((s) => s.setMode);
   // Selecting an orbiting body fires on pointerdown, but pointerup can land on
   // empty space (the body has moved) → onPointerMissed would immediately clear
   // the focus. Stamp the time of every select so the 300ms guard can suppress
@@ -56,11 +56,11 @@ export default function Scene() {
           break;
         case "tree-undo":
           e.preventDefault();
-          useSphereStore.temporal.getState().undo();
+          useUniverseStore.temporal.getState().undo();
           break;
         case "tree-redo":
           e.preventDefault();
-          useSphereStore.temporal.getState().redo();
+          useUniverseStore.temporal.getState().redo();
           break;
         case "noop":
         default:

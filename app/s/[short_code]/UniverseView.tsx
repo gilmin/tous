@@ -1,7 +1,7 @@
 "use client";
 
 import PublicScene from "@/app/scene/PublicScene";
-import { useForeignSphereStore } from "@/app/scene/useForeignSphereStore";
+import { useForeignUniverseStore } from "@/app/scene/useForeignUniverseStore";
 import { FocusLabel } from "@/app/_components/FocusLabel";
 import type { OrbitalBody } from "@/app/scene/types";
 
@@ -9,8 +9,8 @@ import type { OrbitalBody } from "@/app/scene/types";
 // read-only store and renders the viewer plus the focused-Body label. The tree
 // is stable here (no warp), so the label sits at its default position — no bottom
 // nav to clear.
-export function SphereView({ tree }: { tree: OrbitalBody }) {
-  const store = useForeignSphereStore(tree);
+export function UniverseView({ tree }: { tree: OrbitalBody }) {
+  const store = useForeignUniverseStore(tree);
   if (!store) return null;
   return (
     <>

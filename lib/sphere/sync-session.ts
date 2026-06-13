@@ -4,7 +4,7 @@ import type { OrbitalBody } from "@/app/scene/types";
 // from the React effect that used to hold it inline. It is framework-free — no
 // supabase, no zustand, no React — so the policy is the interface and the policy
 // is testable. Two ports are injected: a transport (server I/O) and a local
-// store (the editable tree). The component (app/me/SphereSync) is the thin
+// store (the editable tree). The component (app/me/UniverseSync) is the thin
 // adapter that builds both ports and runs the session for the mount's lifetime.
 //
 // The policy, made explicit here:

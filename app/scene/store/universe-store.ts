@@ -87,7 +87,7 @@ function pickOrbitRadius(parent: OrbitalBody, size: number): number {
 
 export type Mode = "normal" | "edit" | "add" | "delete-confirm";
 
-export type SphereState = {
+export type UniverseState = {
   tree: OrbitalBody;
   lastFocused: string | null;
   focusedId: string | null;
@@ -159,7 +159,7 @@ function makeThrottledStorage() {
   };
 }
 
-export const useSphereStore = create<SphereState>()(
+export const useUniverseStore = create<UniverseState>()(
   persist(
     temporal(
       immer((set) => ({
@@ -296,21 +296,21 @@ export const useSphereStore = create<SphereState>()(
         ({
           tree: state.tree,
           lastFocused: state.lastFocused,
-        }) as Partial<SphereState>,
+        }) as Partial<UniverseState>,
       version: 1,
       migrate: (persisted, version) => {
         if (version !== 1) {
           return {
             tree: structuredClone(SYSTEM),
             lastFocused: SYSTEM.id,
-          } as Partial<SphereState>;
+          } as Partial<UniverseState>;
         }
-        return persisted as Partial<SphereState>;
+        return persisted as Partial<UniverseState>;
       },
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.warn(
-            "[sphere] localStorage 손상, SYSTEM seed로 fallback",
+            "[universe] localStorage 손상, SYSTEM seed로 fallback",
             error,
           );
           return;

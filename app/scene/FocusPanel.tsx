@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   beginSliderCoalesce,
   endSliderCoalesce,
-  useSphereStore,
-} from "./store/sphere-store";
+  useUniverseStore,
+} from "./store/universe-store";
 import { selectBodyById } from "./store/tree-ops";
 import { PLANET_SHAPES, type PlanetShape } from "../_components/Planet";
 import {
@@ -213,16 +213,16 @@ function AppearanceControls({
 }
 
 export function FocusPanel() {
-  const focusedBody = useSphereStore((s) =>
+  const focusedBody = useUniverseStore((s) =>
     s.focusedId ? selectBodyById(s.tree, s.focusedId) : null,
   );
-  const mode = useSphereStore((s) => s.mode);
-  const setFocus = useSphereStore((s) => s.setFocus);
-  const setMode = useSphereStore((s) => s.setMode);
-  const editBody = useSphereStore((s) => s.editBody);
-  const addChild = useSphereStore((s) => s.addChild);
-  const deleteBody = useSphereStore((s) => s.deleteBody);
-  const rootId = useSphereStore((s) => s.tree.id);
+  const mode = useUniverseStore((s) => s.mode);
+  const setFocus = useUniverseStore((s) => s.setFocus);
+  const setMode = useUniverseStore((s) => s.setMode);
+  const editBody = useUniverseStore((s) => s.editBody);
+  const addChild = useUniverseStore((s) => s.addChild);
+  const deleteBody = useUniverseStore((s) => s.deleteBody);
+  const rootId = useUniverseStore((s) => s.tree.id);
   const inputRef = useRef<HTMLInputElement>(null);
   const [addDraft, setAddDraft] = useState("");
 

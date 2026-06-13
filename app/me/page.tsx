@@ -2,15 +2,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Scene from "@/app/scene";
 import { signOut } from "./actions";
-import SphereSync from "./SphereSync";
+import UniverseSync from "./UniverseSync";
 import PublishToggle from "./PublishToggle";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { OnboardingHint } from "@/app/_components/OnboardingHint";
 import { MobileGuard } from "@/app/_components/MobileGuard";
 
 // Owner page. Auth-gated: a logged-out visitor is bounced to /login. This is the
-// cloud-synced sphere editor (M3-2) — the same Scene as "/", but SphereSync
-// loads the owner's server sphere on mount and pushes edits back (debounced).
+// cloud-synced Universe editor (M3-2) — the same Scene as "/", but UniverseSync
+// loads the owner's stored Universe on mount and pushes edits back (debounced).
 // M3-3 adds the publish toggle (share via /s/[short_code]).
 export default async function MePage() {
   const supabase = await createClient();
@@ -21,7 +21,7 @@ export default async function MePage() {
   if (!user) redirect("/login");
 
   // Initial publish state for the toggle. The row may not exist yet on a brand
-  // new account (SphereSync seeds it client-side) → defaults below.
+  // new account (UniverseSync seeds it client-side) → defaults below.
   const { data: sphere } = await supabase
     .from("spheres")
     .select("is_public, short_code")
@@ -31,7 +31,7 @@ export default async function MePage() {
   return (
     <div className="w-screen h-screen">
       <Scene />
-      <SphereSync userId={user.id} />
+      <UniverseSync userId={user.id} />
       <OnboardingHint
         storageKey="tous:onboarding:me:v1"
         title="내 우주를 만드는 법"

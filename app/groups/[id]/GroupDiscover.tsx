@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import PublicScene from "@/app/scene/PublicScene";
-import { useForeignSphereStore } from "@/app/scene/useForeignSphereStore";
+import { useForeignUniverseStore } from "@/app/scene/useForeignUniverseStore";
 import { FocusLabel } from "@/app/_components/FocusLabel";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import {
@@ -51,7 +51,7 @@ export default function GroupDiscover({
 
   // Host owns the read-only store → it renders the Focus chrome (name label
   // lifted above the bottom nav, ←/→ keyboard nav) next to the viewer.
-  const store = useForeignSphereStore(current?.tree ?? null);
+  const store = useForeignUniverseStore(current?.tree ?? null);
   useFocusKeys(store);
 
   const nickname = current?.meta?.nickname as string | undefined;

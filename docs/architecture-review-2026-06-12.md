@@ -4,7 +4,7 @@
 > 어휘: 도메인은 CONTEXT.md(Universe/Body/Self/Orbit/Focus/Warp/Pool), 아키텍처는 module/interface/implementation/depth/seam/adapter/leverage/locality.
 > 원본 비주얼 리포트(before/after 다이어그램 포함)는 세션 당시 temp HTML로 생성됨(휘발성). 이 문서가 영구 사본.
 
-**진행 상태**: 후보 1·2·3 ✅ 구현 완료(브랜치 `refactor/warp-session`). 후보 4 = N/A(후보 1 Pool adapter에 흡수). 후보 5 미착수.
+**진행 상태**: 후보 1·2·3·5 ✅ 구현 완료(브랜치 `refactor/warp-session`). 후보 4 = N/A(후보 1 Pool adapter에 흡수). **5개 후보 전부 종결.**
 
 ---
 
@@ -78,7 +78,7 @@
 
 ---
 
-## 후보 5 — 용어 드리프트: 코드의 "sphere" ≠ 도메인의 Universe
+## 후보 5 — 용어 드리프트: 코드의 "sphere" ≠ 도메인의 Universe ✅ 구현 완료
 
 **강도**: Speculative · **분류**: in-process
 
@@ -91,6 +91,8 @@
 **Wins** — 한 개념 = grep 한 번 · 용어집과 코드 일치.
 
 **메모** — rename 전용 PR은 열린 브랜치와 충돌 비용 큼 → 후보 1/2 건드릴 때 그 파일만 함께 개명하는 점진 방식 권장.
+
+**구현 결과** (2026-06-13, 세션 5 — **Surgical 스코프**) — 핵심 결정: **"sphere"는 영속·전송 식별자로만 잔존**(DB 테이블 `spheres`·마이그·RLS·RPC·`short_code`·`/s/[code]` URL·`tous:sphere:v1` localStorage 키 = 불변), 도메인/앱 코드는 Universe. seam = `lib/sphere/serialize.ts`. CONTEXT.md Flagged ambiguities에 이 경계 박음. 식별자 개명: `useSphereStore→useUniverseStore` · `SphereState→UniverseState` · `createPublicSphereStore→createForeignUniverseStore` · `PublicSphereStore→ForeignUniverseStore` · `useForeignSphereStore→useForeignUniverseStore` · `SphereSync→UniverseSync` · `SphereView→UniverseView`. 파일 5개 `git mv`(store/test/foreign-hook/sync/view). **"foreign" = 뷰어 관점, "public" = `is_public` DB 플래그**로 의미 분리. `state.tree`·`OrbitalBody`·`PublicScene`·`PublicSpherePage`는 스코프 밖(유지). 검증: tsc green, vitest **126**(전 테스트 동작 보존 — 순수 rename). 15개 코드 파일 touched, 도메인 주석만 동반 갱신(기하학적 "sphere"·DB "sphere"는 보존).
 
 ---
 

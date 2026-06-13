@@ -1,20 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import type { useSphereStore as UseSphereStore } from "./sphere-store";
+import type { useUniverseStore as UseUniverseStore } from "./universe-store";
 import { selectBodyById } from "./tree-ops";
 
 const STORAGE_KEY = "tous:sphere:v1";
 
-async function freshStore(): Promise<typeof UseSphereStore> {
+async function freshStore(): Promise<typeof UseUniverseStore> {
   vi.resetModules();
-  const mod = await import("./sphere-store");
-  const useStore = mod.useSphereStore;
+  const mod = await import("./universe-store");
+  const useStore = mod.useUniverseStore;
   // rehydrate() resolves after the hydration attempt regardless of outcome,
   // so awaiting it lets every test observe a settled store.
   await useStore.persist.rehydrate();
   return useStore;
 }
 
-describe("sphere-store persistence", () => {
+describe("universe-store persistence", () => {
   beforeEach(() => {
     window.localStorage.clear();
     vi.restoreAllMocks();
@@ -97,7 +97,7 @@ describe("sphere-store persistence", () => {
   });
 });
 
-describe("sphere-store actions", () => {
+describe("universe-store actions", () => {
   beforeEach(async () => {
     // Drain throttled writes leaked from a prior test before clearing —
     // otherwise a delayed setTimeout would resurrect old state into a fresh
@@ -255,7 +255,7 @@ describe("sphere-store actions", () => {
   });
 });
 
-describe("sphere-store undo/redo (#12)", () => {
+describe("universe-store undo/redo (#12)", () => {
   beforeEach(async () => {
     await new Promise((r) => setTimeout(r, 150));
     window.localStorage.clear();
@@ -311,8 +311,8 @@ describe("sphere-store undo/redo (#12)", () => {
 
   it("coalesces a slider drag into a single undo entry", async () => {
     vi.resetModules();
-    const mod = await import("./sphere-store");
-    const useStore = mod.useSphereStore;
+    const mod = await import("./universe-store");
+    const useStore = mod.useUniverseStore;
     await useStore.persist.rehydrate();
 
     const orig = selectBodyById(useStore.getState().tree, "p1")?.size;
