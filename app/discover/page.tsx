@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import PublicScene from "@/app/scene/PublicScene";
+import { useForeignSphereStore } from "@/app/scene/useForeignSphereStore";
+import { FocusLabel } from "@/app/_components/FocusLabel";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { OnboardingHint } from "@/app/_components/OnboardingHint";
@@ -10,6 +12,7 @@ import {
   useWarpSession,
   type Pool,
 } from "@/app/_components/warp/useWarpSession";
+import { useFocusKeys } from "@/app/_components/warp/useFocusKeys";
 import {
   WarpBottomNav,
   WarpMessage,
@@ -19,7 +22,6 @@ import { createClient } from "@/lib/supabase/client";
 import { getRandomPublicSphere } from "@/lib/sphere/random-public";
 import { loadDiscoverState, saveDiscoverState } from "@/lib/discover/history";
 import type { WarpEntry } from "@/lib/warp/session";
-import type { OrbitalBody } from "@/app/scene/types";
 
 // /discover — wander through strangers' public Universes (M4, ADR-0003). The
 // Warp session (lib/warp/session + useWarpSession) owns the warp mechanics —
@@ -71,16 +73,16 @@ export default function DiscoverPage() {
   const { current, status, canGoBack, dark, flash, goNext, goBack } =
     useWarpSession({ pool, restore, persist, onNavigate });
 
+  // The host owns the read-only store so it can render Focus-derived chrome (the
+  // name label, lifted clear of the bottom nav; the ←/→ keyboard nav) alongside
+  // the viewer instead of inside it.
+  const store = useForeignSphereStore(current?.tree ?? null);
+  useFocusKeys(store);
+
   return (
     <div className="w-screen h-screen">
-      {current && (
-        <PublicScene
-          tree={current.tree as OrbitalBody}
-          warp
-          keyboardFocus
-          bottomNav
-        />
-      )}
+      {store && <PublicScene store={store} />}
+      {store && <FocusLabel store={store} lifted />}
       {status === "ready" && current && (
         <HeartButton key={current.key} shortCode={current.key} />
       )}

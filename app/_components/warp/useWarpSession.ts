@@ -112,8 +112,8 @@ export function useWarpSession({
   }, []);
 
   // Sphere-level keys: Space → next Universe, Backspace → previous. The ←/→
-  // arrows steer Focus between Bodies (PublicScene owns those, keyboardFocus);
-  // the two key sets are disjoint. Unified across hosts (CONTEXT.md Warp).
+  // arrows steer Focus between Bodies (useFocusKeys owns those); the two key
+  // sets are disjoint. Unified across hosts (CONTEXT.md Warp).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "Space") {
