@@ -13,14 +13,19 @@ import { getHeartState, toggleHeart } from "@/lib/sphere/hearts";
 // Anyone can press it (including the owner viewing their own universe); the count
 // + my-heart state load on mount and update optimistically, reconciling with the
 // server's returned count.
+// `interactive` (default true) is the toggle affordance. /me passes false once the
+// universe is unpublished: hearts can't be added to a private sphere, so the button
+// becomes a read-only display of the hearts already earned (filled heart + count).
 export function HeartButton({
   shortCode,
   side = "right",
   inline = false,
+  interactive = true,
 }: {
   shortCode: string;
   side?: "left" | "right";
   inline?: boolean;
+  interactive?: boolean;
 }) {
   const [supabase] = useState(() => createClient());
   const [count, setCount] = useState(0);
@@ -59,9 +64,11 @@ export function HeartButton({
 
   return (
     <button
-      onClick={onClick}
-      aria-pressed={hearted}
-      aria-label={hearted ? "하트 취소" : "하트"}
+      onClick={interactive ? onClick : undefined}
+      aria-pressed={interactive ? hearted : undefined}
+      aria-label={
+        interactive ? (hearted ? "하트 취소" : "하트") : `받은 하트 ${count}개`
+      }
       style={{
         ...(inline
           ? {}
@@ -85,12 +92,14 @@ export function HeartButton({
         fontFamily: "var(--font-cute), system-ui, sans-serif",
         fontSize: 15,
         fontWeight: 700,
-        cursor: "pointer",
+        cursor: interactive ? "pointer" : "default",
         transition: "transform 0.12s",
-        transform: hearted ? "scale(1.04)" : "scale(1)",
+        transform: interactive && hearted ? "scale(1.04)" : "scale(1)",
       }}
     >
-      <span style={{ fontSize: 17, lineHeight: 1 }}>{hearted ? "❤️" : "🤍"}</span>
+      <span style={{ fontSize: 17, lineHeight: 1 }}>
+        {interactive ? (hearted ? "❤️" : "🤍") : "❤️"}
+      </span>
       <span style={{ minWidth: 12, textAlign: "left" }}>{count}</span>
     </button>
   );

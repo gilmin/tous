@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { generateShortCode } from "@/lib/sphere/short-code";
 
@@ -19,6 +20,7 @@ export default function PublishToggle({
   initialIsPublic: boolean;
   initialShortCode: string | null;
 }) {
+  const router = useRouter();
   const [isPublic, setIsPublic] = useState(initialIsPublic);
   const [shortCode, setShortCode] = useState(initialShortCode);
   const [busy, setBusy] = useState(false);
@@ -80,6 +82,12 @@ export default function PublishToggle({
     try {
       if (isPublic) await unpublish();
       else await publish();
+      // The heart's visibility is gated by the /me server component on is_public
+      // (read at render time), not by this client toggle's local state. Refresh
+      // re-runs that server render so the owner's heart appears on publish (and
+      // disappears on unpublish) without a manual reload. Soft refresh — the
+      // 3D Scene + sync store stay mounted, so no edits are lost.
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "오류가 발생했어요.");
     } finally {

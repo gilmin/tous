@@ -1,6 +1,7 @@
 -- 🚩 RLS / RPC GATE for hearts (#13). Verifies the heart RPCs work for an
--- anonymous caller, dedup is per-voter, unheart is scoped to one voter, and you
--- can't heart a private sphere. Self-contained: all test data is rolled back via
+-- anonymous caller, dedup is per-voter, unheart is scoped to one voter, you can't
+-- heart a private sphere, and (migration 0009) the OWNER can still read their own
+-- private sphere's heart count while others can't. Self-contained: data rolled back via
 -- the exception mechanism. A clean run raises "hearts: all checks passed".
 --
 -- The table itself is locked (no DML policies); the RPCs are SECURITY DEFINER, so
@@ -21,6 +22,11 @@ begin
     values (uid_a, '{"id":"self"}'::jsonb, true, 'pubheart');
   insert into public.spheres (owner_id, tree, is_public, short_code)
     values (uid_b, '{"id":"self"}'::jsonb, false, 'privheart');
+
+  -- Seed a heart on B's PRIVATE sphere directly (as the table owner, bypassing the
+  -- lockdown) so the owner-read check below has a non-zero count to find.
+  insert into public.sphere_hearts (sphere_id, voter)
+    select id, 'privvoter' from public.spheres where short_code = 'privheart';
 
   -- Act as anonymous from here on.
   execute 'reset role';
@@ -60,6 +66,10 @@ begin
   select public.heart_sphere('privheart', 'voter1') into n;
   assert n = 0, 'private sphere must not be heartable';
 
+  -- 6b. anon must NOT read a private sphere's heart state (function returns no rows)
+  select count(*)::int into n from public.sphere_heart_state('privheart', 'privvoter');
+  assert n = 0, 'anon must not read a private sphere''s heart state';
+
   -- 7. negative control: direct anon DML on the locked table is denied
   begin
     insert into public.sphere_hearts (sphere_id, voter)
@@ -67,6 +77,18 @@ begin
     assert false, 'direct anon insert into sphere_hearts must be denied';
   exception when insufficient_privilege then null; -- expected
   end;
+
+  -- 8. the OWNER (authenticated) CAN read their own private sphere's heart count
+  --    (migration 0009), while a different authed user still cannot.
+  execute 'reset role';
+  execute 'set local role authenticated';
+  perform set_config('request.jwt.claims', json_build_object('sub', uid_b)::text, true);
+  select hs.count into n from public.sphere_heart_state('privheart', 'privvoter') hs;
+  assert n = 1, 'owner B must see their own private sphere heart count';
+
+  perform set_config('request.jwt.claims', json_build_object('sub', uid_a)::text, true);
+  select count(*)::int into n from public.sphere_heart_state('privheart', 'privvoter');
+  assert n = 0, 'a different authed user must not read B''s private heart state';
 
   execute 'reset role';
   raise exception 'HEARTS_OK';  -- force rollback of all test data
