@@ -43,12 +43,6 @@ export default async function MePage() {
         ]}
       />
       <MobileGuard />
-      {/* Owner can see (and toggle) hearts on their own universe — only once
-          published, since hearts only exist for public spheres. Pinned top-left
-          to clear the publish/sign-out controls top-right. */}
-      {sphere?.is_public && sphere.short_code && (
-        <HeartButton shortCode={sphere.short_code} side="left" />
-      )}
       <div
         style={{
           position: "fixed",
@@ -61,11 +55,19 @@ export default async function MePage() {
           alignItems: "flex-end",
         }}
       >
-        <PublishToggle
-          userId={user.id}
-          initialIsPublic={sphere?.is_public ?? false}
-          initialShortCode={sphere?.short_code ?? null}
-        />
+        {/* Heart sits inline to the left of the publish toggle. Owner can see (and
+            toggle) hearts on their own universe, but only once published — hearts
+            only exist for public spheres. */}
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+          {sphere?.is_public && sphere.short_code && (
+            <HeartButton shortCode={sphere.short_code} inline />
+          )}
+          <PublishToggle
+            userId={user.id}
+            initialIsPublic={sphere?.is_public ?? false}
+            initialShortCode={sphere?.short_code ?? null}
+          />
+        </div>
         <form action={signOut}>
           <button
             type="submit"

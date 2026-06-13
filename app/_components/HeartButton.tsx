@@ -4,19 +4,23 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getHeartState, toggleHeart } from "@/lib/sphere/hearts";
 
-// Heart (like) toggle for a published sphere (#13). Fixed top corner so it stays
-// clear of the nav and the /discover controls (bottom). `side` picks which top
-// corner — default "right" for discover/share views; "left" on /me where the
-// owner's publish + sign-out controls already sit top-right.
+// Heart (like) toggle for a published sphere (#13). Default: fixed top corner
+// (`side`, default "right" for discover/share). `inline` mode drops the fixed
+// positioning so the button flows inside another control cluster — /me renders it
+// inline beside the publish toggle, since /me's top-left is the global Nav and its
+// top-right is the publish/sign-out column (a standalone fixed corner would hide
+// behind the nav or float away from its context).
 // Anyone can press it (including the owner viewing their own universe); the count
 // + my-heart state load on mount and update optimistically, reconciling with the
 // server's returned count.
 export function HeartButton({
   shortCode,
   side = "right",
+  inline = false,
 }: {
   shortCode: string;
   side?: "left" | "right";
+  inline?: boolean;
 }) {
   const [supabase] = useState(() => createClient());
   const [count, setCount] = useState(0);
@@ -59,10 +63,14 @@ export function HeartButton({
       aria-pressed={hearted}
       aria-label={hearted ? "하트 취소" : "하트"}
       style={{
-        position: "fixed",
-        top: 16,
-        ...(side === "left" ? { left: 16 } : { right: 16 }),
-        zIndex: 45,
+        ...(inline
+          ? {}
+          : {
+              position: "fixed",
+              top: 16,
+              ...(side === "left" ? { left: 16 } : { right: 16 }),
+              zIndex: 45,
+            }),
         display: "flex",
         alignItems: "center",
         gap: 7,
