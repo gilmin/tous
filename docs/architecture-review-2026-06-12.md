@@ -4,7 +4,7 @@
 > 어휘: 도메인은 CONTEXT.md(Universe/Body/Self/Orbit/Focus/Warp/Pool), 아키텍처는 module/interface/implementation/depth/seam/adapter/leverage/locality.
 > 원본 비주얼 리포트(before/after 다이어그램 포함)는 세션 당시 temp HTML로 생성됨(휘발성). 이 문서가 영구 사본.
 
-**진행 상태**: 후보 1 ✅ 구현 완료(브랜치 `refactor/warp-session`). 후보 2~5 미착수.
+**진행 상태**: 후보 1·2·3 ✅ 구현 완료(브랜치 `refactor/warp-session`). 후보 4 = N/A(후보 1 Pool adapter에 흡수). 후보 5 미착수.
 
 ---
 
@@ -26,7 +26,7 @@
 
 ---
 
-## 후보 2 — PublicScene의 seam 누수(boolean 프롭 누적)
+## 후보 2 — PublicScene의 seam 누수(boolean 프롭 누적) ✅ 구현 완료
 
 **강도**: Worth exploring · **분류**: in-process
 
@@ -40,9 +40,11 @@
 
 **메모** — 후보 1과 한 묶음. 워프 세션 module이 생긴 지금 크롬의 귀속처가 저절로 정해짐 → **다음 착수 1순위**.
 
+**구현 결과** (2026-06-13) — 뷰어 interface 4프롭(`tree/warp/keyboardFocus/bottomNav`)→1(`store`). 신규 `app/scene/useForeignSphereStore.ts`(호스트가 read-only store 소유 + 트리 스왑 동기화 — D3 registry clear가 swap 옆으로 이동) · `app/_components/FocusLabel.tsx`(`lifted`로 하단 nav 위 배치 → 라벨 가림 버그 클래스 구조적 차단) · `app/_components/warp/useFocusKeys.ts`(←/→/Esc) · `app/s/[short_code]/SphereView.tsx`(서버 페이지용 client 래퍼). `warp` 프롭은 WarpCamera가 store-구동 self-gating이라 소멸. 호스트 3곳 배선 교체. tsc green, vitest 117. ⚠️ R3F 배선이라 런타임/육안 미검증 → `/qa` dogfood 필요.
+
 ---
 
-## 후보 3 — SphereSync: 동기화 정책이 useEffect 클로저에 갇힘
+## 후보 3 — SphereSync: 동기화 정책이 useEffect 클로저에 갇힘 ✅ 구현 완료
 
 **강도**: Worth exploring · **분류**: local-substitutable
 
@@ -55,6 +57,8 @@
 **Wins** — interface가 정책을 드러냄 · 테스트가 interface 통과 · 유실 시나리오(편집 후 이탈) 검증 가능 · 멀티탭(D7 연기분) 착수 지점 한 곳.
 
 **ADR** — eng-review D3는 "local-first + 디바운스"만 락인. 구현 형태 자유 → 충돌 없음.
+
+**구현 결과** (2026-06-13) — `lib/sphere/sync-session.ts`(프레임워크 없는 `startSyncSession({transport,store})`, 정책 6개를 명시: 서버우선·시드·에코억제·디바운스·flush·undo clear) + `sync-session.test.ts` 9테스트(가짜 포트 + fake timer; 서버행이 pending push 취소하는 race·언마운트 flush 유실검증 포함). `SphereSync.tsx`는 얇은 어댑터(supabase=transport, zustand=store), 인터페이스 `<SphereSync userId>` 불변, 동작 100% 보존(console.warn·node_count D8만 어댑터로 이동). tsc green, vitest 126.
 
 ---
 
@@ -70,7 +74,7 @@
 
 **Wins** — seam이 real이 됨(adapter 2개) · fake adapter로 세션 테스트 토대.
 
-**메모** — 단독으로 손대지 말 것. 후보 1에 딸려갈 때만 의미. (후보 1 구현 시 Pool adapter로 일부 이미 반영됨.)
+**메모** — 단독으로 손대지 말 것. 후보 1에 딸려갈 때만 의미. (후보 1 구현 시 Pool adapter로 일부 이미 반영됨.) → **N/A 판정(2026-06-13)**: 후보 1의 Pool seam(공개·그룹 두 adapter)으로 핵심이 이미 충족 — 별도 작업 없음.
 
 ---
 

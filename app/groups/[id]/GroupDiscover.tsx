@@ -3,11 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import PublicScene from "@/app/scene/PublicScene";
+import { useForeignSphereStore } from "@/app/scene/useForeignSphereStore";
+import { FocusLabel } from "@/app/_components/FocusLabel";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import {
   useWarpSession,
   type Pool,
 } from "@/app/_components/warp/useWarpSession";
+import { useFocusKeys } from "@/app/_components/warp/useFocusKeys";
 import {
   WarpBottomNav,
   WarpMessage,
@@ -46,11 +49,17 @@ export default function GroupDiscover({
   const { current, status, canGoBack, dark, flash, goNext, goBack } =
     useWarpSession({ pool });
 
+  // Host owns the read-only store → it renders the Focus chrome (name label
+  // lifted above the bottom nav, ←/→ keyboard nav) next to the viewer.
+  const store = useForeignSphereStore(current?.tree ?? null);
+  useFocusKeys(store);
+
   const nickname = current?.meta?.nickname as string | undefined;
 
   return (
     <div className="w-screen h-screen">
-      {current && <PublicScene tree={current.tree} warp keyboardFocus bottomNav />}
+      {store && <PublicScene store={store} />}
+      {store && <FocusLabel store={store} lifted />}
 
       <WarpOverlay warping={dark} bootOnMount />
 

@@ -7,8 +7,8 @@ import { COSMIC_BG } from "@/app/scene/cosmic-env";
 // kept its own copy of the bottom nav, the centered status message, and the
 // error toast — identical styling, drifting only by accident. One place now.
 
-// Bottom-center back / next row. The label-lift in PublicScene (bottomNav) is
-// keyed to this row's presence.
+// Bottom-center back / next row. Hosts that render this also render
+// <FocusLabel lifted> so the focused-Body label clears these buttons.
 export function WarpBottomNav({
   canGoBack,
   onBack,
