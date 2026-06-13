@@ -55,12 +55,18 @@ export default async function MePage() {
           alignItems: "flex-end",
         }}
       >
-        {/* Heart sits inline to the left of the publish toggle. Owner can see (and
-            toggle) hearts on their own universe, but only once published — hearts
-            only exist for public spheres. */}
+        {/* Heart sits inline to the left of the publish toggle. It appears once the
+            universe has ever been published (a short_code exists). While public it's
+            an interactive toggle; once unpublished it stays as a read-only count of
+            the hearts earned — migration 0009 lets the owner read their own private
+            count, so going private no longer wipes the heart. */}
         <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-          {sphere?.is_public && sphere.short_code && (
-            <HeartButton shortCode={sphere.short_code} inline />
+          {sphere?.short_code && (
+            <HeartButton
+              shortCode={sphere.short_code}
+              inline
+              interactive={!!sphere.is_public}
+            />
           )}
           <PublishToggle
             userId={user.id}
