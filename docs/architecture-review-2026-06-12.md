@@ -4,7 +4,7 @@
 > 어휘: 도메인은 CONTEXT.md(Universe/Body/Self/Orbit/Focus/Warp/Pool), 아키텍처는 module/interface/implementation/depth/seam/adapter/leverage/locality.
 > 원본 비주얼 리포트(before/after 다이어그램 포함)는 세션 당시 temp HTML로 생성됨(휘발성). 이 문서가 영구 사본.
 
-**진행 상태**: 후보 1·2·3 ✅ 구현 완료(브랜치 `refactor/warp-session`). 후보 4 = N/A(후보 1 Pool adapter에 흡수). 후보 5 미착수.
+**진행 상태**: 후보 1·2·3·5 ✅ 구현 완료(브랜치 `refactor/warp-session`). 후보 4 = N/A(후보 1 Pool adapter에 흡수). **5개 후보 전부 종결.**
 
 ---
 
@@ -40,7 +40,7 @@
 
 **메모** — 후보 1과 한 묶음. 워프 세션 module이 생긴 지금 크롬의 귀속처가 저절로 정해짐 → **다음 착수 1순위**.
 
-**구현 결과** (2026-06-13) — 뷰어 interface 4프롭(`tree/warp/keyboardFocus/bottomNav`)→1(`store`). 신규 `app/scene/useForeignSphereStore.ts`(호스트가 read-only store 소유 + 트리 스왑 동기화 — D3 registry clear가 swap 옆으로 이동) · `app/_components/FocusLabel.tsx`(`lifted`로 하단 nav 위 배치 → 라벨 가림 버그 클래스 구조적 차단) · `app/_components/warp/useFocusKeys.ts`(←/→/Esc) · `app/s/[short_code]/SphereView.tsx`(서버 페이지용 client 래퍼). `warp` 프롭은 WarpCamera가 store-구동 self-gating이라 소멸. 호스트 3곳 배선 교체. tsc green, vitest 117. ⚠️ R3F 배선이라 런타임/육안 미검증 → `/qa` dogfood 필요.
+**구현 결과** (2026-06-13) — 뷰어 interface 4프롭(`tree/warp/keyboardFocus/bottomNav`)→1(`store`). 신규 `app/scene/useForeignSphereStore.ts`(호스트가 read-only store 소유 + 트리 스왑 동기화 — D3 registry clear가 swap 옆으로 이동) · `app/_components/FocusLabel.tsx`(`lifted`로 하단 nav 위 배치 → 라벨 가림 버그 클래스 구조적 차단) · `app/_components/warp/useFocusKeys.ts`(←/→/Esc) · `app/s/[short_code]/SphereView.tsx`(서버 페이지용 client 래퍼). `warp` 프롭은 WarpCamera가 store-구동 self-gating이라 소멸. 호스트 3곳 배선 교체. tsc green, vitest 117. ✅ **2026-06-13 사용자 수동 dogfood 통과** — 이름표 위치·←/→ 키보드·`/s/[code]` 클릭 육안 확인 완료.
 
 ---
 
@@ -78,7 +78,7 @@
 
 ---
 
-## 후보 5 — 용어 드리프트: 코드의 "sphere" ≠ 도메인의 Universe
+## 후보 5 — 용어 드리프트: 코드의 "sphere" ≠ 도메인의 Universe ✅ 구현 완료
 
 **강도**: Speculative · **분류**: in-process
 
@@ -91,6 +91,8 @@
 **Wins** — 한 개념 = grep 한 번 · 용어집과 코드 일치.
 
 **메모** — rename 전용 PR은 열린 브랜치와 충돌 비용 큼 → 후보 1/2 건드릴 때 그 파일만 함께 개명하는 점진 방식 권장.
+
+**구현 결과** (2026-06-13, 세션 5 — **Surgical 스코프**) — 핵심 결정: **"sphere"는 영속·전송 식별자로만 잔존**(DB 테이블 `spheres`·마이그·RLS·RPC·`short_code`·`/s/[code]` URL·`tous:sphere:v1` localStorage 키 = 불변), 도메인/앱 코드는 Universe. seam = `lib/sphere/serialize.ts`. CONTEXT.md Flagged ambiguities에 이 경계 박음. 식별자 개명: `useSphereStore→useUniverseStore` · `SphereState→UniverseState` · `createPublicSphereStore→createForeignUniverseStore` · `PublicSphereStore→ForeignUniverseStore` · `useForeignSphereStore→useForeignUniverseStore` · `SphereSync→UniverseSync` · `SphereView→UniverseView`. 파일 5개 `git mv`(store/test/foreign-hook/sync/view). **"foreign" = 뷰어 관점, "public" = `is_public` DB 플래그**로 의미 분리. `state.tree`·`OrbitalBody`·`PublicScene`·`PublicSpherePage`는 스코프 밖(유지). 검증: tsc green, vitest **126**(전 테스트 동작 보존 — 순수 rename). 15개 코드 파일 touched, 도메인 주석만 동반 갱신(기하학적 "sphere"·DB "sphere"는 보존).
 
 ---
 

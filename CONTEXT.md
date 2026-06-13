@@ -46,6 +46,6 @@ _Avoid_: feed(시간순·푸시 함의), source(코드 식별자로만)
 
 ## Flagged ambiguities
 
-- "sphere"가 ① 한 사람의 태양계 전체 ② 개별 노드의 구 모양 두 가지로 쓰였음 → ①은 **Universe**로 확정. "sphere"는 개별 노드를 가리킬 때도 쓰지 않는다.
+- "sphere"가 ① 한 사람의 태양계 전체 ② 개별 노드의 구 모양 두 가지로 쓰였음 → ①은 **Universe**로 확정. "sphere"는 개별 노드를 가리킬 때도 쓰지 않는다. 단 **영속·전송 층에서는 "sphere"가 잔존**한다(2026-06-13 결정) — `spheres` DB 테이블·마이그·RLS·RPC·`short_code`·`/s/[code]` 공유 URL·`tous:sphere:v1` localStorage 키. 즉 **"sphere" = 저장·공유된 형태, Universe = 살아있는 도메인 객체**이고 그 seam은 `lib/sphere/serialize.ts`. 도메인/앱 코드(store·viewer·sync 컴포넌트)는 Universe로 부른다.
 - "cosmos/cosmic"은 시각 **테마 이름**(`/v/cosmic`)으로 예약됨 — 최상위 엔티티 이름으로 쓰지 않는다.
 - 중심 노드가 코드 `self` / PROGRESS `inner_core` / 설계문서 "이름 노드" 3가지로 불렸음 → **Self**로 확정. PROGRESS.md의 `inner_core` 표기는 정리 대상.

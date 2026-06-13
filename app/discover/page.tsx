@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import PublicScene from "@/app/scene/PublicScene";
-import { useForeignSphereStore } from "@/app/scene/useForeignSphereStore";
+import { useForeignUniverseStore } from "@/app/scene/useForeignUniverseStore";
 import { FocusLabel } from "@/app/_components/FocusLabel";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import { HeartButton } from "@/app/_components/HeartButton";
@@ -76,7 +76,7 @@ export default function DiscoverPage() {
   // The host owns the read-only store so it can render Focus-derived chrome (the
   // name label, lifted clear of the bottom nav; the ←/→ keyboard nav) alongside
   // the viewer instead of inside it.
-  const store = useForeignSphereStore(current?.tree ?? null);
+  const store = useForeignUniverseStore(current?.tree ?? null);
   useFocusKeys(store);
 
   return (

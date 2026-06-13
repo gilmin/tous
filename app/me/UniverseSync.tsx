@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useSphereStore } from "@/app/scene/store/sphere-store";
+import { useUniverseStore } from "@/app/scene/store/universe-store";
 import { countNodes } from "@/lib/sphere/serialize";
 import {
   startSyncSession,
@@ -19,7 +19,7 @@ import type { OrbitalBody } from "@/app/scene/types";
 // mount's lifetime. Side-effect only — renders nothing. Mounted inside the
 // auth-gated /me page, so `userId` is always a real owner and the browser
 // client's session makes auth.uid() = userId (RLS owner check).
-export default function SphereSync({ userId }: { userId: string }) {
+export default function UniverseSync({ userId }: { userId: string }) {
   useEffect(() => {
     const supabase = createClient();
 
@@ -33,7 +33,7 @@ export default function SphereSync({ userId }: { userId: string }) {
           .eq("owner_id", userId)
           .maybeSingle();
         if (error) {
-          console.warn("[sphere-sync] load 실패", error.message);
+          console.warn("[universe-sync] load 실패", error.message);
           return { status: "error" };
         }
         return data
@@ -46,7 +46,7 @@ export default function SphereSync({ userId }: { userId: string }) {
           { onConflict: "owner_id" },
         );
         if (error) {
-          console.warn("[sphere-sync] push 실패", error.message);
+          console.warn("[universe-sync] push 실패", error.message);
           return false;
         }
         return true;
@@ -56,11 +56,11 @@ export default function SphereSync({ userId }: { userId: string }) {
     // Local state port. Only a tree-reference change is a real edit — focus /
     // mode / nav leave the tree ref stable (immer), so a ref check skips them.
     const store: SyncLocalStore = {
-      getTree: () => useSphereStore.getState().tree,
-      setTree: (tree) => useSphereStore.setState({ tree }),
-      clearHistory: () => useSphereStore.temporal.getState().clear(),
+      getTree: () => useUniverseStore.getState().tree,
+      setTree: (tree) => useUniverseStore.setState({ tree }),
+      clearHistory: () => useUniverseStore.temporal.getState().clear(),
       subscribe: (onChange) =>
-        useSphereStore.subscribe((state, prev) => {
+        useUniverseStore.subscribe((state, prev) => {
           if (state.tree !== prev.tree) onChange(state.tree);
         }),
     };

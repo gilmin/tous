@@ -1,4 +1,4 @@
-import type { Mode } from "./sphere-store";
+import type { Mode } from "./universe-store";
 
 export type KeyAction =
   | { type: "noop" }

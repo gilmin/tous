@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SphereView } from "./SphereView";
+import { UniverseView } from "./UniverseView";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { MobileGuard } from "@/app/_components/MobileGuard";
 import type { OrbitalBody } from "@/app/scene/types";
@@ -27,7 +27,7 @@ export default async function PublicSpherePage({
 
   return (
     <div className="w-screen h-screen">
-      <SphereView tree={data.tree as OrbitalBody} />
+      <UniverseView tree={data.tree as OrbitalBody} />
       <HeartButton shortCode={short_code} />
       <MobileGuard />
     </div>
