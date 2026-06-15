@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useKeyboardInset } from "../_components/keyboard-inset";
 import {
   beginSliderCoalesce,
   endSliderCoalesce,
@@ -225,6 +226,8 @@ export function FocusPanel() {
   const rootId = useUniverseStore((s) => s.tree.id);
   const inputRef = useRef<HTMLInputElement>(null);
   const [addDraft, setAddDraft] = useState("");
+  // Lift the panel above the soft keyboard while an input is focused (U4).
+  const kbInset = useKeyboardInset();
 
   const isEditing = mode === "edit" && focusedBody !== null;
   const isAdding = mode === "add" && focusedBody !== null;
@@ -259,7 +262,10 @@ export function FocusPanel() {
         position: "fixed",
         left: "50%",
         bottom: "calc(36px + env(safe-area-inset-bottom))",
-        transform: "translateX(-50%)",
+        transform: `translateX(-50%) translateY(-${
+          isEditing || isAdding ? kbInset : 0
+        }px)`,
+        transition: "transform 0.18s ease",
         zIndex: 30,
         padding: "14px 22px",
         minWidth: 220,
