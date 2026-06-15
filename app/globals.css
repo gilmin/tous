@@ -40,7 +40,10 @@ body {
 
 @media (pointer: coarse) {
   .me-chrome {
-    transform: scale(0.85);
+    /* Origin top-right: shrinking pulls the cluster's left edge rightward, away
+       from the nav. 0.78 clears the wide published state (공개됨 · 비공개로 +
+       하트) on narrow portrait phones. */
+    transform: scale(0.78);
     transform-origin: top right;
   }
 }

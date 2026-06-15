@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getHeartState, toggleHeart } from "@/lib/sphere/hearts";
+import { useCoarsePointer } from "./useCoarsePointer";
 
 // Heart (like) toggle for a published sphere (#13). Default: fixed top corner
 // (`side`, default "right" for discover/share). `inline` mode drops the fixed
@@ -31,6 +32,10 @@ export function HeartButton({
   const [count, setCount] = useState(0);
   const [hearted, setHearted] = useState(false);
   const [busy, setBusy] = useState(false);
+  // The fixed-corner heart (discover / share) shrinks on touch to match the
+  // scaled-down nav. The inline /me heart is left alone — its parent cluster is
+  // already scaled by the .me-chrome transform, so shrinking here would double up.
+  const compact = useCoarsePointer() && !inline;
 
   useEffect(() => {
     let active = true;
@@ -80,8 +85,8 @@ export function HeartButton({
             }),
         display: "flex",
         alignItems: "center",
-        gap: 7,
-        padding: "8px 15px",
+        gap: compact ? 6 : 7,
+        padding: compact ? "7px 13px" : "8px 15px",
         borderRadius: 999,
         border: "2px solid rgba(255,255,255,0.22)",
         background: "rgba(43,28,84,0.55)",
@@ -90,17 +95,19 @@ export function HeartButton({
         boxShadow: "0 6px 20px rgba(20,10,50,0.35)",
         color: "#fff",
         fontFamily: "var(--font-cute), system-ui, sans-serif",
-        fontSize: 15,
+        fontSize: compact ? 12 : 15,
         fontWeight: 700,
         cursor: interactive ? "pointer" : "default",
         transition: "transform 0.12s",
         transform: interactive && hearted ? "scale(1.04)" : "scale(1)",
       }}
     >
-      <span style={{ fontSize: 17, lineHeight: 1 }}>
+      <span style={{ fontSize: compact ? 14 : 17, lineHeight: 1 }}>
         {interactive ? (hearted ? "❤️" : "🤍") : "❤️"}
       </span>
-      <span style={{ minWidth: 12, textAlign: "left" }}>{count}</span>
+      <span style={{ minWidth: compact ? 10 : 12, textAlign: "left" }}>
+        {count}
+      </span>
     </button>
   );
 }
