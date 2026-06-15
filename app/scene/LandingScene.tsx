@@ -38,6 +38,7 @@ function PulsingSelf() {
 export default function LandingScene() {
   return (
     <Canvas
+      dpr={[1, 2]}
       camera={{ position: [0, 0, 4.2], fov: 50, near: 0.01, far: 200 }}
       style={{ background: COSMIC_BG }}
     >
