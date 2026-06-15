@@ -30,23 +30,27 @@ export function System() {
 
   useFrame((_, delta) => {
     if (!systemRef.current || isPaused) return;
-    // Touch: symmetric directional spin — tapping left of center spins left,
-    // right spins right (same magnitude, no idle bias). Desktop keeps the idle
-    // drift + pointer parallax.
-    const target = coarse
-      ? pointer.x * MOUSE_INFLUENCE
-      : IDLE_ROTATION_SPEED + pointer.x * MOUSE_INFLUENCE;
-    // Touch: a tap opposing the current spin snaps straight to the new direction
-    // instead of easing across zero. Without this the leftward tap has to bleed
-    // off the residual rightward spin first — felt as 저항감 / a slower left. A
-    // same-direction change still eases. Desktop always eases (floaty drift).
-    const reversing =
-      coarse &&
-      Math.abs(target) > 1e-3 &&
-      Math.sign(target) !== Math.sign(rotationSpeedRef.current);
-    rotationSpeedRef.current = reversing
-      ? target
-      : THREE.MathUtils.lerp(rotationSpeedRef.current, target, LERP_FACTOR);
+    if (coarse) {
+      // Touch: direction comes from which side of center was tapped, at a FIXED
+      // magnitude so a left tap spins exactly as fast as a right tap (no slower,
+      // position-dependent left). Assigned directly — no lerp — so a reversing tap
+      // responds immediately instead of bleeding off the old spin across zero;
+      // that easing was the lingering 저항감. Before the first touch (pointer at 0)
+      // a gentle idle drift plays; the pointer holds its last value after release,
+      // so the drift keeps going (공전).
+      const dir = Math.sign(pointer.x);
+      rotationSpeedRef.current =
+        dir === 0 ? IDLE_ROTATION_SPEED : dir * MOUSE_INFLUENCE;
+      systemRef.current.rotation.y += rotationSpeedRef.current * delta;
+      return;
+    }
+    // Desktop: gentle idle drift + pointer parallax, eased for a floaty feel.
+    const target = IDLE_ROTATION_SPEED + pointer.x * MOUSE_INFLUENCE;
+    rotationSpeedRef.current = THREE.MathUtils.lerp(
+      rotationSpeedRef.current,
+      target,
+      LERP_FACTOR,
+    );
     systemRef.current.rotation.y += rotationSpeedRef.current * delta;
   });
 
