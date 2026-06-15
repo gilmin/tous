@@ -37,7 +37,7 @@ export default function WhyPage() {
   return (
     <main
       style={{
-        height: "100vh",
+        height: "100dvh",
         overflowY: "auto",
         background:
           "radial-gradient(circle at 50% -10%, #3a2486 0%, #18103f 46%, #0b0622 100%)",

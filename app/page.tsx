@@ -6,7 +6,7 @@ import LandingScene from "./scene/LandingScene";
 // people's universes (/discover). Making your own lives behind login at /me.
 export default function Home() {
   return (
-    <main style={{ position: "relative", width: "100vw", height: "100vh" }}>
+    <main style={{ position: "relative", width: "100vw", height: "100dvh" }}>
       <LandingScene />
 
       <div
@@ -47,6 +47,9 @@ export default function Home() {
             display: "flex",
             gap: 12,
             alignItems: "center",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            maxWidth: "92vw",
           }}
         >
           <Link
