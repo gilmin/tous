@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useCoarsePointer } from "./useCoarsePointer";
 
 // First-visit hint card (M5-B onboarding). Lists the page's controls as
 // key → action pairs; "알겠어요" dismisses it and a localStorage flag keeps it
@@ -10,12 +11,18 @@ export function OnboardingHint({
   storageKey,
   title,
   lines,
+  touchLines,
 }: {
   storageKey: string;
   title: string;
   lines: [key: string, action: string][];
+  touchLines?: [key: string, action: string][];
 }) {
   const [show, setShow] = useState(false);
+  // Touch devices have no keyboard, so the key→action hints are meaningless;
+  // swap in tap-based copy when the caller provides it.
+  const coarse = useCoarsePointer();
+  const rows = coarse && touchLines ? touchLines : lines;
 
   // localStorage only exists client-side; reading in an effect avoids a
   // hydration mismatch. Private-mode storage failures just skip the hint.
@@ -42,7 +49,7 @@ export function OnboardingHint({
     <div
       style={{
         position: "fixed",
-        bottom: 96,
+        bottom: "calc(96px + env(safe-area-inset-bottom))",
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 48,
@@ -63,7 +70,7 @@ export function OnboardingHint({
         {title}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {lines.map(([key, action]) => (
+        {rows.map(([key, action]) => (
           <div
             key={key}
             style={{ display: "flex", alignItems: "baseline", gap: 10 }}

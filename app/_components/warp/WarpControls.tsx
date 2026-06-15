@@ -22,7 +22,7 @@ export function WarpBottomNav({
     <div
       style={{
         position: "fixed",
-        bottom: 28,
+        bottom: "calc(28px + env(safe-area-inset-bottom))",
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 40,

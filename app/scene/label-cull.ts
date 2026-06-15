@@ -18,10 +18,12 @@ export function nextLabelVisible(
   prev: boolean,
   size: number,
   distance: number,
+  show: number = LABEL_CULL_SHOW,
+  hide: number = LABEL_CULL_HIDE,
 ): boolean {
   if (distance <= 0) return true; // camera at/inside the body — degenerate, show
   const apparent = size / distance;
-  if (apparent >= LABEL_CULL_SHOW) return true;
-  if (apparent <= LABEL_CULL_HIDE) return false;
+  if (apparent >= show) return true;
+  if (apparent <= hide) return false;
   return prev;
 }

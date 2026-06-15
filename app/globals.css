@@ -19,8 +19,15 @@
   }
 }
 
+html {
+  /* iOS 고무줄 스크롤 / 당겨서 새로고침 차단 */
+  overscroll-behavior: none;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-cute), system-ui, sans-serif;
+  /* 탭 시 회색 하이라이트 플래시 제거 */
+  -webkit-tap-highlight-color: transparent;
 }

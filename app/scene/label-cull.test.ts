@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { nextLabelVisible } from "./label-cull";
-import { LABEL_CULL_SHOW, LABEL_CULL_HIDE } from "./constants";
+import {
+  LABEL_CULL_SHOW,
+  LABEL_CULL_HIDE,
+  LABEL_CULL_SHOW_MOBILE,
+  LABEL_CULL_HIDE_MOBILE,
+} from "./constants";
 
 describe("nextLabelVisible", () => {
   it("shows a large/near body regardless of previous state", () => {
@@ -38,5 +43,13 @@ describe("nextLabelVisible", () => {
   it("shows on degenerate non-positive distance", () => {
     expect(nextLabelVisible(false, 0.1, 0)).toBe(true);
     expect(nextLabelVisible(false, 0.1, -1)).toBe(true);
+  });
+
+  it("느슨한 모바일 임계에선 더 작은 바디도 보인다", () => {
+    // 겉보기 0.06/6 = 0.01 — 데스크탑 SHOW(0.014) 아래, 모바일 SHOW(0.009) 위
+    expect(nextLabelVisible(false, 0.06, 6)).toBe(false);
+    expect(
+      nextLabelVisible(false, 0.06, 6, LABEL_CULL_SHOW_MOBILE, LABEL_CULL_HIDE_MOBILE),
+    ).toBe(true);
   });
 });

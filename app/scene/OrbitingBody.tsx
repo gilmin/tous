@@ -5,7 +5,12 @@ import { Line, Html } from "@react-three/drei";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { PlanetMesh } from "../_components/Planet";
-import { LABEL_FADE_NEAR, LABEL_FADE_FAR } from "./constants";
+import {
+  LABEL_FADE_NEAR,
+  LABEL_FADE_FAR,
+  LABEL_CULL_SHOW,
+  LABEL_CULL_HIDE,
+} from "./constants";
 import { nextLabelVisible } from "./label-cull";
 import { useSceneStore } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
@@ -33,7 +38,15 @@ function getGlossTexture(): THREE.CanvasTexture {
   return _glossTex;
 }
 
-export const OrbitingBody = memo(function OrbitingBody({ id }: { id: string }) {
+export const OrbitingBody = memo(function OrbitingBody({
+  id,
+  labelShow = LABEL_CULL_SHOW,
+  labelHide = LABEL_CULL_HIDE,
+}: {
+  id: string;
+  labelShow?: number;
+  labelHide?: number;
+}) {
   const body = useSceneStore((s) => selectBodyById(s.tree, id));
   const focusedId = useSceneStore((s) => s.focusedId);
   const setFocus = useSceneStore((s) => s.setFocus);
@@ -81,7 +94,13 @@ export const OrbitingBody = memo(function OrbitingBody({ id }: { id: string }) {
       // Cull: unmount labels too small on screen to read (perf — 100 mounted
       // DOM labels halve the frame rate; see label-cull.ts). State only
       // changes on threshold crossings, so this doesn't re-render per frame.
-      const visible = nextLabelVisible(labelVisible, body.size, distance);
+      const visible = nextLabelVisible(
+        labelVisible,
+        body.size,
+        distance,
+        labelShow,
+        labelHide,
+      );
       if (visible !== labelVisible) setLabelVisible(visible);
       if (labelRef.current) {
         const opacity = THREE.MathUtils.clamp(
@@ -196,7 +215,12 @@ export const OrbitingBody = memo(function OrbitingBody({ id }: { id: string }) {
           </Html>
         )}
         {body.children?.map((child) => (
-          <OrbitingBody key={child.id} id={child.id} />
+          <OrbitingBody
+            key={child.id}
+            id={child.id}
+            labelShow={labelShow}
+            labelHide={labelHide}
+          />
         ))}
       </group>
     </group>

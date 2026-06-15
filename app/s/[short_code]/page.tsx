@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { UniverseView } from "./UniverseView";
 import { HeartButton } from "@/app/_components/HeartButton";
-import { MobileGuard } from "@/app/_components/MobileGuard";
 import type { OrbitalBody } from "@/app/scene/types";
 
 // Public share link. Anyone (incl. anonymous) can read a published, non-flagged
@@ -29,7 +28,6 @@ export default async function PublicSpherePage({
     <div className="w-screen h-screen">
       <UniverseView tree={data.tree as OrbitalBody} />
       <HeartButton shortCode={short_code} />
-      <MobileGuard />
     </div>
   );
 }

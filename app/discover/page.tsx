@@ -7,7 +7,6 @@ import { FocusLabel } from "@/app/_components/FocusLabel";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { OnboardingHint } from "@/app/_components/OnboardingHint";
-import { MobileGuard } from "@/app/_components/MobileGuard";
 import {
   useWarpSession,
   type Pool,
@@ -108,10 +107,14 @@ export default function DiscoverPage() {
             ["Space", "다음 우주로 워프"],
             ["Backspace", "이전 우주로 돌아가기"],
           ]}
+          touchLines={[
+            ["행성 탭", "행성 하나를 살펴보기"],
+            ["빈 곳 탭", "살펴보기 끝내기"],
+            ["다음 우주 →", "다음 우주로 워프"],
+            ["← 뒤로", "이전 우주로 돌아가기"],
+          ]}
         />
       )}
-      <MobileGuard />
-
       {status === "ready" && (
         <WarpBottomNav
           canGoBack={canGoBack}

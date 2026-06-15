@@ -16,8 +16,8 @@ export default function Nav() {
     <nav
       style={{
         position: "fixed",
-        top: 16,
-        left: 16,
+        top: "calc(16px + env(safe-area-inset-top))",
+        left: "calc(16px + env(safe-area-inset-left))",
         zIndex: 50,
         display: "flex",
         gap: 4,
@@ -39,7 +39,7 @@ export default function Nav() {
             key={l.href}
             href={l.href}
             style={{
-              padding: "6px 14px",
+              padding: "9px 14px",
               borderRadius: 999,
               fontWeight: active ? 700 : 400,
               color: active ? "#3a1f6b" : "rgba(255,255,255,0.72)",

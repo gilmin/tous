@@ -54,6 +54,7 @@ export default function PublicScene({
 
   return (
     <Canvas
+      dpr={[1, 2]}
       camera={{ position: [0, 2, 8], fov: 50, near: 0.01, far: 200 }}
       style={{ background: COSMIC_BG }}
       onPointerMissed={() => {

@@ -3,9 +3,18 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
-import { IDLE_ROTATION_SPEED, MOUSE_INFLUENCE, LERP_FACTOR } from "./constants";
+import {
+  IDLE_ROTATION_SPEED,
+  MOUSE_INFLUENCE,
+  LERP_FACTOR,
+  LABEL_CULL_SHOW,
+  LABEL_CULL_HIDE,
+  LABEL_CULL_SHOW_MOBILE,
+  LABEL_CULL_HIDE_MOBILE,
+} from "./constants";
 import { OrbitingBody } from "./OrbitingBody";
 import { useSceneStore } from "./store/scene-store-context";
+import { useCoarsePointer } from "../_components/useCoarsePointer";
 
 export function System() {
   const rootId = useSceneStore((s) => s.tree.id);
@@ -14,6 +23,10 @@ export function System() {
   const rotationSpeedRef = useRef(IDLE_ROTATION_SPEED);
   const { pointer } = useThree();
   const isPaused = focusedId !== null;
+  // Touch has no hover to reveal labels → looser culling so more stay visible.
+  const coarse = useCoarsePointer();
+  const labelShow = coarse ? LABEL_CULL_SHOW_MOBILE : LABEL_CULL_SHOW;
+  const labelHide = coarse ? LABEL_CULL_HIDE_MOBILE : LABEL_CULL_HIDE;
 
   useFrame((_, delta) => {
     if (!systemRef.current || isPaused) return;
@@ -28,7 +41,7 @@ export function System() {
 
   return (
     <group ref={systemRef}>
-      <OrbitingBody id={rootId} />
+      <OrbitingBody id={rootId} labelShow={labelShow} labelHide={labelHide} />
     </group>
   );
 }
