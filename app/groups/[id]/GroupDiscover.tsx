@@ -12,7 +12,7 @@ import {
 } from "@/app/_components/warp/useWarpSession";
 import { useFocusKeys } from "@/app/_components/warp/useFocusKeys";
 import {
-  WarpBottomNav,
+  WarpNav,
   WarpMessage,
   WarpFlash,
 } from "@/app/_components/warp/WarpControls";
@@ -121,8 +121,9 @@ export default function GroupDiscover({
 
       {flash && <WarpFlash message={flash} />}
 
-      {status === "ready" && (
-        <WarpBottomNav
+      {status === "ready" && store && (
+        <WarpNav
+          store={store}
           canGoBack={canGoBack}
           onBack={goBack}
           onNext={() => void goNext(true)}
