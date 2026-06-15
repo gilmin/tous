@@ -36,11 +36,17 @@ export function System() {
     const target = coarse
       ? pointer.x * MOUSE_INFLUENCE
       : IDLE_ROTATION_SPEED + pointer.x * MOUSE_INFLUENCE;
-    rotationSpeedRef.current = THREE.MathUtils.lerp(
-      rotationSpeedRef.current,
-      target,
-      LERP_FACTOR,
-    );
+    // Touch: a tap opposing the current spin snaps straight to the new direction
+    // instead of easing across zero. Without this the leftward tap has to bleed
+    // off the residual rightward spin first — felt as 저항감 / a slower left. A
+    // same-direction change still eases. Desktop always eases (floaty drift).
+    const reversing =
+      coarse &&
+      Math.abs(target) > 1e-3 &&
+      Math.sign(target) !== Math.sign(rotationSpeedRef.current);
+    rotationSpeedRef.current = reversing
+      ? target
+      : THREE.MathUtils.lerp(rotationSpeedRef.current, target, LERP_FACTOR);
     systemRef.current.rotation.y += rotationSpeedRef.current * delta;
   });
 
