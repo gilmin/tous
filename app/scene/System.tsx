@@ -30,10 +30,11 @@ export function System() {
 
   useFrame((_, delta) => {
     if (!systemRef.current || isPaused) return;
-    // Touch taps jerk the pointer-driven rotation asymmetrically (tap side =
-    // spin speed/direction); keep a steady idle spin on coarse pointers.
+    // Touch: symmetric directional spin — tapping left of center spins left,
+    // right spins right (same magnitude, no idle bias). Desktop keeps the idle
+    // drift + pointer parallax.
     const target = coarse
-      ? IDLE_ROTATION_SPEED
+      ? pointer.x * MOUSE_INFLUENCE
       : IDLE_ROTATION_SPEED + pointer.x * MOUSE_INFLUENCE;
     rotationSpeedRef.current = THREE.MathUtils.lerp(
       rotationSpeedRef.current,
