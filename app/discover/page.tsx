@@ -7,7 +7,6 @@ import { FocusLabel } from "@/app/_components/FocusLabel";
 import { WarpOverlay } from "@/app/_components/WarpOverlay";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { OnboardingHint } from "@/app/_components/OnboardingHint";
-import { MobileGuard } from "@/app/_components/MobileGuard";
 import {
   useWarpSession,
   type Pool,
@@ -110,8 +109,6 @@ export default function DiscoverPage() {
           ]}
         />
       )}
-      <MobileGuard />
-
       {status === "ready" && (
         <WarpBottomNav
           canGoBack={canGoBack}

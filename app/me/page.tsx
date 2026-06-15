@@ -6,7 +6,6 @@ import UniverseSync from "./UniverseSync";
 import PublishToggle from "./PublishToggle";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { OnboardingHint } from "@/app/_components/OnboardingHint";
-import { MobileGuard } from "@/app/_components/MobileGuard";
 
 // Owner page. Auth-gated: a logged-out visitor is bounced to /login. This is the
 // cloud-synced Universe editor (M3-2) — the same Scene as "/", but UniverseSync
@@ -42,7 +41,6 @@ export default async function MePage() {
           ["Esc", "포커스 해제"],
         ]}
       />
-      <MobileGuard />
       <div
         style={{
           position: "fixed",
