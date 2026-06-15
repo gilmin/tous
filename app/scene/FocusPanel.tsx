@@ -258,11 +258,13 @@ export function FocusPanel() {
       style={{
         position: "fixed",
         left: "50%",
-        bottom: 36,
+        bottom: "calc(36px + env(safe-area-inset-bottom))",
         transform: "translateX(-50%)",
         zIndex: 30,
         padding: "14px 22px",
         minWidth: 220,
+        maxWidth: "calc(100vw - 24px)",
+        boxSizing: "border-box",
         textAlign: "center",
         background: "rgba(38,25,72,0.72)",
         backdropFilter: "blur(14px)",
@@ -360,7 +362,7 @@ export function FocusPanel() {
             <button
               onClick={() => setMode("edit")}
               style={{
-                padding: "6px 16px",
+                padding: "9px 18px",
                 fontSize: 13,
                 fontWeight: 700,
                 background: buttonBg,
@@ -376,7 +378,7 @@ export function FocusPanel() {
             <button
               onClick={() => setMode("add")}
               style={{
-                padding: "6px 16px",
+                padding: "9px 18px",
                 fontSize: 13,
                 fontWeight: 700,
                 background: buttonBg,
@@ -393,11 +395,11 @@ export function FocusPanel() {
               <button
                 onClick={() => deleteBody(focusedBody.id)}
                 style={{
-                  padding: "4px 12px",
-                  fontSize: 12,
+                  padding: "8px 16px",
+                  fontSize: 13,
                   background: buttonBg,
                   border: "none",
-                  borderRadius: 6,
+                  borderRadius: 999,
                   color: buttonColor,
                   cursor: "pointer",
                   fontFamily: "inherit",
@@ -431,14 +433,14 @@ export function FocusPanel() {
           position: "absolute",
           top: 8,
           right: 10,
-          width: 24,
-          height: 24,
+          width: 32,
+          height: 32,
           padding: 0,
           background: "transparent",
           border: "none",
           color: "rgba(255,255,255,0.5)",
           cursor: "pointer",
-          fontSize: 16,
+          fontSize: 18,
           lineHeight: 1,
         }}
         aria-label="닫기"

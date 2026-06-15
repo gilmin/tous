@@ -42,7 +42,7 @@ export function OnboardingHint({
     <div
       style={{
         position: "fixed",
-        bottom: 96,
+        bottom: "calc(96px + env(safe-area-inset-bottom))",
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 48,
