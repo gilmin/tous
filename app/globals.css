@@ -31,3 +31,15 @@ body {
   /* 탭 시 회색 하이라이트 플래시 제거 */
   -webkit-tap-highlight-color: transparent;
 }
+
+/* /me top-right cluster (heart + publish + sign-out). On touch the global Nav
+   (top-left) is wide enough to collide with it, so drop it below the Nav row. */
+.me-chrome {
+  top: calc(14px + env(safe-area-inset-top));
+}
+
+@media (pointer: coarse) {
+  .me-chrome {
+    top: calc(58px + env(safe-area-inset-top));
+  }
+}
