@@ -32,14 +32,15 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* /me top-right cluster (heart + publish + sign-out). On touch the global Nav
-   (top-left) is wide enough to collide with it, so drop it below the Nav row. */
+/* /me top-right cluster (heart + publish + sign-out). On touch it's scaled down
+   to match the smaller nav so the two stay balanced and clear of each other. */
 .me-chrome {
   top: calc(14px + env(safe-area-inset-top));
 }
 
 @media (pointer: coarse) {
   .me-chrome {
-    top: calc(58px + env(safe-area-inset-top));
+    transform: scale(0.85);
+    transform-origin: top right;
   }
 }
