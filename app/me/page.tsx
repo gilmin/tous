@@ -42,6 +42,11 @@ export default async function MePage() {
           ["Ctrl+Z · Ctrl+Y", "실행 취소 · 다시 실행"],
           ["Esc", "포커스 해제"],
         ]}
+        touchLines={[
+          ["행성 탭", "포커스 — 편집·자식 추가·삭제"],
+          ["↩︎ ↪︎", "실행 취소 · 다시 실행"],
+          ["빈 곳 탭", "포커스 해제"],
+        ]}
       />
       <div
         style={{

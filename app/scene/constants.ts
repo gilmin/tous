@@ -15,6 +15,11 @@ export const LABEL_FADE_FAR = 11;
 export const LABEL_CULL_SHOW = 0.014;
 export const LABEL_CULL_HIDE = 0.011;
 
+// coarse-pointer(터치)용 더 느슨한 쌍 — hover로 라벨을 띄울 수 없으니 더 작은
+// 겉보기 크기에서도 보이게 한다(데스크탑 대비 ~35% 낮춤).
+export const LABEL_CULL_SHOW_MOBILE = 0.009;
+export const LABEL_CULL_HIDE_MOBILE = 0.007;
+
 export const CAMERA_LERP = 0.06;
 export const DEFAULT_CAM_POS = new THREE.Vector3(0, 2, 8);
 export const DEFAULT_LOOK_AT = new THREE.Vector3(0, 0, 0);
