@@ -79,8 +79,12 @@ export function HeartButton({
           ? {}
           : {
               position: "fixed",
-              top: 16,
-              ...(side === "left" ? { left: 16 } : { right: 16 }),
+              // Match the nav's safe-area insets so their top edges line up — a
+              // plain top:16 rode above the nav (top: 16 + inset) on inset phones.
+              top: "calc(16px + env(safe-area-inset-top))",
+              ...(side === "left"
+                ? { left: "calc(16px + env(safe-area-inset-left))" }
+                : { right: "calc(16px + env(safe-area-inset-right))" }),
               zIndex: 45,
             }),
         display: "flex",
