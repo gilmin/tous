@@ -7,6 +7,7 @@ import PublishToggle from "./PublishToggle";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { OnboardingHint } from "@/app/_components/OnboardingHint";
 import { UndoRedoControls } from "@/app/_components/UndoRedoControls";
+import { EditorFocusNav } from "@/app/scene/EditorFocusNav";
 
 // Owner page. Auth-gated: a logged-out visitor is bounced to /login. This is the
 // cloud-synced Universe editor (M3-2) — the same Scene as "/", but UniverseSync
@@ -33,6 +34,7 @@ export default async function MePage() {
       <Scene />
       <UniverseSync userId={user.id} />
       <UndoRedoControls />
+      <EditorFocusNav />
       <OnboardingHint
         storageKey="tous:onboarding:me:v1"
         title="내 우주를 만드는 법"

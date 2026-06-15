@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useKeyboardInset } from "../_components/keyboard-inset";
+import { useCoarsePointer } from "../_components/useCoarsePointer";
 import {
   beginSliderCoalesce,
   endSliderCoalesce,
@@ -228,6 +229,8 @@ export function FocusPanel() {
   const [addDraft, setAddDraft] = useState("");
   // Lift the panel above the soft keyboard while an input is focused (U4).
   const kbInset = useKeyboardInset();
+  // On touch the editor shows a ←/→ focus-nav row at the bottom; sit above it.
+  const coarse = useCoarsePointer();
 
   const isEditing = mode === "edit" && focusedBody !== null;
   const isAdding = mode === "add" && focusedBody !== null;
@@ -253,6 +256,21 @@ export function FocusPanel() {
 
   const buttonBg = "rgba(255,255,255,0.14)";
   const buttonColor = "#f7f3ff";
+  // One shared style for 편집 / + 자식 / 삭제 so they match (nowrap keeps the
+  // Korean labels horizontal; flexShrink:0 stops the panel squeezing them).
+  const panelBtn: CSSProperties = {
+    padding: "8px 16px",
+    fontSize: 13,
+    fontWeight: 700,
+    background: buttonBg,
+    border: "none",
+    borderRadius: 999,
+    color: buttonColor,
+    cursor: "pointer",
+    fontFamily: "inherit",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
+  };
   const inputBg = "rgba(255,255,255,0.08)";
   const inputBorder = "1px solid rgba(255,255,255,0.2)";
 
@@ -261,7 +279,9 @@ export function FocusPanel() {
       style={{
         position: "fixed",
         left: "50%",
-        bottom: "calc(36px + env(safe-area-inset-bottom))",
+        bottom: coarse
+          ? "calc(84px + env(safe-area-inset-bottom))"
+          : "calc(36px + env(safe-area-inset-bottom))",
         transform: `translateX(-50%) translateY(-${
           isEditing || isAdding ? kbInset : 0
         }px)`,
@@ -367,49 +387,20 @@ export function FocusPanel() {
           >
             <button
               onClick={() => setMode("edit")}
-              style={{
-                padding: "9px 18px",
-                fontSize: 13,
-                fontWeight: 700,
-                background: buttonBg,
-                border: "none",
-                borderRadius: 999,
-                color: buttonColor,
-                cursor: "pointer",
-                fontFamily: "inherit",
-              }}
+              style={panelBtn}
             >
               편집
             </button>
             <button
               onClick={() => setMode("add")}
-              style={{
-                padding: "9px 18px",
-                fontSize: 13,
-                fontWeight: 700,
-                background: buttonBg,
-                border: "none",
-                borderRadius: 999,
-                color: buttonColor,
-                cursor: "pointer",
-                fontFamily: "inherit",
-              }}
+              style={panelBtn}
             >
               + 자식
             </button>
             {focusedBody.id !== rootId && (
               <button
                 onClick={() => deleteBody(focusedBody.id)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 13,
-                  background: buttonBg,
-                  border: "none",
-                  borderRadius: 999,
-                  color: buttonColor,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
+                style={panelBtn}
               >
                 삭제
               </button>

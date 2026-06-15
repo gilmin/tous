@@ -48,6 +48,27 @@ export function WarpBottomNav({
 // While a Body is focused, the bottom row navigates *within* the Universe:
 // ← / → cycle focus through its bodies (DFS, circular) — the touch equivalent of
 // the ←/→ keyboard nav. Empty-space tap clears focus and restores WarpBottomNav.
+// Shared ← / → bottom row (within-Universe focus nav). Warp hosts wire it to the
+// foreign store; the /me editor wires it to the editable store.
+export function FocusNavRow({
+  onPrev,
+  onNext,
+}: {
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <div style={bottomRowStyle}>
+      <button onClick={onPrev} aria-label="이전 행성" style={btnStyle(false)}>
+        ←
+      </button>
+      <button onClick={onNext} aria-label="다음 행성" style={btnStyle(false)}>
+        →
+      </button>
+    </div>
+  );
+}
+
 export function WarpFocusNav({ store }: { store: StoreApi<SceneReadState> }) {
   const move = (code: "ArrowLeft" | "ArrowRight") => {
     const { tree, focusedId, setFocus } = store.getState();
@@ -55,22 +76,10 @@ export function WarpFocusNav({ store }: { store: StoreApi<SceneReadState> }) {
     if (r) setFocus(r.focusId);
   };
   return (
-    <div style={bottomRowStyle}>
-      <button
-        onClick={() => move("ArrowLeft")}
-        aria-label="이전 행성"
-        style={btnStyle(false)}
-      >
-        ←
-      </button>
-      <button
-        onClick={() => move("ArrowRight")}
-        aria-label="다음 행성"
-        style={btnStyle(false)}
-      >
-        →
-      </button>
-    </div>
+    <FocusNavRow
+      onPrev={() => move("ArrowLeft")}
+      onNext={() => move("ArrowRight")}
+    />
   );
 }
 
