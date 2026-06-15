@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -26,6 +26,16 @@ const dunggeunmiso = localFont({
 export const metadata: Metadata = {
   title: "tous",
   description: "당신의 마음 깊은 곳에 있는 개인을 다시 불러내는 공간",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // 노치/홈 인디케이터 영역까지 채우고 safe-area 인셋을 활성화.
+  viewportFit: "cover",
+  // 키보드가 뜰 때 레이아웃 뷰포트를 수축(Android). iOS는 useKeyboardInset의
+  // visualViewport 계산이 보정.
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
