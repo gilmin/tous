@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { InAppBrowserNotice } from "@/app/_components/InAppBrowserNotice";
 
 function LoginButtons() {
   const params = useSearchParams();
@@ -18,6 +19,7 @@ function LoginButtons() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
+      <InAppBrowserNotice />
       <h1 className="text-lg font-medium text-neutral-800">로그인</h1>
       <p className="text-sm text-neutral-500">
         나만의 우주를 만들고 저장하려면 로그인하세요.

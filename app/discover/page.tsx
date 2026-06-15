@@ -13,7 +13,7 @@ import {
 } from "@/app/_components/warp/useWarpSession";
 import { useFocusKeys } from "@/app/_components/warp/useFocusKeys";
 import {
-  WarpBottomNav,
+  WarpNav,
   WarpMessage,
   WarpFlash,
 } from "@/app/_components/warp/WarpControls";
@@ -108,15 +108,17 @@ export default function DiscoverPage() {
             ["Backspace", "이전 우주로 돌아가기"],
           ]}
           touchLines={[
-            ["행성 탭", "행성 하나를 살펴보기"],
+            ["행성 탭", "행성 하나 살펴보기"],
+            ["← →", "옆 행성으로 이동 (살펴보는 중)"],
             ["빈 곳 탭", "살펴보기 끝내기"],
-            ["다음 우주 →", "다음 우주로 워프"],
-            ["← 뒤로", "이전 우주로 돌아가기"],
+            ["다음 우주 · 뒤로", "다른 우주로 워프"],
+            ["가로로 돌리기", "전체를 더 넓게"],
           ]}
         />
       )}
-      {status === "ready" && (
-        <WarpBottomNav
+      {status === "ready" && store && (
+        <WarpNav
+          store={store}
           canGoBack={canGoBack}
           onBack={goBack}
           onNext={() => void goNext(true)}

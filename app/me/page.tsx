@@ -46,12 +46,13 @@ export default async function MePage() {
           ["행성 탭", "포커스 — 편집·자식 추가·삭제"],
           ["↩︎ ↪︎", "실행 취소 · 다시 실행"],
           ["빈 곳 탭", "포커스 해제"],
+          ["가로로 돌리기", "전체 우주를 더 넓게"],
         ]}
       />
       <div
+        className="me-chrome"
         style={{
           position: "fixed",
-          top: "calc(14px + env(safe-area-inset-top))",
           right: "calc(14px + env(safe-area-inset-right))",
           zIndex: 50,
           display: "flex",

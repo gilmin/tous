@@ -7,6 +7,7 @@ import { useSceneStoreApi } from "./store/scene-store-context";
 import { selectBodyById } from "./store/tree-ops";
 import { getBodyMesh } from "./store/body-mesh-registry";
 import { CAMERA_LERP, DEFAULT_CAM_POS, DEFAULT_LOOK_AT } from "./constants";
+import { defaultCamDistanceScale } from "./camera-frame";
 
 export function CameraController() {
   // Read the store fresh each frame instead of via a React subscription, so a
@@ -19,7 +20,7 @@ export function CameraController() {
   const desiredPos = useRef(new THREE.Vector3());
   const desiredLook = useRef(new THREE.Vector3());
 
-  useFrame(() => {
+  useFrame((state) => {
     const { tree, focusedId } = api.getState();
     const body = focusedId ? selectBodyById(tree, focusedId) : null;
     const mesh = focusedId ? getBodyMesh(focusedId) : null;
@@ -34,7 +35,12 @@ export function CameraController() {
       desiredPos.current.copy(worldPos.current).add(offset);
       desiredLook.current.copy(worldPos.current);
     } else {
-      desiredPos.current.copy(DEFAULT_CAM_POS);
+      // Portrait: pull the camera back so the whole Universe fits the narrower
+      // horizontal FOV (landscape/desktop unchanged).
+      const scale = defaultCamDistanceScale(
+        state.size.width / state.size.height,
+      );
+      desiredPos.current.copy(DEFAULT_CAM_POS).multiplyScalar(scale);
       desiredLook.current.copy(DEFAULT_LOOK_AT);
     }
 

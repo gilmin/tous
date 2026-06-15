@@ -28,7 +28,7 @@ export function FocusLabel({
         position: "fixed",
         left: "50%",
         bottom: lifted
-          ? "calc(92px + env(safe-area-inset-bottom))"
+          ? "calc(108px + env(safe-area-inset-bottom))"
           : "calc(36px + env(safe-area-inset-bottom))",
         transform: "translateX(-50%)",
         zIndex: 30,
