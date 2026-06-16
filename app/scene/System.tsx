@@ -31,14 +31,14 @@ export function System() {
   const labelShow = coarse ? LABEL_CULL_SHOW_MOBILE : LABEL_CULL_SHOW;
   const labelHide = coarse ? LABEL_CULL_HIDE_MOBILE : LABEL_CULL_HIDE;
 
-  // Explicit touch-steer state (coarse only). useThree's `pointer` keeps its last
-  // value after release, so it can't tell "finger down" from "finger lifted" —
-  // the analog model needs that, otherwise it would keep spinning after release.
-  // We track press + signed NDC-x ourselves: steer only while pressed, idle when
-  // released. Listening on the canvas (down) + window (move/up) catches a release
-  // anywhere, even if the finger leaves the canvas.
+  // Touch steering state (coarse only). A tap (or drag) sets the spin from where
+  // it lands — speed ∝ distance from center("나"), via touchSpinSpeed — and it
+  // KEEPS going after the finger lifts, until the next tap (tap, don't hold).
+  // targetSpeedRef persists that across release; pressedRef only gates the move
+  // handler so a stray hover doesn't re-steer. Coming out of focus resets to idle.
+  // Listening on canvas (down) + window (move/up) catches a release anywhere.
   const pressedRef = useRef(false);
-  const pointerXRef = useRef(0);
+  const targetSpeedRef = useRef(IDLE_ROTATION_SPEED);
   // Track focus state across frames so we can spot the unfocus transition.
   const wasPausedRef = useRef(false);
 
@@ -51,15 +51,18 @@ export function System() {
       const x = ((clientX - rect.left) / rect.width) * 2 - 1;
       return Math.max(-1, Math.min(1, x));
     };
+    const steer = (clientX: number) => {
+      targetSpeedRef.current = touchSpinSpeed(ndcX(clientX), TOUCH_SPIN_SCALE);
+    };
     const onDown = (e: PointerEvent) => {
       pressedRef.current = true;
-      pointerXRef.current = ndcX(e.clientX);
+      steer(e.clientX);
     };
     const onMove = (e: PointerEvent) => {
-      if (!pressedRef.current) return;
-      pointerXRef.current = ndcX(e.clientX);
+      if (pressedRef.current) steer(e.clientX);
     };
     const onUp = () => {
+      // Finger lifted — keep the last tap's spin (don't reset to idle).
       pressedRef.current = false;
     };
     canvas.addEventListener("pointerdown", onDown);
@@ -83,16 +86,17 @@ export function System() {
     if (isPaused) return;
 
     if (coarse) {
-      if (justUnfocused) rotationSpeedRef.current = IDLE_ROTATION_SPEED;
-      // Steer only while a finger is down: far from center("나") = fast, near =
-      // slow, left/right symmetric. Released → drift at idle (the 공전 the user
-      // likes). Light lerp tracks the finger smoothly without cross-zero 저항감.
-      const target = pressedRef.current
-        ? touchSpinSpeed(pointerXRef.current, TOUCH_SPIN_SCALE)
-        : IDLE_ROTATION_SPEED;
+      // Coming out of focus, resume the gentle idle drift rather than whatever
+      // speed the last tap left spinning.
+      if (justUnfocused) {
+        targetSpeedRef.current = IDLE_ROTATION_SPEED;
+        rotationSpeedRef.current = IDLE_ROTATION_SPEED;
+      }
+      // Hold the last tap's speed (far from center("나") = fast, near = slow,
+      // left/right symmetric); a light lerp eases the change between taps.
       rotationSpeedRef.current = THREE.MathUtils.lerp(
         rotationSpeedRef.current,
-        target,
+        targetSpeedRef.current,
         TOUCH_LERP_FACTOR,
       );
       systemRef.current.rotation.y += rotationSpeedRef.current * delta;
