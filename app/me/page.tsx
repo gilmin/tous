@@ -4,6 +4,7 @@ import Scene from "@/app/scene";
 import { signOut } from "./actions";
 import UniverseSync from "./UniverseSync";
 import PublishToggle from "./PublishToggle";
+import MeChrome from "./MeChrome";
 import { HeartButton } from "@/app/_components/HeartButton";
 import { OnboardingHint } from "@/app/_components/OnboardingHint";
 import { UndoRedoControls } from "@/app/_components/UndoRedoControls";
@@ -51,18 +52,7 @@ export default async function MePage() {
           ["가로로 돌리기", "전체 우주를 더 넓게"],
         ]}
       />
-      <div
-        className="me-chrome"
-        style={{
-          position: "fixed",
-          right: "calc(14px + env(safe-area-inset-right))",
-          zIndex: 50,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-          alignItems: "flex-end",
-        }}
-      >
+      <MeChrome>
         {/* Heart sits inline to the left of the publish toggle. It appears once the
             universe has ever been published (a short_code exists). While public it's
             an interactive toggle; once unpublished it stays as a read-only count of
@@ -103,7 +93,7 @@ export default async function MePage() {
             로그아웃
           </button>
         </form>
-      </div>
+      </MeChrome>
     </div>
   );
 }
