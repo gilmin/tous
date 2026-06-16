@@ -1,8 +1,9 @@
-# 모바일 도그푸드 — 피드백 라운드 5 (다음 세션에서 구현)
+# 모바일 도그푸드 — 피드백 라운드 5
 
-> **상태:** 기록만 됨, 구현 X. 사용자가 폰에서 라운드 4까지 머지/도그푸드 후 남긴 4건.
-> 다음 세션에서 이 문서를 단일 출처로 진행한다. 브랜치: `feat/mobile-support`
-> (라운드 4b 2커밋이 최신 `main` 위에 리베이스된 채 PR 대기 중 — 아래 §0 참조).
+> **상태:** ✅ **구현 완료 (2026-06-16, 세션 8 이어서) — tsc green, vitest 149. 폰 도그푸드 대기.**
+> 4건 전부 구현: item 1(하트 compact 패딩 7→10) · item 2(`FocusPanel` 드래그+재focus 리셋, pure core `app/scene/panel-drag.ts`) · items 3+4(`System.tsx` 아날로그 대칭 비례 터치 회전 + 놓으면/unfocus 시 idle 리셋, pure core `app/scene/touch-spin.ts`). 전부 `useCoarsePointer()`/compact 게이트 → **데스크탑 무변**(System 데스크탑 분기 바이트 동일).
+> 브랜치: `feat/mobile-support`. **도그푸드 결과로 `TOUCH_SPIN_SCALE`(1.2)·`TOUCH_LERP_FACTOR`(0.2)·하트 패딩 튜닝 예정.**
+> ⚠️ 판단 2건: item 1 패딩은 산식 도출값(line-height 상쇄로 견고하나 폰서 미세단차면 이 숫자만 조정) · item 2는 본 문서 "터치+마우스" 명시라 coarse 게이트 안 함(기존 데스크탑 인터랙션 무변·추가적).
 
 > **검증 관례 (ADR-0002 D12):** 순수 함수는 vitest, R3F/DOM 배선은 사람 도그푸드.
 > "pure core + thin adapter" 패턴 따를 것 (cf. `lib/warp/session.ts`, `app/scene/label-cull.ts`).
