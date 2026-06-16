@@ -104,14 +104,16 @@ export function HeartButton({
         boxShadow: "0 6px 20px rgba(20,10,50,0.35)",
         color: "#fff",
         fontFamily: "var(--font-cute), system-ui, sans-serif",
-        fontSize: compact ? 12 : 15,
+        // The inline /me heart matches the publish toggle (fontSize 13) so the
+        // cluster's first row is flush; the fixed-corner heart stays bigger.
+        fontSize: inline ? 13 : compact ? 12 : 15,
         fontWeight: 700,
         cursor: interactive ? "pointer" : "default",
         transition: "transform 0.12s",
         transform: interactive && hearted ? "scale(1.04)" : "scale(1)",
       }}
     >
-      <span style={{ fontSize: compact ? 14 : 17, lineHeight: 1 }}>
+      <span style={{ fontSize: inline ? 15 : compact ? 14 : 17, lineHeight: 1 }}>
         {interactive ? (hearted ? "❤️" : "🤍") : "❤️"}
       </span>
       <span style={{ minWidth: compact ? 10 : 12, textAlign: "left" }}>

@@ -35,7 +35,10 @@ body {
 /* /me top-right cluster (heart + publish + sign-out). On touch it's scaled down
    to match the smaller nav so the two stay balanced and clear of each other. */
 .me-chrome {
-  top: calc(14px + env(safe-area-inset-top));
+  /* Match the nav's top (16px) so the left nav and right cluster top edges line
+     up — scale(0.78) is anchored top-right, so the top edge stays at this value
+     (round-5 item 1, /me 단차). */
+  top: calc(16px + env(safe-area-inset-top));
 }
 
 @media (pointer: coarse) {
