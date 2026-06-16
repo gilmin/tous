@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useKeyboardInset } from "../_components/keyboard-inset";
 import { useCoarsePointer } from "../_components/useCoarsePointer";
 import {
@@ -8,6 +14,7 @@ import {
   endSliderCoalesce,
   useUniverseStore,
 } from "./store/universe-store";
+import { clampPanelOffset } from "./panel-drag";
 import { selectBodyById } from "./store/tree-ops";
 import { PLANET_SHAPES, type PlanetShape } from "../_components/Planet";
 import {
@@ -232,6 +239,71 @@ export function FocusPanel() {
   // On touch the editor shows a ←/→ focus-nav row at the bottom; sit above it.
   const coarse = useCoarsePointer();
 
+  // Draggable panel (round-5 item 2). `offset` is added on top of the base
+  // transform; a drag starts only on the panel's non-interactive area so it never
+  // steals pointerdown from inputs/sliders/buttons/×. Re-focusing a body (id
+  // change) snaps it back to the default position.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    baseX: number;
+    baseY: number;
+    zeroRect: { left: number; top: number; width: number; height: number };
+  } | null>(null);
+
+  useEffect(() => {
+    setOffset({ x: 0, y: 0 });
+  }, [focusedBody?.id]);
+
+  const onPanelPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("input, button, select, textarea, a")) return;
+    const el = panelRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: offset.x,
+      baseY: offset.y,
+      // The measured rect includes the live offset; subtract it for the
+      // zero-offset rect that clampPanelOffset expects.
+      zeroRect: {
+        left: rect.left - offset.x,
+        top: rect.top - offset.y,
+        width: rect.width,
+        height: rect.height,
+      },
+    };
+    setDragging(true);
+    el.setPointerCapture(e.pointerId);
+  };
+
+  const onPanelPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const raw = {
+      x: d.baseX + (e.clientX - d.startX),
+      y: d.baseY + (e.clientY - d.startY),
+    };
+    setOffset(
+      clampPanelOffset(raw, d.zeroRect, {
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      }),
+    );
+  };
+
+  const onPanelPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    setDragging(false);
+    panelRef.current?.releasePointerCapture(e.pointerId);
+  };
+
   const isEditing = mode === "edit" && focusedBody !== null;
   const isAdding = mode === "add" && focusedBody !== null;
 
@@ -276,6 +348,10 @@ export function FocusPanel() {
 
   return (
     <div
+      ref={panelRef}
+      onPointerDown={onPanelPointerDown}
+      onPointerMove={onPanelPointerMove}
+      onPointerUp={onPanelPointerUp}
       style={{
         position: "fixed",
         left: "50%",
@@ -284,8 +360,12 @@ export function FocusPanel() {
           : "calc(36px + env(safe-area-inset-bottom))",
         transform: `translateX(-50%) translateY(-${
           isEditing || isAdding ? kbInset : 0
-        }px)`,
-        transition: "transform 0.18s ease",
+        }px) translate(${offset.x}px, ${offset.y}px)`,
+        // No easing while dragging so the panel tracks the finger 1:1; restore it
+        // afterwards so the keyboard-lift and re-focus snap-back stay smooth.
+        transition: dragging ? "none" : "transform 0.18s ease",
+        cursor: dragging ? "grabbing" : "move",
+        touchAction: "none",
         zIndex: 30,
         padding: "14px 22px",
         minWidth: 220,

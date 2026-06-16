@@ -89,8 +89,13 @@ export function HeartButton({
             }),
         display: "flex",
         alignItems: "center",
+        // Match the nav pill's outer height so the two top-corner pills, which
+        // share top:calc(16px+inset), line up (round-5 item 1). The heart's
+        // content (emoji+count) is shorter than the nav's padded link, so it
+        // needs more vertical padding to reach the same height — otherwise its
+        // shorter pill centers higher and reads as "하트가 더 높아".
         gap: compact ? 6 : 7,
-        padding: compact ? "7px 13px" : "8px 15px",
+        padding: compact ? "10px 13px" : "8px 15px",
         borderRadius: 999,
         border: "2px solid rgba(255,255,255,0.22)",
         background: "rgba(43,28,84,0.55)",

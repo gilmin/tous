@@ -4,6 +4,14 @@ export const IDLE_ROTATION_SPEED = 0.05;
 export const MOUSE_INFLUENCE = 0.8;
 export const LERP_FACTOR = 0.08;
 
+// Touch steering (coarse pointer). Spin is proportional to the finger's signed
+// distance from center("나"): touchSpinSpeed(pointerX) = pointerX * TOUCH_SPIN_SCALE,
+// so the screen edges spin fastest and center is slow — symmetric, no idle bias.
+// A light lerp smooths analog jitter without the cross-zero 저항감 of the old
+// fixed-magnitude model. Both dogfood-tunable.
+export const TOUCH_SPIN_SCALE = 1.2;
+export const TOUCH_LERP_FACTOR = 0.2;
+
 export const LABEL_FADE_NEAR = 6;
 export const LABEL_FADE_FAR = 11;
 
