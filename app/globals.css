@@ -35,10 +35,11 @@ body {
 /* /me top-right cluster (heart + publish + sign-out). On touch it's scaled down
    to match the smaller nav so the two stay balanced and clear of each other. */
 .me-chrome {
-  /* Match the nav's top (16px) so the left nav and right cluster top edges line
-     up — scale(0.78) is anchored top-right, so the top edge stays at this value
-     (round-5 item 1, /me 단차). */
   top: calc(16px + env(safe-area-inset-top));
+  /* MeChrome.tsx measures the nav and sets --me-align so the heart row's CENTER
+     lines up with the nav's center (round-5 item 1, /me — center, not tops).
+     translateY sits outside scale() so it nudges in viewport px. */
+  transform: translateY(var(--me-align, 0px));
 }
 
 @media (pointer: coarse) {
@@ -46,7 +47,7 @@ body {
     /* Origin top-right: shrinking pulls the cluster's left edge rightward, away
        from the nav. 0.78 clears the wide published state (공개됨 · 비공개로 +
        하트) on narrow portrait phones. */
-    transform: scale(0.78);
+    transform: translateY(var(--me-align, 0px)) scale(0.78);
     transform-origin: top right;
   }
 }
